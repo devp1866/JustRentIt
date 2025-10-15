@@ -18,7 +18,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    // TODO: Hash password before saving in production!
     const user = await User.create({
       email,
       password,

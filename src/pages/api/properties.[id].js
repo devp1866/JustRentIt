@@ -1,5 +1,3 @@
-// pages/api/properties/[id].js
-
 import dbConnect from '../../../utils/db';
 import Property from '../../../models/Property';
 

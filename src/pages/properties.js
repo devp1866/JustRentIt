@@ -5,12 +5,11 @@ import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal } from "lucide-react";
 import PropertyCard from "@/components/home/PropertyCard";
-// Adapt UI components to simple HTML elements or Next.js UI kit
+
 
 export default function Properties() {
     const router = useRouter();
 
-    // Get query params from URL (Next.js style)
     const searchCityDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('city') || "" : "";
     const propertyTypeDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('type') || "all" : "all";
 

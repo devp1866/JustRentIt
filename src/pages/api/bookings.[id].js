@@ -1,5 +1,3 @@
-// pages/api/bookings/[id].js
-
 import dbConnect from '../../../utils/db';
 import Booking from '../../../models/Booking';
 

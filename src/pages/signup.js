@@ -34,7 +34,7 @@ export default function Signup() {
       setError(data.error || "Signup failed");
     } else {
       setSuccess(true);
-      setTimeout(() => router.push("/login"), 1500); // delay to show success
+      setTimeout(() => router.push("/login"), 1500); 
     }
   };
 

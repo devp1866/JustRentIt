@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const UserSchema = new mongoose.Schema({
   full_name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // Store hashed in production!
+  password: { type: String, required: true }, 
   user_type: { type: String, default: "renter" }
 });
 

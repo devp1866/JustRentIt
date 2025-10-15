@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Bed, Bath, Square, Calendar, DollarSign, ArrowLeft, CheckCircle } from "lucide-react";
-// import BookingModal and Badge as needed
 
 export default function PropertyDetails() {
   const router = useRouter();
@@ -15,11 +14,10 @@ export default function PropertyDetails() {
   const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
-    // Replace with real user logic if needed
     setUser(null);
   }, []);
 
-  // Correct API call fetch by id
+
   const { data: property, isLoading } = useQuery({
     queryKey: ['property', propertyId],
     queryFn: async () => {
@@ -249,7 +247,6 @@ export default function PropertyDetails() {
             </div>
           </div>
         </div>
-        {/* BookingModal integration if needed */}
       </div>
     </div>
   );

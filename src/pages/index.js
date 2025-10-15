@@ -6,42 +6,41 @@ import { useQuery } from "@tanstack/react-query";
 import { MapPin, DollarSign, Home as HomeIcon, TrendingUp, CheckCircle, Search } from "lucide-react";
 import PropertyCard from "../components/home/PropertyCard";
 
-const mockProperties = [
-    {
-        id: "1",
-        title: "Sunny Apartment",
-        location: "Downtown City",
-        property_type: "apartment",
-        bedrooms: 2,
-        bathrooms: 1,
-        area_sqft: 850,
-        price_per_month: 1200,
-        amenities: ["Pool", "Gym", "Parking"],
-        images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800"],
-        status: "available",
-        landlord_email: "owner@example.com",
-        description: "A bright, well-located apartment."
-    },
-    {
-        id: "2",
-        title: "Cozy Studio",
-        location: "Central Avenue",
-        property_type: "studio",
-        price_per_month: 950,
-        amenities: [],
-        images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800"],
-        status: "available",
-        landlord_email: "owner2@example.com",
-        description: "Perfect for singles or students."
-    }
-];
+// const mockProperties = [
+//     {
+//         id: "1",
+//         title: "Sunny Apartment",
+//         location: "Downtown City",
+//         property_type: "apartment",
+//         bedrooms: 2,
+//         bathrooms: 1,
+//         area_sqft: 850,
+//         price_per_month: 1200,
+//         amenities: ["Pool", "Gym", "Parking"],
+//         images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800"],
+//         status: "available",
+//         landlord_email: "owner@example.com",
+//         description: "A bright, well-located apartment."
+//     },
+//     {
+//         id: "2",
+//         title: "Cozy Studio",
+//         location: "Central Avenue",
+//         property_type: "studio",
+//         price_per_month: 950,
+//         amenities: [],
+//         images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800"],
+//         status: "available",
+//         landlord_email: "owner2@example.com",
+//         description: "Perfect for singles or students."
+//     }
+// ];
 
 export default function Home() {
     const router = useRouter();
     const [searchCity, setSearchCity] = useState("");
     const [propertyType, setPropertyType] = useState("all");
 
-    // Use mockProperties for demo!
     const { data: featuredProperties = [], isLoading } = useQuery({
         queryKey: ['featured-properties'],
         queryFn: async () =>

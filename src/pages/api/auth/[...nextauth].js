@@ -16,7 +16,6 @@ export default NextAuth({
         const user = await User.findOne({ email: credentials.email });
         if (!user) throw new Error("No user found");
 
-        // TODO: Use hashed passwords in production!
         if (user.password !== credentials.password) throw new Error("Invalid password");
 
         return {
