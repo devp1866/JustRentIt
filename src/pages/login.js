@@ -1,30 +1,42 @@
-// pages/login.js
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 
 export default function Login() {
-    const [form, setForm] = useState({ email: "", password: "" });
-    const router = useRouter();
-    const { data: session, status } = useSession();
-    if (status === "loading") return <div>Loading...</div>;
-    if (!session) return <div>Not authorized</div>;
+  const router = useRouter();
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const res = await signIn("credentials", {
+      ...formData,
+      redirect: false,
+    });
+    setLoading(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        await signIn("credentials", {
-            email: form.email,
-            password: form.password,
-            callbackUrl: "/"
-        });
-    };
+    if (res.error) {
+      setError("Invalid email or password");
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
-            <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
-            <button type="submit">Login</button>
-        </form>
-    );
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form className="bg-white p-8 rounded shadow-md w-96 space-y-6" onSubmit={handleSubmit}>
+        <h1 className="text-xl font-bold mb-4">Login</h1>
+        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required className="border px-3 py-2 w-full rounded" />
+        <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required className="border px-3 py-2 w-full rounded" />
+        <button type="submit" className="bg-blue-900 text-white rounded px-4 py-2 w-full">{loading ? "Logging in..." : "Login"}</button>
+        {error && <p className="text-red-500 mt-2">{error}</p>}
+        <p className="mt-4 text-sm">Don`&apos;`t have an account? <a href="/signup" className="text-blue-900 underline">Sign Up</a></p>
+      </form>
+    </div>
+  );
 }
