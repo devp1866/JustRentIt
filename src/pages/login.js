@@ -1,6 +1,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function Login() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function Login() {
         <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required className="border px-3 py-2 w-full rounded" />
         <button type="submit" className="bg-blue-900 text-white rounded px-4 py-2 w-full">{loading ? "Logging in..." : "Login"}</button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
-        <p className="mt-4 text-sm">Don`&apos;`t have an account? <a href="/signup" className="text-blue-900 underline">Sign Up</a></p>
+        <p className="mt-4 text-sm">Don`&apos;`t have an account? <Link href="/signup" className="text-blue-900 underline">Sign Up</Link></p>
       </form>
     </div>
   );
