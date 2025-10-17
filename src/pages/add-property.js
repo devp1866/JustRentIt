@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, PlusCircle, Upload, X } from "lucide-react";
 import { useSession, signIn } from "next-auth/react";
+import Image from "next/image";
 
 export default function AddProperty() {
   const { data: session, status } = useSession();
@@ -307,7 +308,7 @@ export default function AddProperty() {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {formData.images.map((img, idx) => (
                                         <div key={idx} className="relative group">
-                                            <img
+                                            <Image
                                                 src={img}
                                                 alt=""
                                                 className="w-full h-32 object-cover rounded-lg"

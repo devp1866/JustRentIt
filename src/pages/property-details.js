@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Bed, Bath, Square, Calendar, DollarSign, ArrowLeft, CheckCircle } from "lucide-react";
+import Image from "next/image";
 
 export default function PropertyDetails() {
   const router = useRouter();
@@ -92,7 +93,7 @@ export default function PropertyDetails() {
             {/* Main Image */}
             <div className="bg-white rounded-2xl overflow-hidden shadow-lg mb-4">
               <div className="relative h-96">
-                <img
+                <Image
                   src={images[selectedImage]}
                   alt={property.title}
                   className="w-full h-full object-cover"
@@ -115,7 +116,7 @@ export default function PropertyDetails() {
                         : "border-transparent hover:border-gray-300"
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-24 object-cover" />
+                    <Image src={img} alt="" className="w-full h-24 object-cover" />
                   </button>
                 ))}
               </div>

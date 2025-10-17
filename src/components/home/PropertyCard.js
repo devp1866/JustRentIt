@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { MapPin, Bed, Bath, Square } from "lucide-react";
+import Image from "next/image";
 
 export default function PropertyCard({ property }) {
   const mainImage =
@@ -13,9 +14,10 @@ export default function PropertyCard({ property }) {
     <Link href={`/property-details?id=${property._id}`}>
       <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer">
         <div className="relative h-56 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={mainImage}
+            width={800}
+            height={600}
             alt={property.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
