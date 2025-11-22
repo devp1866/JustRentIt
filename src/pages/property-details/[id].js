@@ -74,11 +74,11 @@ export default function PropertyDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Images & Details */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* Breadcrumb & Header */}
             <div>
-              <button 
-                onClick={() => router.back()} 
+              <button
+                onClick={() => router.back()}
                 className="text-gray-500 hover:text-blue-900 mb-4 flex items-center text-sm font-medium"
               >
                 ← Back to Properties
@@ -86,9 +86,8 @@ export default function PropertyDetails() {
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
-                      property.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${property.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
                       {property.status}
                     </span>
                     <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wide">
@@ -213,12 +212,18 @@ export default function PropertyDetails() {
               </div>
 
               <button
-                onClick={() => setShowBookingModal(true)}
+                onClick={() => {
+                  if (!session) {
+                    router.push(`/login?callbackUrl=${encodeURIComponent(router.asPath)}`);
+                  } else {
+                    setShowBookingModal(true);
+                  }
+                }}
                 disabled={property.status !== 'available'}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] ${property.status === 'available'
                   ? 'bg-blue-900 text-white hover:bg-blue-800 shadow-lg hover:shadow-blue-900/20'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 {property.status === 'available' ? 'Book Now' : 'Not Available'}
               </button>

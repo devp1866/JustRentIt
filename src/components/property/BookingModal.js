@@ -31,10 +31,22 @@ export default function BookingModal({ property, user, onClose }) {
 
   const createBookingMutation = useMutation({
     mutationFn: async (bookingData) => {
-      // Replace with API call or Next.js API
-      return { id: "dummy-booking-id" }; // Mock
+      const response = await fetch('/api/bookings/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Booking failed');
+      }
+
+      return response.json();
     },
-    onSuccess: async (booking) => {
+    onSuccess: async (data) => {
       setIsProcessing(true);
       // Simulate email sending / extra booking steps if needed
       setTimeout(() => {
@@ -42,6 +54,10 @@ export default function BookingModal({ property, user, onClose }) {
         setStep("success");
         queryClient.invalidateQueries({ queryKey: ["bookings"] });
       }, 1500);
+    },
+    onError: (error) => {
+      setIsProcessing(false);
+      alert(error.message);
     }
   });
 
