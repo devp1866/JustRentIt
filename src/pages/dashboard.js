@@ -9,10 +9,12 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('bookings');
 
   const user = useMemo(() => {
-    return session && {
+    const u = session && {
       email: session.user.email,
       user_type: session.user.user_type || "renter",
     };
+    console.log("[Dashboard] User:", u);
+    return u;
   }, [session]);
 
   const userType = user?.user_type;
@@ -42,7 +44,7 @@ export default function Dashboard() {
           type="button"
           onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
         >
-          Sign In with Google
+          Sign In
         </button>
       </div>
     );
@@ -68,21 +70,26 @@ export default function Dashboard() {
               My Properties
             </button>
           )}
-          <button
-            className={`flex items-center gap-2 px-4 py-2 border rounded ${activeTab === "bookings" ? "bg-blue-900 text-white" : "bg-white"
-              }`}
-            onClick={() => setActiveTab("bookings")}
-          >
-            <CalendarIcon className="w-4 h-4" />
-            My Bookings
-          </button>
+
+          {(user.user_type === "renter" || user.user_type === "both") && (
+            <button
+              className={`flex items-center gap-2 px-4 py-2 border rounded ${activeTab === "bookings" ? "bg-blue-900 text-white" : "bg-white"
+                }`}
+              onClick={() => setActiveTab("bookings")}
+            >
+              <CalendarIcon className="w-4 h-4" />
+              My Bookings
+            </button>
+          )}
         </div>
 
         {/* Tab Contents */}
         {(user.user_type === "landlord" || user.user_type === "both") && activeTab === "properties" && (
           <MyProperties user={user} />
         )}
-        {activeTab === "bookings" && <MyBookings user={user} />}
+        {(user.user_type === "renter" || user.user_type === "both") && activeTab === "bookings" && (
+          <MyBookings user={user} />
+        )}
       </div>
     </div>
   );

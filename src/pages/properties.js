@@ -1,4 +1,4 @@
-// pages/properties.js
+
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
@@ -25,7 +25,11 @@ export default function Properties() {
 
 
     const filteredProperties = properties.filter(property => {
-        const cityMatch = !searchCity || property.city?.toLowerCase().includes(searchCity.toLowerCase());
+        const searchTerm = searchCity.toLowerCase();
+        const cityMatch = !searchCity ||
+            property.city?.toLowerCase().includes(searchTerm) ||
+            property.location?.toLowerCase().includes(searchTerm);
+
         const typeMatch = propertyType === "all" || property.property_type === propertyType;
         let priceMatch = true;
         if (priceRange === "low") priceMatch = property.price_per_month < 1000;
@@ -52,7 +56,7 @@ export default function Properties() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <input
-                            placeholder="Search by city..."
+                            placeholder="Search by city or area..."
                             value={searchCity}
                             onChange={(e) => setSearchCity(e.target.value)}
                             className="h-11 rounded border px-3"

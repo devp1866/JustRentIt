@@ -8,6 +8,7 @@ export default function Signup() {
     full_name: "",
     email: "",
     password: "",
+    user_type: "renter",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,7 +35,7 @@ export default function Signup() {
       setError(data.error || "Signup failed");
     } else {
       setSuccess(true);
-      setTimeout(() => router.push("/login"), 1500); 
+      setTimeout(() => router.push("/login"), 1500);
     }
   };
 
@@ -75,6 +76,31 @@ export default function Signup() {
           required
           className="border px-3 py-2 w-full rounded"
         />
+
+        <input
+          type="tel"
+          name="phone"
+          placeholder="Phone Number (10 digits)"
+          value={formData.phone}
+          onChange={handleChange}
+          required
+          pattern="[0-9]{10}"
+          className="border px-3 py-2 w-full rounded"
+        />
+
+        <div className="space-y-1">
+          <label className="text-sm text-gray-600">I want to:</label>
+          <select
+            name="user_type"
+            value={formData.user_type}
+            onChange={handleChange}
+            className="border px-3 py-2 w-full rounded bg-white"
+          >
+            <option value="renter">Rent a Property</option>
+            <option value="landlord">List my Property</option>
+            <option value="both">Both (Rent & List)</option>
+          </select>
+        </div>
 
         <button
           type="submit"

@@ -1,5 +1,5 @@
-import dbConnect from '../../utils/db';
-import Property from '../../models/Property';
+import dbConnect from '../../../utils/db';
+import Property from '../../../models/Property';
 
 export default async function handler(req, res) {
   await dbConnect();

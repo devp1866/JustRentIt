@@ -10,8 +10,9 @@ export default function MyBookings({ user }) {
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['my-bookings'],
     queryFn: async () => {
-      // Replace with your API call
-      return [];
+      const res = await fetch('/api/user/bookings');
+      if (!res.ok) throw new Error('Failed to fetch bookings');
+      return res.json();
     },
   });
 

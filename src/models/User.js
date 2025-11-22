@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 const UserSchema = new mongoose.Schema({
   full_name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, 
-  user_type: { type: String, default: "renter" }
+  password: { type: String, required: true },
+  phone: { type: String, required: true },
+  user_type: { type: String, default: "renter" },
+  is_verified: { type: Boolean, default: false }
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

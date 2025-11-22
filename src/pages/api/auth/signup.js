@@ -8,26 +8,32 @@ export default async function handler(req, res) {
 
   try {
     await dbConnect();
-    const { email, password, full_name } = req.body;
-    if (!email || !password || !full_name) {
+    const { full_name, email, password, user_type, phone } = req.body;
+
+    if (!full_name || !email || !password || !phone) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const existing = await User.findOne({ email });
-    if (existing) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    const user = await User.create({
-      email,
-      password,
+    const newUser = await User.create({
       full_name,
-      user_type: "renter",
+      email,
+      password, // plain
+      user_type: user_type || "renter",
+      phone,
     });
 
-    return res
-      .status(201)
-      .json({ message: "User registered", user: { email: user.email, full_name: user.full_name } });
+    return res.status(201).json({
+      message: "User registered",
+      user: {
+        email: newUser.email,
+        full_name: newUser.full_name,
+      },
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server Error" });

@@ -1,5 +1,3 @@
-// components/home/PropertyCard.js
-
 import React from "react";
 import Link from "next/link";
 import { MapPin, Bed, Bath, Square } from "lucide-react";
@@ -11,7 +9,7 @@ export default function PropertyCard({ property }) {
     "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800";
 
   return (
-    <Link href={`/property-details?id=${property._id}`}>
+    <Link href={`/property-details/${property._id}`}>
       <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer">
         <div className="relative h-56 overflow-hidden">
           <Image

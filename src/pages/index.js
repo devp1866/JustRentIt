@@ -2,42 +2,17 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, DollarSign, Home as HomeIcon, TrendingUp, CheckCircle, Search } from "lucide-react";
 import PropertyCard from "../components/home/PropertyCard";
 
-// const mockProperties = [
-//     {
-//         id: "1",
-//         title: "Sunny Apartment",
-//         location: "Downtown City",
-//         property_type: "apartment",
-//         bedrooms: 2,
-//         bathrooms: 1,
-//         area_sqft: 850,
-//         price_per_month: 1200,
-//         amenities: ["Pool", "Gym", "Parking"],
-//         images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800"],
-//         status: "available",
-//         landlord_email: "owner@example.com",
-//         description: "A bright, well-located apartment."
-//     },
-//     {
-//         id: "2",
-//         title: "Cozy Studio",
-//         location: "Central Avenue",
-//         property_type: "studio",
-//         price_per_month: 950,
-//         amenities: [],
-//         images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800"],
-//         status: "available",
-//         landlord_email: "owner2@example.com",
-//         description: "Perfect for singles or students."
-//     }
-// ];
+import Image from "next/image";
 
 export default function Home() {
     const router = useRouter();
+    const { data: session } = useSession();
+    const user = session?.user;
     const [searchCity, setSearchCity] = useState("");
     const [propertyType, setPropertyType] = useState("all");
 
@@ -59,7 +34,16 @@ export default function Home() {
         <div className="min-h-screen">
             {/* Hero Section */}
             <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600')] bg-cover bg-center opacity-10"></div>
+                <div className="absolute inset-0">
+                    <Image
+                        src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600"
+                        alt="Hero background"
+                        fill
+                        className="object-cover object-center opacity-10"
+                        priority
+                        fetchPriority="high"
+                    />
+                </div>
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
                     <div className="max-w-3xl">
                         <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
@@ -170,19 +154,34 @@ export default function Home() {
             {/* CTA Section */}
             <section className="py-16 bg-gradient-to-r from-blue-900 to-blue-800 text-white">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <HomeIcon className="w-16 h-16 mx-auto mb-6 opacity-80" />
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Own a Property?</h2>
-                    <p className="text-xl text-blue-100 mb-8">
-                        List your property on JustRentIt and connect with verified renters today
-                    </p>
-                    <button
-                        onClick={() => router.push("/add-property")}
-                        className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-lg"
-                    >
-                        List Your Property
-                    </button>
+                    {user && user.user_type === 'renter' ? (
+                        <>
+                            <p className="text-xl text-blue-100 mb-8">
+                                To list your property, you need a Landlord account.
+                                Upgrade your account to start listing properties.
+                            </p>
+                            <button
+                                onClick={() => router.push("/profile")}
+                                className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-lg"
+                            >
+                                Become a Landlord
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-xl text-blue-100 mb-8">
+                                List your property on JustRentIt and connect with verified renters today
+                            </p>
+                            <button
+                                onClick={() => router.push("/add-property")}
+                                className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-lg"
+                            >
+                                List Your Property
+                            </button>
+                        </>
+                    )}
                 </div>
-            </section>
-        </div>
+            </section >
+        </div >
     );
 }

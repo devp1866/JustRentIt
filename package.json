@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.3",
+    "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
+    "formidable": "^3.5.4",
     "lucide-react": "^0.545.0",
     "mongoose": "^8.19.1",
     "next": "15.5.5",
@@ -20,7 +22,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",

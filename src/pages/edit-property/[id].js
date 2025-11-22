@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, PlusCircle, Upload, X } from "lucide-react";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
 
-export default function AddProperty() {
+export default function EditProperty() {
     const { data: session, status } = useSession();
     const router = useRouter();
-    const queryClient = useQueryClient();
+    const { id } = router.query;
 
     // Only get user from session (never use a mock)
     const user = session?.user || null;
@@ -29,43 +29,51 @@ export default function AddProperty() {
         status: "available",
     });
     const [amenityInput, setAmenityInput] = useState("");
-    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load from localStorage on mount
+    // Fetch existing property data
+    const { data: property, isLoading: isLoadingProperty } = useQuery({
+        queryKey: ['property', id],
+        queryFn: async () => {
+            const res = await fetch(`/api/properties/${id}`);
+            if (!res.ok) throw new Error('Failed to fetch property');
+            return res.json();
+        },
+        enabled: !!id,
+    });
+
+    // Populate form when data is loaded
     useEffect(() => {
-        const savedData = localStorage.getItem("add-property-form");
-        if (savedData) {
-            try {
-                const parsed = JSON.parse(savedData);
-                // Exclude images from restoration
-                const { images, ...rest } = parsed;
-                setFormData(prev => ({ ...prev, ...rest }));
-            } catch (e) {
-                console.error("Failed to load saved form data", e);
-            }
+        if (property) {
+            setFormData({
+                title: property.title || "",
+                description: property.description || "",
+                property_type: property.property_type || "apartment",
+                location: property.location || "",
+                city: property.city || "",
+                bedrooms: property.bedrooms || 1,
+                bathrooms: property.bathrooms || 1,
+                area_sqft: property.area_sqft || 0,
+                price_per_month: property.price_per_month || 0,
+                amenities: property.amenities || [],
+                images: property.images || [],
+                status: property.status || "available",
+            });
         }
-        setIsLoaded(true);
-    }, []);
+    }, [property]);
 
-    // Save to localStorage on change
-    useEffect(() => {
-        if (!isLoaded) return;
-        const { images, ...dataToSave } = formData;
-        localStorage.setItem("add-property-form", JSON.stringify(dataToSave));
-    }, [formData, isLoaded]);
-
-    const createPropertyMutation = useMutation({
+    const updatePropertyMutation = useMutation({
         mutationFn: async (propertyData) =>
-            fetch("/api/properties", {
-                method: "POST",
+            fetch(`/api/properties/${id}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(propertyData),
-            }).then((res) => res.json()),
+            }).then((res) => {
+                if (!res.ok) throw new Error('Failed to update property');
+                return res.json();
+            }),
         onSuccess: () => {
-            localStorage.removeItem("add-property-form");
-            queryClient.invalidateQueries({ queryKey: ['my-properties'] });
             router.push("/dashboard");
         },
     });
@@ -81,9 +89,9 @@ export default function AddProperty() {
             alert("Please fill in all required fields");
             return;
         }
-        createPropertyMutation.mutate({
+        updatePropertyMutation.mutate({
             ...formData,
-            landlord_email: user.email.toLowerCase(),
+            landlord_email: user.email,
         });
     };
 
@@ -124,7 +132,7 @@ export default function AddProperty() {
     };
 
     // --- AUTH GUARD ---
-    if (status === "loading") {
+    if (status === "loading" || isLoadingProperty) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-900" />
@@ -132,7 +140,7 @@ export default function AddProperty() {
         );
     }
     if (!user) {
-        signIn(undefined, { callbackUrl: "/add-property" });
+        signIn(undefined, { callbackUrl: `/edit-property/${id}` });
         return null;
     }
 
@@ -140,12 +148,31 @@ export default function AddProperty() {
         router.push("/dashboard");
         return null;
     }
+
+    // Verify ownership
+    if (property && property.landlord_email !== user.email) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+                    <p className="text-gray-600">You do not have permission to edit this property.</p>
+                    <button
+                        onClick={() => router.push("/dashboard")}
+                        className="mt-4 px-4 py-2 bg-blue-900 text-white rounded"
+                    >
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">List Your Property</h1>
-                    <p className="text-gray-600">Fill in the details to list your property on JustRentIt</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit Property</h1>
+                    <p className="text-gray-600">Update your property details</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -205,6 +232,20 @@ export default function AddProperty() {
                                         required
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="status">Status</label>
+                                <select
+                                    id="status"
+                                    value={formData.status}
+                                    onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                >
+                                    <option value="available">Available</option>
+                                    <option value="rented">Rented</option>
+                                    <option value="maintenance">Maintenance</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -371,15 +412,15 @@ export default function AddProperty() {
                         <button
                             type="submit"
                             className="flex-1 bg-blue-900 hover:bg-blue-800 h-12 text-white font-semibold rounded"
-                            disabled={createPropertyMutation.isPending}
+                            disabled={updatePropertyMutation.isPending}
                         >
-                            {createPropertyMutation.isPending ? (
+                            {updatePropertyMutation.isPending ? (
                                 <>
                                     <Loader2 className="w-5 h-5 mr-2 animate-spin inline" />
-                                    Listing Property...
+                                    Updating Property...
                                 </>
                             ) : (
-                                "List Property"
+                                "Update Property"
                             )}
                         </button>
                     </div>

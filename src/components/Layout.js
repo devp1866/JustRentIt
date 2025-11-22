@@ -4,11 +4,28 @@ import { useRouter } from "next/router";
 import { Home, Building2, PlusCircle, User, LogOut, Menu, X } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
+import Head from "next/head";
+
 export default function Layout({ children }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const path = router.pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = React.useRef(null);
+
+  // Close profile menu when clicking outside
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // User info from NextAuth session
   const user = session?.user;
@@ -44,6 +61,11 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>JustRentIt - Find Your Perfect Rental Home</title>
+        <meta name="description" content="Discover quality rental properties from verified landlords. Simple, secure, and stress-free renting with JustRentIt." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <style>{`
         :root {
           --primary: #1e3a8a;
@@ -70,11 +92,10 @@ export default function Layout({ children }) {
                 <Link
                   key={item.title}
                   href={item.url}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                    isActive(item.url)
-                      ? "bg-blue-50 text-blue-900 font-medium"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isActive(item.url)
+                    ? "bg-blue-50 text-blue-900 font-medium"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }`}
                 >
                   <item.icon className="w-4 h-4" />
                   {item.title}
@@ -91,13 +112,32 @@ export default function Layout({ children }) {
                     <p className="text-sm font-medium text-gray-900">{user.full_name || user.email}</p>
                     <p className="text-xs text-gray-500 capitalize">{user.user_type || "renter"}</p>
                   </div>
-                  <button
-                    onClick={() => signOut()}
-                    className="border rounded px-4 py-2 flex gap-2 items-center"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Logout
-                  </button>
+                  <div className="relative" ref={profileMenuRef}>
+                    <button
+                      onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                      className={`flex items-center gap-2 border rounded px-3 py-2 hover:bg-gray-50 ${profileMenuOpen ? 'bg-gray-50 ring-2 ring-blue-100' : ''}`}
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Account</span>
+                    </button>
+                    {profileMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-50">
+                        <Link
+                          href="/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setProfileMenuOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        <button
+                          onClick={() => { setProfileMenuOpen(false); signOut(); }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <button
@@ -126,11 +166,10 @@ export default function Layout({ children }) {
                   key={item.title}
                   href={item.url}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                    isActive(item.url)
-                      ? "bg-blue-50 text-blue-900 font-medium"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive(item.url)
+                    ? "bg-blue-50 text-blue-900 font-medium"
+                    : "text-gray-600 hover:bg-gray-50"
+                    }`}
                 >
                   <item.icon className="w-5 h-5" />
                   {item.title}
@@ -145,9 +184,17 @@ export default function Layout({ children }) {
                       <p className="text-sm font-medium text-gray-900">{user.full_name || user.email}</p>
                       <p className="text-xs text-gray-500 capitalize">{user.user_type || "renter"}</p>
                     </div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    >
+                      <User className="w-5 h-5" />
+                      Profile
+                    </Link>
                     <button
                       onClick={() => { setMobileMenuOpen(false); signOut(); }}
-                      className="w-full border rounded px-4 py-2 flex gap-2 items-center"
+                      className="w-full border rounded px-4 py-2 flex gap-2 items-center justify-center"
                     >
                       <LogOut className="w-4 h-4" />
                       Logout
@@ -185,35 +232,55 @@ export default function Layout({ children }) {
                 Your trusted platform for finding and listing rental properties.
               </p>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4">For Renters</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <Link href="/properties" className="hover:text-blue-900">Browse Properties</Link>
-                </li>
-                <li>
-                  <Link href="/dashboard" className="hover:text-blue-900">My Bookings</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4">For Landlords</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <Link href="/add-property" className="hover:text-blue-900">List Property</Link>
-                </li>
-                <li>
-                  <Link href="/dashboard" className="hover:text-blue-900">Manage Listings</Link>
-                </li>
-              </ul>
-            </div>
+
+            {/* Role-based Sections */}
+            {(!user || user.user_type === 'renter' || user.user_type === 'both') && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-4">For Renters</h3>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>
+                    <Link href="/properties" className="hover:text-blue-900">Browse Properties</Link>
+                  </li>
+                  {user && (
+                    <li>
+                      <Link href="/dashboard" className="hover:text-blue-900">My Bookings</Link>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {(!user || user.user_type === 'landlord' || user.user_type === 'both') && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-4">For Landlords</h3>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>
+                    <Link href="/add-property" className="hover:text-blue-900">List Property</Link>
+                  </li>
+                  {user && (
+                    <li>
+                      <Link href="/dashboard" className="hover:text-blue-900">Manage Listings</Link>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li>About Us</li>
-                <li>Contact</li>
-                <li>Terms of Service</li>
-                <li>Privacy Policy</li>
+                <li>
+                  <Link href="/about" className="hover:text-blue-900">About Us</Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-blue-900">Contact Us</Link>
+                </li>
+                <li>
+                  <span className="text-gray-400 cursor-not-allowed">Terms of Service</span>
+                </li>
+                <li>
+                  <span className="text-gray-400 cursor-not-allowed">Privacy Policy</span>
+                </li>
               </ul>
             </div>
           </div>
