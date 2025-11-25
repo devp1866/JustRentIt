@@ -27,12 +27,11 @@ export default async function handler(req, res) {
             is_verified: user.is_verified
         });
     } else if (req.method === "POST") {
-        // Handle OTP Verification / Upgrade
+        // Handle OTP Verification / Upgrade / Phone Update
         const { action, otp, phone } = req.body;
 
         if (action === "send_otp") {
             // Mock OTP sending
-            // In a real app, you would generate a code, save it to Redis/DB with expiry, and send via SMS
             console.log(`Sending OTP to ${phone || user.phone}: 123456`);
             return res.status(200).json({ message: "OTP sent successfully" });
         }
@@ -48,6 +47,42 @@ export default async function handler(req, res) {
             } else {
                 return res.status(400).json({ error: "Invalid OTP" });
             }
+        }
+
+        if (action === "update_phone") {
+            if (!phone || phone.length !== 10) {
+                return res.status(400).json({ error: "Invalid phone number" });
+            }
+            // Check if phone is already taken by another user
+            const existingUser = await User.findOne({ phone });
+            if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+                return res.status(409).json({ error: "This phone number is already registered with another account." });
+            }
+
+            user.phone = phone;
+            user.is_verified = true;
+            await user.save();
+            return res.status(200).json({ message: "Phone updated successfully" });
+        }
+
+        if (action === "delete_account") {
+            // Soft delete user
+            user.is_active = false;
+            await user.save();
+
+            // Cancel active bookings
+            const Booking = (await import("../../../models/Booking")).default;
+            await Booking.updateMany(
+                {
+                    renter_email: user.email,
+                    status: { $in: ["confirmed", "active", "pending"] }
+                },
+                {
+                    $set: { status: "cancelled" }
+                }
+            );
+
+            return res.status(200).json({ message: "Account deleted successfully" });
         }
 
         return res.status(400).json({ error: "Invalid action" });

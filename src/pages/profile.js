@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { User, Phone, Shield, CheckCircle } from "lucide-react";
+import { User, Phone, Shield, CheckCircle, History, DollarSign } from "lucide-react";
+import { format } from "date-fns";
 
 export default function Profile() {
     const { data: session, update } = useSession();
@@ -12,14 +13,28 @@ export default function Profile() {
     const [otp, setOtp] = useState("");
     const [phoneInput, setPhoneInput] = useState("");
     const [showUpgrade, setShowUpgrade] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [isEditingPhone, setIsEditingPhone] = useState(false);
+    const [newPhone, setNewPhone] = useState("");
 
     const { data: user, isLoading } = useQuery({
         queryKey: ["profile"],
         queryFn: async () => {
             const res = await fetch("/api/user/profile");
             if (!res.ok) throw new Error("Failed to fetch profile");
+            return res.json();
+        },
+        enabled: !!session,
+    });
+
+    const { data: transactions = [] } = useQuery({
+        queryKey: ["my-transactions"],
+        queryFn: async () => {
+            const res = await fetch("/api/user/bookings");
+            if (!res.ok) throw new Error("Failed to fetch transactions");
             return res.json();
         },
         enabled: !!session,
@@ -60,6 +75,71 @@ export default function Profile() {
             setMessage("");
         },
     });
+
+    const updatePhoneMutation = useMutation({
+        mutationFn: async (phone) => {
+            const res = await fetch("/api/user/profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "update_phone", phone }),
+            });
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to update phone");
+            }
+            return res.json();
+        },
+        onSuccess: () => {
+            setMessage("Phone number updated successfully!");
+            setIsEditingPhone(false);
+            queryClient.invalidateQueries(["profile"]);
+            update(); // Update session
+        },
+        onError: (err) => {
+            setError(err.message);
+        },
+    });
+
+    const deleteAccountMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch("/api/user/profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "delete_account" }),
+            });
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to delete account");
+            }
+            return res.json();
+        },
+        onSuccess: () => {
+            // Sign out and redirect to home
+            import("next-auth/react").then(({ signOut }) => {
+                signOut({ callbackUrl: "/" });
+            });
+        },
+        onError: (err) => {
+            setError(err.message);
+            setShowDeleteConfirm(false);
+        },
+    });
+
+    const handleUpdatePhone = () => {
+        if (!newPhone || newPhone.length !== 10) {
+            setError("Please enter a valid 10-digit phone number.");
+            return;
+        }
+        updatePhoneMutation.mutate(newPhone);
+    };
+
+    const handleDeleteAccount = () => {
+        if (deleteConfirmationText !== "DELETE") {
+            setError("Please type DELETE to confirm.");
+            return;
+        }
+        deleteAccountMutation.mutate();
+    };
 
     const handleUpgradeClick = () => {
         setShowUpgrade(true);
@@ -119,6 +199,40 @@ export default function Profile() {
                                 <span className="font-medium">Phone Number</span>
                             </div>
                             <span className="text-gray-900">{user?.phone || "Not set"}</span>
+                            {!user?.phone && !isEditingPhone && (
+                                <button
+                                    onClick={() => { setIsEditingPhone(true); setNewPhone(""); }}
+                                    className="ml-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                >
+                                    Add Number
+                                </button>
+                            )}
+                            {/* Edit button removed as per requirement: Phone number is immutable once set */}
+
+                            {isEditingPhone && (
+                                <div className="flex items-center gap-2 ml-4">
+                                    <input
+                                        type="tel"
+                                        value={newPhone}
+                                        onChange={(e) => setNewPhone(e.target.value)}
+                                        placeholder="10-digit number"
+                                        className="border rounded px-2 py-1 text-sm w-32"
+                                    />
+                                    <button
+                                        onClick={handleUpdatePhone}
+                                        disabled={updatePhoneMutation.isPending}
+                                        className="text-sm bg-blue-900 text-white px-2 py-1 rounded hover:bg-blue-800"
+                                    >
+                                        Save
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditingPhone(false)}
+                                        className="text-sm text-gray-500 hover:text-gray-700"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center justify-between pb-2">
@@ -130,11 +244,73 @@ export default function Profile() {
                                 {user?.is_verified ? "Verified" : "Unverified"}
                             </span>
                         </div>
+                        {!user?.is_verified && (
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-2">
+                                <div className="flex">
+                                    <div className="ml-3">
+                                        <p className="text-sm text-yellow-700">
+                                            Please add a phone number to verify your account.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Transaction History */}
+                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                                <History className="w-5 h-5 mr-2 text-blue-900" />
+                                Transaction History
+                            </h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-gray-600">
+                                <thead className="bg-gray-50 text-gray-900 font-semibold">
+                                    <tr>
+                                        <th className="px-6 py-3">Date</th>
+                                        <th className="px-6 py-3">Property</th>
+                                        <th className="px-6 py-3">Amount</th>
+                                        <th className="px-6 py-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {transactions.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                                                No transactions found.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        transactions.map((tx) => (
+                                            <tr key={tx._id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    {tx.payment_date ? format(new Date(tx.payment_date), "MMM d, yyyy") : "-"}
+                                                </td>
+                                                <td className="px-6 py-4 font-medium text-gray-900">
+                                                    {tx.property_title}
+                                                </td>
+                                                <td className="px-6 py-4 text-blue-900 font-bold">
+                                                    ₹{tx.total_amount}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${tx.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                        }`}>
+                                                        {tx.payment_status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 {user?.user_type === "renter" && (
-                    <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl shadow-lg p-8 text-white">
+                    <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl shadow-lg p-8 text-white mb-8">
                         <div className="flex flex-col md:flex-row items-center justify-between">
                             <div className="mb-6 md:mb-0">
                                 <h3 className="text-2xl font-bold mb-2">Become a Landlord</h3>
@@ -149,6 +325,78 @@ export default function Profile() {
                             >
                                 Upgrade Now
                             </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Danger Zone */}
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-red-100">
+                    <div className="p-6">
+                        <h3 className="text-lg font-bold text-red-600 mb-2">Danger Zone</h3>
+                        <p className="text-gray-600 mb-4 text-sm">
+                            Deleting your account is irreversible. All your data will be permanently removed and active bookings will be cancelled.
+                        </p>
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg font-semibold hover:bg-red-100 transition-colors text-sm"
+                        >
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 relative">
+                            <button
+                                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmationText(""); setError(""); }}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                            >
+                                ✕
+                            </button>
+
+                            <h3 className="text-2xl font-bold text-gray-900 mb-4">Delete Account?</h3>
+
+                            <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6">
+                                <p className="text-red-800 text-sm font-medium">
+                                    Warning: This action cannot be undone.
+                                </p>
+                                <ul className="list-disc list-inside text-red-700 text-sm mt-2 space-y-1">
+                                    <li>You will lose access immediately.</li>
+                                    <li>All active bookings will be cancelled.</li>
+                                    <li>Your profile will be permanently deactivated.</li>
+                                </ul>
+                            </div>
+
+                            {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Type <strong>DELETE</strong> to confirm
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={deleteConfirmationText}
+                                        onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                                        placeholder="DELETE"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    disabled={deleteAccountMutation.isPending || deleteConfirmationText !== "DELETE"}
+                                    className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {deleteAccountMutation.isPending ? "Deleting..." : "Permanently Delete Account"}
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="w-full text-gray-500 text-sm hover:underline"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

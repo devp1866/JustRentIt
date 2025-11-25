@@ -1,10 +1,11 @@
 // pages/index.js
 
 import React, { useState } from "react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, DollarSign, Home as HomeIcon, TrendingUp, CheckCircle, Search } from "lucide-react";
+import { MapPin, IndianRupee, Home as HomeIcon, TrendingUp, CheckCircle, Search } from "lucide-react";
 import PropertyCard from "../components/home/PropertyCard";
 
 import Image from "next/image";
@@ -15,6 +16,7 @@ export default function Home() {
     const user = session?.user;
     const [searchCity, setSearchCity] = useState("");
     const [propertyType, setPropertyType] = useState("all");
+    const [rentalType, setRentalType] = useState("all");
 
     const { data: featuredProperties = [], isLoading } = useQuery({
         queryKey: ['featured-properties'],
@@ -27,11 +29,16 @@ export default function Home() {
         const params = new URLSearchParams();
         if (searchCity) params.append('city', searchCity);
         if (propertyType !== 'all') params.append('type', propertyType);
+        if (rentalType !== 'all') params.append('rental_type', rentalType);
         router.push(`/properties?${params.toString()}`);
     };
 
     return (
         <div className="min-h-screen">
+            <Head>
+                <title>JustRentIt - Find Your Perfect Rental Home</title>
+                <meta name="description" content="Browse thousands of verified rental properties. Short-term and long-term rentals available with secure payments." />
+            </Head>
             {/* Hero Section */}
             <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white">
                 <div className="absolute inset-0">
@@ -55,7 +62,7 @@ export default function Home() {
                         </p>
                         {/* Search Bar */}
                         <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div className="relative">
                                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
@@ -71,12 +78,21 @@ export default function Home() {
                                     onChange={e => setPropertyType(e.target.value)}
                                     className="h-12 text-gray-900 rounded border border-gray-300 w-full"
                                 >
-                                    <option value="all">All Types</option>
+                                    <option value="all">All Property Types</option>
                                     <option value="apartment">Apartment</option>
                                     <option value="house">House</option>
                                     <option value="condo">Condo</option>
                                     <option value="studio">Studio</option>
                                     <option value="villa">Villa</option>
+                                </select>
+                                <select
+                                    value={rentalType}
+                                    onChange={e => setRentalType(e.target.value)}
+                                    className="h-12 text-gray-900 rounded border border-gray-300 w-full"
+                                >
+                                    <option value="all">All Rental Types</option>
+                                    <option value="long_term">Long Term (Monthly)</option>
+                                    <option value="short_term">Short Term (Daily)</option>
                                 </select>
                                 <button
                                     onClick={handleSearch}
@@ -104,7 +120,7 @@ export default function Home() {
                         </div>
                         <div className="text-center">
                             <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <DollarSign className="w-8 h-8 text-amber-600" />
+                                <IndianRupee className="w-8 h-8 text-amber-600" />
                             </div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">Secure Payments</h3>
                             <p className="text-gray-600">Safe and encrypted payment processing for your peace of mind</p>

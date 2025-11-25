@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -15,6 +16,9 @@ import {
   Star
 } from "lucide-react";
 import BookingModal from "../../components/property/BookingModal";
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
+import { isSameDay, parseISO } from 'date-fns';
 
 export default function PropertyDetails() {
   const router = useRouter();
@@ -25,6 +29,28 @@ export default function PropertyDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookedDates, setBookedDates] = useState([]);
+
+  // Gallery State
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const openGallery = (index) => {
+    setCurrentImageIndex(index);
+    setIsGalleryOpen(true);
+  };
+
+  const closeGallery = () => setIsGalleryOpen(false);
+
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % property.images.length);
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
+  };
 
   useEffect(() => {
     if (id) {
@@ -42,6 +68,24 @@ export default function PropertyDetails() {
           setError(err.message);
           setLoading(false);
         });
+
+      // Fetch availability
+      fetch(`/api/properties/${id}/availability`)
+        .then(res => res.json())
+        .then(data => {
+          const dates = [];
+          data.forEach(booking => {
+            let currentDate = parseISO(booking.start_date);
+            const endDate = booking.end_date ? parseISO(booking.end_date) : parseISO(booking.start_date); // Fallback if end_date missing
+
+            while (currentDate <= endDate) {
+              dates.push(new Date(currentDate));
+              currentDate.setDate(currentDate.getDate() + 1);
+            }
+          });
+          setBookedDates(dates);
+        })
+        .catch(console.error);
     }
   }, [id]);
 
@@ -70,6 +114,13 @@ export default function PropertyDetails() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <Head>
+        <title>{property.title} | JustRentIt</title>
+        <meta name="description" content={`Rent this ${property.property_type} in ${property.city}. ${property.description?.slice(0, 150)}...`} />
+        <meta property="og:title" content={property.title} />
+        <meta property="og:description" content={`Rent this ${property.property_type} in ${property.city}.`} />
+        <meta property="og:image" content={property.images?.[0] || ""} />
+      </Head>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Images & Details */}
@@ -93,32 +144,52 @@ export default function PropertyDetails() {
                     <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wide">
                       {property.property_type}
                     </span>
+                    <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wide">
+                      {property.rental_type === 'short_term' ? 'Short Term' : 'Long Term'}
+                    </span>
                   </div>
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{property.title}</h1>
                   <div className="flex items-center text-gray-600">
                     <MapPin className="w-5 h-5 mr-2 text-blue-900" />
                     <span className="text-lg">{property.location}, {property.city}</span>
                   </div>
-                </div>
-                {/* Price is shown in booking card, hiding here for cleaner layout on desktop */}
-                <div className="text-left md:text-right lg:hidden">
-                  <p className="text-3xl font-bold text-blue-900">${property.price_per_month}</p>
-                  <p className="text-gray-500">per month</p>
+                  {/* Price is shown in booking card, hiding here for cleaner layout on desktop */}
+                  <div className="text-left md:text-right lg:hidden">
+                    <p className="text-3xl font-bold text-blue-900">
+                      {property.rental_type === 'short_term'
+                        ? `₹${property.price_per_night}`
+                        : `₹${property.price_per_month}`
+                      }
+                    </p>
+                    <p className="text-gray-500">
+                      {property.rental_type === 'short_term' ? 'per night' : 'per month'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Image Gallery */}
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-              <div className="relative h-[400px] md:h-[500px] w-full">
+              <div
+                className="relative h-[400px] md:h-[500px] w-full cursor-pointer group"
+                onClick={() => openGallery(0)}
+              >
                 {property.images && property.images.length > 0 ? (
-                  <Image
-                    src={property.images[0]}
-                    alt={property.title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+                  <>
+                    <Image
+                      src={property.images[0]}
+                      alt={property.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                      <span className="text-white opacity-0 group-hover:opacity-100 font-semibold bg-black bg-opacity-50 px-4 py-2 rounded-full transition-opacity">
+                        View All Photos
+                      </span>
+                    </div>
+                  </>
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
                     <Home className="w-20 h-20" />
@@ -129,8 +200,17 @@ export default function PropertyDetails() {
               {property.images && property.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2 p-2 bg-gray-100">
                   {property.images.slice(1, 5).map((img, idx) => (
-                    <div key={idx} className="relative h-24 rounded-lg overflow-hidden cursor-pointer hover:opacity-90">
+                    <div
+                      key={idx}
+                      className="relative h-24 rounded-lg overflow-hidden cursor-pointer hover:opacity-90"
+                      onClick={() => openGallery(idx + 1)}
+                    >
                       <Image src={img} alt={`View ${idx + 2}`} fill className="object-cover" />
+                      {idx === 3 && property.images.length > 5 && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white font-bold text-lg">
+                          +{property.images.length - 5}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -164,6 +244,36 @@ export default function PropertyDetails() {
               </div>
             </div>
 
+            {/* Special Offer */}
+            {property.offer?.enabled && (
+              <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-2xl shadow-sm p-6 md:p-8 text-white">
+                <div className="flex items-start gap-4">
+                  <div className="bg-white/20 p-3 rounded-full">
+                    <Star className="w-8 h-8 text-yellow-400 fill-current" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold mb-2">Special Offer!</h2>
+                    <p className="text-blue-100 text-lg">
+                      Get <span className="font-bold text-white">{property.offer.discount_percentage}% OFF</span> when you book for {property.offer.required_duration} {property.rental_type === 'short_term' ? 'days' : 'months'} or more!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Availability Calendar */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Availability</h2>
+              <div className="flex justify-center">
+                <DayPicker
+                  mode="default"
+                  disabled={bookedDates}
+                  modifiers={{ booked: bookedDates }}
+                  modifiersStyles={{ booked: { color: 'red', textDecoration: 'line-through' } }}
+                />
+              </div>
+            </div>
+
             {/* Description */}
             <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Description</h2>
@@ -194,9 +304,19 @@ export default function PropertyDetails() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border border-gray-100">
               <div className="mb-6">
-                <p className="text-sm text-gray-500 mb-1">Monthly Rent</p>
+                <p className="text-sm text-gray-500 mb-1">
+                  {property.rental_type === 'short_term' ? 'Nightly Price' : 'Monthly Rent'}
+                </p>
                 <div className="flex items-baseline">
-                  <span className="text-3xl font-bold text-blue-900">${property.price_per_month}</span>
+                  <span className="text-3xl font-bold text-blue-900">
+                    {property.rental_type === 'short_term'
+                      ? `₹${property.price_per_night}`
+                      : `₹${property.price_per_month}`
+                    }
+                  </span>
+                  <span className="text-gray-500 ml-1">
+                    {property.rental_type === 'short_term' ? '/night' : '/mo'}
+                  </span>
                 </div>
               </div>
 
@@ -242,7 +362,46 @@ export default function PropertyDetails() {
           property={property}
           user={session?.user || { email: 'guest@example.com', full_name: 'Guest User' }}
           onClose={() => setShowBookingModal(false)}
+          bookedDates={bookedDates}
         />
+      )}
+
+      {/* Image Gallery Modal */}
+      {isGalleryOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center" onClick={closeGallery}>
+          <button
+            onClick={closeGallery}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-50 p-2"
+          >
+            <span className="text-4xl">&times;</span>
+          </button>
+
+          <button
+            onClick={prevImage}
+            className="absolute left-4 text-white hover:text-gray-300 p-4 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+          >
+            <span className="text-2xl">&#10094;</span>
+          </button>
+
+          <div className="relative w-full h-full max-w-5xl max-h-[80vh] mx-4" onClick={e => e.stopPropagation()}>
+            <Image
+              src={property.images[currentImageIndex]}
+              alt={`Gallery Image ${currentImageIndex + 1}`}
+              fill
+              className="object-contain"
+            />
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full">
+              {currentImageIndex + 1} / {property.images.length}
+            </div>
+          </div>
+
+          <button
+            onClick={nextImage}
+            className="absolute right-4 text-white hover:text-gray-300 p-4 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+          >
+            <span className="text-2xl">&#10095;</span>
+          </button>
+        </div>
       )}
     </div>
   );

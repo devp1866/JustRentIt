@@ -19,9 +19,18 @@ export default function PropertyCard({ property }) {
             alt={property.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <span className="absolute top-4 right-4 bg-white text-gray-900 font-semibold px-3 py-1 rounded">
-            ${property.price_per_month}/mo
-          </span>
+          <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+            <span className="bg-white text-gray-900 font-bold px-3 py-1 rounded shadow-sm">
+              {property.rental_type === 'short_term'
+                ? `₹${property.price_per_night}/night`
+                : `₹${property.price_per_month}/mo`
+              }
+            </span>
+            <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wide shadow-sm ${property.rental_type === 'short_term' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+              }`}>
+              {property.rental_type === 'short_term' ? 'Short Term' : 'Long Term'}
+            </span>
+          </div>
         </div>
         <div className="p-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-900 transition-colors">

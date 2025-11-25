@@ -14,6 +14,7 @@ export const authOptions = {
                 await dbConnect();
                 const user = await User.findOne({ email: credentials.email });
                 if (!user) throw new Error("No user found");
+                if (user.is_active === false) throw new Error("Account is deactivated");
 
                 if (user.password !== credentials.password) throw new Error("Invalid password");
 

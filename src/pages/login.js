@@ -8,13 +8,27 @@ export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-  
+
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Basic Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setLoading(false);
+      return;
+    }
+
     const res = await signIn("credentials", {
       ...formData,
       redirect: false,

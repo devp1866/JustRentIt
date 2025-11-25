@@ -10,13 +10,18 @@ export default async function handler(req, res) {
     await dbConnect();
     const { full_name, email, password, user_type, phone } = req.body;
 
-    if (!full_name || !email || !password || !phone) {
+    if (!full_name || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const query = { $or: [{ email }] };
+    if (phone) {
+      query.$or.push({ phone });
+    }
+
+    const existingUser = await User.findOne(query);
     if (existingUser) {
-      return res.status(400).json({ error: "User already exists" });
+      return res.status(400).json({ error: "User with this email or phone already exists" });
     }
 
     const newUser = await User.create({
@@ -24,7 +29,8 @@ export default async function handler(req, res) {
       email,
       password, // plain
       user_type: user_type || "renter",
-      phone,
+      phone: phone || undefined,
+      is_verified: !!phone,
     });
 
     return res.status(201).json({

@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect } from "react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal } from "lucide-react";
@@ -12,17 +13,17 @@ export default function Properties() {
 
     const searchCityDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('city') || "" : "";
     const propertyTypeDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('type') || "all" : "all";
+    const rentalTypeDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('rental_type') || "all" : "all";
 
     const [searchCity, setSearchCity] = useState(searchCityDefault);
     const [propertyType, setPropertyType] = useState(propertyTypeDefault);
+    const [rentalType, setRentalType] = useState(rentalTypeDefault);
     const [priceRange, setPriceRange] = useState("all");
 
     const { data: properties = [], isLoading } = useQuery({
         queryKey: ['properties'],
         queryFn: async () => fetch('/api/properties').then(res => res.json()),
     });
-
-
 
     const filteredProperties = properties.filter(property => {
         const searchTerm = searchCity.toLowerCase();
@@ -31,16 +32,22 @@ export default function Properties() {
             property.location?.toLowerCase().includes(searchTerm);
 
         const typeMatch = propertyType === "all" || property.property_type === propertyType;
+        const rentalMatch = rentalType === "all" || property.rental_type === rentalType;
+
         let priceMatch = true;
         if (priceRange === "low") priceMatch = property.price_per_month < 1000;
         else if (priceRange === "mid") priceMatch = property.price_per_month >= 1000 && property.price_per_month <= 2500;
         else if (priceRange === "high") priceMatch = property.price_per_month > 2500;
 
-        return cityMatch && typeMatch && priceMatch;
+        return cityMatch && typeMatch && rentalMatch && priceMatch;
     });
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
+            <Head>
+                <title>Browse Properties - JustRentIt</title>
+                <meta name="description" content="Search and filter through our extensive collection of rental properties. Find apartments, houses, and studios in your preferred location." />
+            </Head>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
@@ -54,7 +61,7 @@ export default function Properties() {
                         <SlidersHorizontal className="w-5 h-5 text-gray-600" />
                         <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <input
                             placeholder="Search by city or area..."
                             value={searchCity}
@@ -66,7 +73,7 @@ export default function Properties() {
                             onChange={e => setPropertyType(e.target.value)}
                             className="h-11 rounded border px-3"
                         >
-                            <option value="all">All Types</option>
+                            <option value="all">All Property Types</option>
                             <option value="apartment">Apartment</option>
                             <option value="house">House</option>
                             <option value="condo">Condo</option>
@@ -74,19 +81,29 @@ export default function Properties() {
                             <option value="villa">Villa</option>
                         </select>
                         <select
+                            value={rentalType}
+                            onChange={e => setRentalType(e.target.value)}
+                            className="h-11 rounded border px-3"
+                        >
+                            <option value="all">All Rental Types</option>
+                            <option value="long_term">Long Term</option>
+                            <option value="short_term">Short Term</option>
+                        </select>
+                        <select
                             value={priceRange}
                             onChange={e => setPriceRange(e.target.value)}
                             className="h-11 rounded border px-3"
                         >
                             <option value="all">All Prices</option>
-                            <option value="low">Under $1,000</option>
-                            <option value="mid">$1,000 - $2,500</option>
-                            <option value="high">Above $2,500</option>
+                            <option value="low">Under ₹1,000</option>
+                            <option value="mid">₹1,000 - ₹2,500</option>
+                            <option value="high">Above ₹2,500</option>
                         </select>
                         <button
                             onClick={() => {
                                 setSearchCity('');
                                 setPropertyType('all');
+                                setRentalType('all');
                                 setPriceRange('all');
                             }}
                             className="h-11 border rounded px-3 bg-gray-100 font-semibold"

@@ -17,6 +17,7 @@ export default function AddProperty() {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
+        rental_type: "long_term",
         property_type: "apartment",
         location: "",
         city: "",
@@ -24,9 +25,15 @@ export default function AddProperty() {
         bathrooms: 1,
         area_sqft: 0,
         price_per_month: 0,
+        price_per_night: 0,
         amenities: [],
         images: [],
         status: "available",
+        offer: {
+            enabled: false,
+            required_duration: 0,
+            discount_percentage: 0
+        }
     });
     const [amenityInput, setAmenityInput] = useState("");
     const [isLoaded, setIsLoaded] = useState(false);
@@ -62,8 +69,16 @@ export default function AddProperty() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(propertyData),
-            }).then((res) => res.json()),
+            }).then(async (res) => {
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.message || 'Failed to create property');
+                }
+                return res.json();
+            }),
+
         onSuccess: () => {
+            alert("Property listed successfully!");
             localStorage.removeItem("add-property-form");
             queryClient.invalidateQueries({ queryKey: ['my-properties'] });
             router.push("/dashboard");
@@ -75,10 +90,17 @@ export default function AddProperty() {
         if (
             !formData.title ||
             !formData.location ||
-            !formData.city ||
-            !formData.price_per_month
+            !formData.city
         ) {
             alert("Please fill in all required fields");
+            return;
+        }
+        if (formData.rental_type === 'long_term' && !formData.price_per_month) {
+            alert("Please enter monthly rent");
+            return;
+        }
+        if (formData.rental_type === 'short_term' && !formData.price_per_night) {
+            alert("Please enter nightly price");
             return;
         }
         createPropertyMutation.mutate({
@@ -177,6 +199,22 @@ export default function AddProperty() {
                                 />
                             </div>
 
+                            <div>
+                                <label htmlFor="rental_type">Rental Type *</label>
+                                <select
+                                    id="rental_type"
+                                    value={formData.rental_type}
+                                    onChange={e => setFormData({ ...formData, rental_type: e.target.value })}
+                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                >
+                                    <option value="long_term">Long Term (Monthly)</option>
+                                    <option value="short_term">Short Term (Daily/Weekly)</option>
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Long-term rentals are typically for 6+ months. Short-term are for holidays or temporary stays.
+                                </p>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label htmlFor="property_type">Property Type *</label>
@@ -194,36 +232,36 @@ export default function AddProperty() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="price">Monthly Rent ($) *</label>
-                                    <input
-                                        id="price"
-                                        type="number"
-                                        min="0"
-                                        value={formData.price_per_month}
-                                        onChange={e => setFormData({ ...formData, price_per_month: parseFloat(e.target.value) })}
-                                        className="mt-1 w-full border px-3 py-2 rounded"
-                                        required
-                                    />
+                                    {formData.rental_type === 'short_term' ? (
+                                        <>
+                                            <label htmlFor="price_night">Nightly Price (₹) *</label>
+                                            <input
+                                                id="price_night"
+                                                type="number"
+                                                min="0"
+                                                value={formData.price_per_night}
+                                                onChange={e => setFormData({ ...formData, price_per_night: parseFloat(e.target.value) })}
+                                                className="mt-1 w-full border px-3 py-2 rounded"
+                                                required
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <label htmlFor="price">Monthly Rent (₹) *</label>
+                                            <input
+                                                id="price"
+                                                type="number"
+                                                min="0"
+                                                value={formData.price_per_month}
+                                                onChange={e => setFormData({ ...formData, price_per_month: parseFloat(e.target.value) })}
+                                                className="mt-1 w-full border px-3 py-2 rounded"
+                                                required
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Location */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Location</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label htmlFor="location">Full Address *</label>
-                                <input
-                                    id="location"
-                                    value={formData.location}
-                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
-                                    placeholder="123 Main Street, Apt 4B"
-                                    className="mt-1 w-full border px-3 py-2 rounded"
-                                    required
-                                />
-                            </div>
                             <div>
                                 <label htmlFor="city">City *</label>
                                 <input
@@ -384,7 +422,7 @@ export default function AddProperty() {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

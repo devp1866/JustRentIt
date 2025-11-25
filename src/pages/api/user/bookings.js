@@ -14,8 +14,18 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
         try {
             // Fetch bookings where the user is the renter
-            const bookings = await Booking.find({ renter_email: session.user.email }).sort({ createdAt: -1 });
-            return res.status(200).json(bookings);
+            const bookings = await Booking.find({ renter_email: session.user.email }).sort({ createdAt: -1 }).lean();
+
+            // Populate property images manually
+            const bookingsWithImages = await Promise.all(bookings.map(async (booking) => {
+                const property = await import("../../../models/Property").then(mod => mod.default.findById(booking.property_id));
+                return {
+                    ...booking,
+                    property_image: property?.images?.[0] || null
+                };
+            }));
+
+            return res.status(200).json(bookingsWithImages);
         } catch (error) {
             console.error("Error fetching bookings:", error);
             return res.status(500).json({ message: "Internal Server Error" });

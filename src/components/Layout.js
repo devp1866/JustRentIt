@@ -65,6 +65,12 @@ export default function Layout({ children }) {
         <title>JustRentIt - Find Your Perfect Rental Home</title>
         <meta name="description" content="Discover quality rental properties from verified landlords. Simple, secure, and stress-free renting with JustRentIt." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="JustRentIt - Find Your Perfect Rental Home" />
+        <meta property="og:description" content="Discover quality rental properties from verified landlords. Simple, secure, and stress-free renting with JustRentIt." />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="JustRentIt" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
       <style>{`
         :root {

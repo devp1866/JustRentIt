@@ -17,6 +17,7 @@ export default function EditProperty() {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
+        rental_type: "long_term",
         property_type: "apartment",
         location: "",
         city: "",
@@ -24,9 +25,15 @@ export default function EditProperty() {
         bathrooms: 1,
         area_sqft: 0,
         price_per_month: 0,
+        price_per_night: 0,
         amenities: [],
         images: [],
         status: "available",
+        offer: {
+            enabled: false,
+            required_duration: 0,
+            discount_percentage: 0
+        }
     });
     const [amenityInput, setAmenityInput] = useState("");
 
@@ -47,6 +54,7 @@ export default function EditProperty() {
             setFormData({
                 title: property.title || "",
                 description: property.description || "",
+                rental_type: property.rental_type || "long_term",
                 property_type: property.property_type || "apartment",
                 location: property.location || "",
                 city: property.city || "",
@@ -54,9 +62,15 @@ export default function EditProperty() {
                 bathrooms: property.bathrooms || 1,
                 area_sqft: property.area_sqft || 0,
                 price_per_month: property.price_per_month || 0,
+                price_per_night: property.price_per_night || 0,
                 amenities: property.amenities || [],
                 images: property.images || [],
                 status: property.status || "available",
+                offer: property.offer || {
+                    enabled: false,
+                    required_duration: 0,
+                    discount_percentage: 0
+                }
             });
         }
     }, [property]);
@@ -74,6 +88,7 @@ export default function EditProperty() {
                 return res.json();
             }),
         onSuccess: () => {
+            alert("Property updated successfully!");
             router.push("/dashboard");
         },
     });
@@ -83,10 +98,17 @@ export default function EditProperty() {
         if (
             !formData.title ||
             !formData.location ||
-            !formData.city ||
-            !formData.price_per_month
+            !formData.city
         ) {
             alert("Please fill in all required fields");
+            return;
+        }
+        if (formData.rental_type === 'long_term' && !formData.price_per_month) {
+            alert("Please enter monthly rent");
+            return;
+        }
+        if (formData.rental_type === 'short_term' && !formData.price_per_night) {
+            alert("Please enter nightly price");
             return;
         }
         updatePropertyMutation.mutate({
@@ -204,6 +226,19 @@ export default function EditProperty() {
                                 />
                             </div>
 
+                            <div>
+                                <label htmlFor="rental_type">Rental Type *</label>
+                                <select
+                                    id="rental_type"
+                                    value={formData.rental_type}
+                                    onChange={e => setFormData({ ...formData, rental_type: e.target.value })}
+                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                >
+                                    <option value="long_term">Long Term (Monthly)</option>
+                                    <option value="short_term">Short Term (Daily/Weekly)</option>
+                                </select>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label htmlFor="property_type">Property Type *</label>
@@ -221,16 +256,33 @@ export default function EditProperty() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="price">Monthly Rent ($) *</label>
-                                    <input
-                                        id="price"
-                                        type="number"
-                                        min="0"
-                                        value={formData.price_per_month}
-                                        onChange={e => setFormData({ ...formData, price_per_month: parseFloat(e.target.value) })}
-                                        className="mt-1 w-full border px-3 py-2 rounded"
-                                        required
-                                    />
+                                    {formData.rental_type === 'short_term' ? (
+                                        <>
+                                            <label htmlFor="price_night">Nightly Price (₹) *</label>
+                                            <input
+                                                id="price_night"
+                                                type="number"
+                                                min="0"
+                                                value={formData.price_per_night}
+                                                onChange={e => setFormData({ ...formData, price_per_night: parseFloat(e.target.value) })}
+                                                className="mt-1 w-full border px-3 py-2 rounded"
+                                                required
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <label htmlFor="price">Monthly Rent (₹) *</label>
+                                            <input
+                                                id="price"
+                                                type="number"
+                                                min="0"
+                                                value={formData.price_per_month}
+                                                onChange={e => setFormData({ ...formData, price_per_month: parseFloat(e.target.value) })}
+                                                className="mt-1 w-full border px-3 py-2 rounded"
+                                                required
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -247,6 +299,71 @@ export default function EditProperty() {
                                     <option value="maintenance">Maintenance</option>
                                 </select>
                             </div>
+                        </div>
+
+                        {/* Offers Section */}
+                        <div className="border-t pt-6 mt-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-medium text-gray-900">Special Offers</h3>
+                                <div className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id="offer_enabled"
+                                        checked={formData.offer?.enabled || false}
+                                        onChange={e => setFormData({
+                                            ...formData,
+                                            offer: { ...formData.offer, enabled: e.target.checked }
+                                        })}
+                                        className="h-4 w-4 text-blue-900 focus:ring-blue-900 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="offer_enabled" className="ml-2 block text-sm text-gray-900">
+                                        Enable Offer
+                                    </label>
+                                </div>
+                            </div>
+
+                            {formData.offer?.enabled && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 p-4 rounded-xl">
+                                    <div>
+                                        <label htmlFor="required_duration">
+                                            Required Duration ({formData.rental_type === 'short_term' ? 'Days' : 'Months'})
+                                        </label>
+                                        <input
+                                            id="required_duration"
+                                            type="number"
+                                            min="1"
+                                            value={formData.offer?.required_duration || 0}
+                                            onChange={e => setFormData({
+                                                ...formData,
+                                                offer: { ...formData.offer, required_duration: parseInt(e.target.value) }
+                                            })}
+                                            className="mt-1 w-full border px-3 py-2 rounded"
+                                            placeholder={formData.rental_type === 'short_term' ? "e.g., 5 days" : "e.g., 6 months"}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="discount_percentage">Discount Percentage (%)</label>
+                                        <input
+                                            id="discount_percentage"
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            value={formData.offer?.discount_percentage || 0}
+                                            onChange={e => setFormData({
+                                                ...formData,
+                                                offer: { ...formData.offer, discount_percentage: parseFloat(e.target.value) }
+                                            })}
+                                            className="mt-1 w-full border px-3 py-2 rounded"
+                                            placeholder="e.g., 10%"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2 text-sm text-blue-800">
+                                        <p>
+                                            Preview: Buy for {formData.offer?.required_duration || 0} {formData.rental_type === 'short_term' ? 'days' : 'months'} and get {formData.offer?.discount_percentage || 0}% discount.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
