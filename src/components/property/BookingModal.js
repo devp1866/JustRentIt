@@ -10,7 +10,7 @@ function SimpleModal({ open, onClose, children }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 relative">
+      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-2 right-3 text-gray-400 hover:text-gray-900 text-xl">&times;</button>
         {children}
       </div>
@@ -88,6 +88,8 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
     });
   };
 
+  const [termsAccepted, setTermsAccepted] = useState(new Array(11).fill(false));
+
   // Check if selected range overlaps with booked dates
   const isDateRangeAvailable = (start, duration) => {
     if (!start) return true;
@@ -112,6 +114,10 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
     }
     if (!isDateRangeAvailable(startDate, duration)) {
       alert("Selected dates overlap with an existing booking. Please choose different dates.");
+      return;
+    }
+    if (!termsAccepted.every(Boolean)) {
+      alert("Please agree to all Terms & Conditions to proceed.");
       return;
     }
     setStep("payment");
@@ -216,7 +222,9 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-2">{property.title}</h3>
               <p className="text-sm text-gray-600">{property.location}</p>
-              <p className="text-lg font-bold text-blue-900 mt-2">₹{property.price_per_month}/month</p>
+              <p className="text-lg font-bold text-blue-900 mt-2">
+                ₹{isShortTerm ? property.price_per_night : property.price_per_month}/{isShortTerm ? "night" : "month"}
+              </p>
             </div>
             <div className="space-y-4">
               <div>
@@ -269,6 +277,74 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
                 </div>
               </div>
             </div>
+
+
+
+            {/* Tenant Terms Checklist */}
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-3">Terms & Conditions</h3>
+              <div className="space-y-2">
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    id="agree_all_terms"
+                    checked={termsAccepted.every(i => i) && termsAccepted.length === 12}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setTermsAccepted(checked ? new Array(12).fill(true) : new Array(12).fill(false));
+                    }}
+                    className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                  />
+                  <label htmlFor="agree_all_terms" className="ml-3 text-sm font-bold text-gray-900">
+                    I agree to all JustRentIt Tenant Terms & Conditions.
+                  </label>
+                </div>
+                <hr className="my-2" />
+                {[
+                  "I confirm all details provided are accurate and authentic.",
+                  "I agree to sign a legal rental agreement with the landlord.",
+                  "I will pay rent and bills on time as mutually agreed.",
+                  "I will not damage the property or cause disturbances.",
+                  "I agree to provide valid ID proof and accurate information.",
+                  "I understand check-in/check-out timings and related charges.",
+                  "I agree that cancellations follow the host’s refund policy.",
+                  "I will follow society rules and maintain respectful behavior.",
+                  "I will not sublet, misuse, or engage in illegal activities.",
+                  "I understand JustRentIt is only a connecting platform.",
+                  "I agree that violations may lead to eviction or legal action."
+                ].map((term, idx) => (
+                  <div key={idx} className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id={`term_${idx}`}
+                      checked={termsAccepted[idx] || false}
+                      onChange={(e) => {
+                        const newTerms = [...termsAccepted];
+                        newTerms[idx] = e.target.checked;
+                        // Update the last "Select All" checkbox logic if needed, but for now independent
+                        // Actually, let's keep the last one as the master "Select All" in the UI array logic if we want
+                        // But here I'm mapping the first 11. The 12th is the "Select All" which I put at the top.
+                        // Let's just keep the state simple: array of 12. Index 11 is "Select All" conceptually but I'll handle it separately in UI or just map 11 items and use a separate state or logic.
+                        // Simpler approach: Array of 11 specific terms. The "Select All" toggles all 11.
+                        // The user request said: "I agree to all JustRentIt Tenant Terms & Conditions. (same like for landlord last check box)"
+                        // So I will use 12 items in state, where the 12th is the "Select All" one, or just use the "Select All" to toggle the others.
+                        // Let's stick to the pattern used in add-property: Array of N items. "Select All" toggles all.
+                        setTermsAccepted(prev => {
+                          const updated = [...prev];
+                          updated[idx] = e.target.checked;
+                          return updated;
+                        });
+                      }}
+                      className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                    />
+                    <label htmlFor={`term_${idx}`} className="ml-3 text-sm text-gray-600">
+                      {term}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <button
               onClick={handleBooking}
               className="w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded"
@@ -279,70 +355,74 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
           </div>
         )}
 
-        {step === "payment" && (
-          <div className="space-y-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total Amount</span>
-                <span className="text-2xl font-bold text-blue-900">₹{totalAmount}</span>
+        {
+          step === "payment" && (
+            <div className="space-y-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Total Amount</span>
+                  <span className="text-2xl font-bold text-blue-900">₹{totalAmount}</span>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <p className="text-sm text-blue-800 mb-2">
+                  You are about to pay securely with Razorpay.
+                </p>
+                <p className="text-xs text-blue-600">
+                  Your booking details are saved. If you cancel the payment, you can try again without re-entering details.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep("details")}
+                  className="flex-1 border rounded py-3 bg-white"
+                  disabled={isProcessing}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handlePayment}
+                  className="flex-1 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded py-3"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin inline" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4 mr-2 inline" />
+                      Pay Now
+                    </>
+                  )}
+                </button>
               </div>
             </div>
+          )
+        }
 
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-              <p className="text-sm text-blue-800 mb-2">
-                You are about to pay securely with Razorpay.
+        {
+          step === "success" && (
+            <div className="text-center py-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Payment Successful!</h3>
+              <p className="text-gray-600 mb-6">
+                Your booking has been confirmed. Check your email for details.
               </p>
-              <p className="text-xs text-blue-600">
-                Your booking details are saved. If you cancel the payment, you can try again without re-entering details.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
               <button
-                onClick={() => setStep("details")}
-                className="flex-1 border rounded py-3 bg-white"
-                disabled={isProcessing}
+                onClick={() => router.push("/dashboard")}
+                className="w-full bg-blue-900 hover:bg-blue-800 py-3 rounded text-white font-semibold"
               >
-                Back
-              </button>
-              <button
-                onClick={handlePayment}
-                className="flex-1 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded py-3"
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin inline" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4 mr-2 inline" />
-                    Pay Now
-                  </>
-                )}
+                View My Bookings
               </button>
             </div>
-          </div>
-        )}
-
-        {step === "success" && (
-          <div className="text-center py-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Payment Successful!</h3>
-            <p className="text-gray-600 mb-6">
-              Your booking has been confirmed. Check your email for details.
-            </p>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="w-full bg-blue-900 hover:bg-blue-800 py-3 rounded text-white font-semibold"
-            >
-              View My Bookings
-            </button>
-          </div>
-        )}
+          )
+        }
       </div>
     </SimpleModal>
   );

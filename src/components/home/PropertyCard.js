@@ -30,6 +30,11 @@ export default function PropertyCard({ property }) {
               }`}>
               {property.rental_type === 'short_term' ? 'Short Term' : 'Long Term'}
             </span>
+            {property.offer && property.offer.enabled && (
+              <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold uppercase tracking-wide shadow-sm">
+                {property.offer.discount_percentage}% OFF
+              </span>
+            )}
           </div>
         </div>
         <div className="p-6">

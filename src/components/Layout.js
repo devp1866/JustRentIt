@@ -59,8 +59,10 @@ export default function Layout({ children }) {
 
   const isActive = (url) => path === url;
 
+  const isAuthPage = path === "/login" || path === "/signup";
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Head>
         <title>JustRentIt - Find Your Perfect Rental Home</title>
         <meta name="description" content="Discover quality rental properties from verified landlords. Simple, secure, and stress-free renting with JustRentIt." />
@@ -219,87 +221,90 @@ export default function Layout({ children }) {
           </div>
         )}
       </header>
+
       {/* Main Content */}
-      <main className="min-h-[calc(100vh-4rem)]">
+      <main className="flex-grow">
         {children}
       </main>
+
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-white" />
+      {!isAuthPage && (
+        <footer className="bg-white border-t border-gray-200 mt-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+              <div className="col-span-1">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="text-xl font-bold text-gray-900">JustRentIt</span>
                 </div>
-                <span className="text-xl font-bold text-gray-900">JustRentIt</span>
+                <p className="text-sm text-gray-600">
+                  Your trusted platform for finding and listing rental properties. Simple, secure, and reliable.
+                </p>
               </div>
-              <p className="text-sm text-gray-600">
-                Your trusted platform for finding and listing rental properties.
-              </p>
-            </div>
 
-            {/* Role-based Sections */}
-            {(!user || user.user_type === 'renter' || user.user_type === 'both') && (
+              {/* Role-based Sections */}
+              {(!user || user.user_type === 'renter' || user.user_type === 'both') && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-4">For Renters</h3>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>
+                      <Link href="/properties" className="hover:text-blue-900 transition-colors">Browse Properties</Link>
+                    </li>
+                    {user && (
+                      <li>
+                        <Link href="/dashboard" className="hover:text-blue-900 transition-colors">My Bookings</Link>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {(!user || user.user_type === 'landlord' || user.user_type === 'both') && (
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-4">For Landlords</h3>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>
+                      <Link href="/add-property" className="hover:text-blue-900 transition-colors">List Property</Link>
+                    </li>
+                    {user && (
+                      <li>
+                        <Link href="/dashboard" className="hover:text-blue-900 transition-colors">Manage Listings</Link>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">For Renters</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li>
-                    <Link href="/properties" className="hover:text-blue-900">Browse Properties</Link>
+                    <Link href="/about" className="hover:text-blue-900 transition-colors">About Us</Link>
                   </li>
-                  {user && (
-                    <li>
-                      <Link href="/dashboard" className="hover:text-blue-900">My Bookings</Link>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {(!user || user.user_type === 'landlord' || user.user_type === 'both') && (
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4">For Landlords</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
                   <li>
-                    <Link href="/add-property" className="hover:text-blue-900">List Property</Link>
+                    <Link href="/contact" className="hover:text-blue-900 transition-colors">Contact Us</Link>
                   </li>
-                  {user && (
-                    <li>
-                      <Link href="/dashboard" className="hover:text-blue-900">Manage Listings</Link>
-                    </li>
-                  )}
+                  <li>
+                    <Link href="/terms" className="hover:text-blue-900 transition-colors">Terms of Service</Link>
+                  </li>
+                  <li>
+                    <Link href="/privacy" className="hover:text-blue-900 transition-colors">Privacy Policy</Link>
+                  </li>
                 </ul>
               </div>
-            )}
-
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <Link href="/about" className="hover:text-blue-900">About Us</Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-blue-900">Contact Us</Link>
-                </li>
-                <li>
-                  <span className="text-gray-400 cursor-not-allowed">Terms of Service</span>
-                </li>
-                <li>
-                  <span className="text-gray-400 cursor-not-allowed">Privacy Policy</span>
-                </li>
-              </ul>
+            </div>
+            <div className="pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
+              © 2025 JustRentIt. All rights reserved.
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-600">
-            © 2025 JustRentIt. All rights reserved.
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
 
-// Simple loader icon for async "loading" states
 function Loader() {
   return (
     <span className="inline-block animate-spin text-blue-900">

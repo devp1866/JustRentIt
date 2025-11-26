@@ -24,11 +24,32 @@ export default async function handler(req, res) {
             email: user.email,
             phone: user.phone,
             user_type: user.user_type,
-            is_verified: user.is_verified
+            is_verified: user.is_verified,
+            // Landlord specific
+            city: user.city,
+            state: user.state,
+            country: user.country,
+            govt_id: user.govt_id,
+            property_ownership_proof: user.property_ownership_proof,
+            // Renter specific
+            preferred_city: user.preferred_city,
+            budget_range: user.budget_range
         });
     } else if (req.method === "POST") {
-        // Handle OTP Verification / Upgrade / Phone Update
-        const { action, otp, phone } = req.body;
+        // Handle OTP Verification / Upgrade / Phone Update / Profile Update
+        const { action, otp, phone, city, state, country, preferred_city, budget_range } = req.body;
+
+        if (action === "update_profile") {
+            // Allow updating mutable fields
+            if (city) user.city = city;
+            if (state) user.state = state;
+            if (country) user.country = country;
+            if (preferred_city) user.preferred_city = preferred_city;
+            if (budget_range) user.budget_range = budget_range;
+
+            await user.save();
+            return res.status(200).json({ message: "Profile updated successfully" });
+        }
 
         if (action === "send_otp") {
             // Mock OTP sending
@@ -68,6 +89,7 @@ export default async function handler(req, res) {
         if (action === "delete_account") {
             // Soft delete user
             user.is_active = false;
+            user.deleted_at = new Date();
             await user.save();
 
             // Cancel active bookings

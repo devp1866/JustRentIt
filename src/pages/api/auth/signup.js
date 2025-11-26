@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   try {
     await dbConnect();
-    const { full_name, email, password, user_type, phone } = req.body;
+    const { full_name, email, password, user_type, phone, city, state, country, govt_id, preferred_city, budget_range } = req.body;
 
     if (!full_name || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -21,7 +21,23 @@ export default async function handler(req, res) {
 
     const existingUser = await User.findOne(query);
     if (existingUser) {
-      return res.status(400).json({ error: "User with this email or phone already exists" });
+      if (!existingUser.is_active) {
+        // Check if user was deleted recently
+        if (existingUser.deleted_at) {
+          const daysSinceDeletion = (new Date() - new Date(existingUser.deleted_at)) / (1000 * 60 * 60 * 24);
+          if (daysSinceDeletion < 7) {
+            const daysRemaining = Math.ceil(7 - daysSinceDeletion);
+            return res.status(400).json({ error: `Account deleted recently. You can recreate your account in ${daysRemaining} days.` });
+          } else {
+            // Allow recreation: Delete old record so new one can be created
+            await User.deleteOne({ _id: existingUser._id });
+          }
+        } else {
+          return res.status(400).json({ error: "Account is inactive or banned." });
+        }
+      } else {
+        return res.status(400).json({ error: "User with this email or phone already exists" });
+      }
     }
 
     const newUser = await User.create({
@@ -31,6 +47,13 @@ export default async function handler(req, res) {
       user_type: user_type || "renter",
       phone: phone || undefined,
       is_verified: !!phone,
+      // New fields
+      city,
+      state,
+      country,
+      govt_id,
+      preferred_city,
+      budget_range
     });
 
     return res.status(201).json({

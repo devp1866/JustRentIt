@@ -1,14 +1,18 @@
-import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { User, Phone, Shield, CheckCircle, History, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Profile() {
-    const { data: session, update } = useSession();
+    const { data: session, status, update } = useSession();
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({});
     const router = useRouter();
     const queryClient = useQueryClient();
+
+    // State
     const [otpSent, setOtpSent] = useState(false);
     const [otp, setOtp] = useState("");
     const [phoneInput, setPhoneInput] = useState("");
@@ -20,14 +24,22 @@ export default function Profile() {
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [newPhone, setNewPhone] = useState("");
 
-    const { data: user, isLoading } = useQuery({
+    // Auth Redirect
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            signIn(undefined, { callbackUrl: "/profile" });
+        }
+    }, [status]);
+
+    // Queries
+    const { data: user, isLoading: isUserLoading } = useQuery({
         queryKey: ["profile"],
         queryFn: async () => {
             const res = await fetch("/api/user/profile");
             if (!res.ok) throw new Error("Failed to fetch profile");
             return res.json();
         },
-        enabled: !!session,
+        enabled: status === "authenticated",
     });
 
     const { data: transactions = [] } = useQuery({
@@ -37,8 +49,32 @@ export default function Profile() {
             if (!res.ok) throw new Error("Failed to fetch transactions");
             return res.json();
         },
-        enabled: !!session,
+        enabled: status === "authenticated",
     });
+
+    // Mutations
+    const handleUpdateProfile = async () => {
+        try {
+            const res = await fetch("/api/user/profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "update_profile",
+                    ...editData
+                })
+            });
+            if (res.ok) {
+                setIsEditing(false);
+                queryClient.invalidateQueries(["profile"]);
+                alert("Profile updated successfully!");
+            } else {
+                alert("Failed to update profile");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error updating profile");
+        }
+    };
 
     const upgradeMutation = useMutation({
         mutationFn: async (data) => {
@@ -62,7 +98,6 @@ export default function Profile() {
                 setMessage("Profile upgraded! You can now list properties.");
                 setShowUpgrade(false);
                 setOtpSent(false);
-                setOtp("");
                 setOtp("");
                 queryClient.invalidateQueries(["profile"]);
                 // Force session update
@@ -125,6 +160,7 @@ export default function Profile() {
         },
     });
 
+    // Handlers
     const handleUpdatePhone = () => {
         if (!newPhone || newPhone.length !== 10) {
             setError("Please enter a valid 10-digit phone number.");
@@ -164,8 +200,13 @@ export default function Profile() {
         upgradeMutation.mutate({ action: "verify_otp", otp, phone: phoneInput });
     };
 
-    if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-    if (!session) return <div className="min-h-screen flex items-center justify-center">Please log in.</div>;
+    if (status === "loading" || status === "unauthenticated" || isUserLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 py-12">
@@ -255,59 +296,171 @@ export default function Profile() {
                                 </div>
                             </div>
                         )}
-                    </div>
 
-                    {/* Transaction History */}
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                                <History className="w-5 h-5 mr-2 text-blue-900" />
-                                Transaction History
-                            </h2>
+                        {/* Additional Details Section */}
+                        <div className="border-t border-gray-100 pt-6 mt-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-gray-900">Additional Details</h3>
+                                {!isEditing ? (
+                                    <button
+                                        onClick={() => {
+                                            setIsEditing(true);
+                                            setEditData({
+                                                city: user?.city || "",
+                                                state: user?.state || "",
+                                                country: user?.country || "",
+                                                preferred_city: user?.preferred_city || "",
+                                                budget_range: user?.budget_range || ""
+                                            });
+                                        }}
+                                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                    >
+                                        Edit Details
+                                    </button>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setIsEditing(false)}
+                                            className="text-sm text-gray-500 hover:text-gray-700"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleUpdateProfile}
+                                            className="text-sm bg-blue-900 text-white px-3 py-1 rounded hover:bg-blue-800"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {(user?.user_type === "landlord" || user?.user_type === "both") && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500">City</label>
+                                            {isEditing ? (
+                                                <input
+                                                    value={editData.city}
+                                                    onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                                                    className="mt-1 w-full border rounded px-2 py-1"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900">{user?.city || "-"}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500">State</label>
+                                            {isEditing ? (
+                                                <input
+                                                    value={editData.state}
+                                                    onChange={(e) => setEditData({ ...editData, state: e.target.value })}
+                                                    className="mt-1 w-full border rounded px-2 py-1"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900">{user?.state || "-"}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500">Country</label>
+                                            {isEditing ? (
+                                                <input
+                                                    value={editData.country}
+                                                    onChange={(e) => setEditData({ ...editData, country: e.target.value })}
+                                                    className="mt-1 w-full border rounded px-2 py-1"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900">{user?.country || "-"}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500">Government ID</label>
+                                            <p className="text-gray-900 font-mono">{user?.govt_id || "-"}</p>
+                                            {isEditing && <p className="text-xs text-red-500 mt-1">Immutable for security</p>}
+                                        </div>
+                                    </>
+                                )}
+
+                                {(user?.user_type === "renter" || user?.user_type === "both") && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500">Preferred City</label>
+                                            {isEditing ? (
+                                                <input
+                                                    value={editData.preferred_city}
+                                                    onChange={(e) => setEditData({ ...editData, preferred_city: e.target.value })}
+                                                    className="mt-1 w-full border rounded px-2 py-1"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900">{user?.preferred_city || "-"}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500">Budget Range</label>
+                                            {isEditing ? (
+                                                <input
+                                                    value={editData.budget_range}
+                                                    onChange={(e) => setEditData({ ...editData, budget_range: e.target.value })}
+                                                    className="mt-1 w-full border rounded px-2 py-1"
+                                                />
+                                            ) : (
+                                                <p className="text-gray-900">{user?.budget_range || "-"}</p>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-600">
-                                <thead className="bg-gray-50 text-gray-900 font-semibold">
+
+                        <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                            <History className="w-5 h-5 mr-2 text-blue-900" />
+                            Transaction History
+                        </h2>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm text-gray-600">
+                            <thead className="bg-gray-50 text-gray-900 font-semibold">
+                                <tr>
+                                    <th className="px-6 py-3">Date</th>
+                                    <th className="px-6 py-3">Property</th>
+                                    <th className="px-6 py-3">Amount</th>
+                                    <th className="px-6 py-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {transactions.length === 0 ? (
                                     <tr>
-                                        <th className="px-6 py-3">Date</th>
-                                        <th className="px-6 py-3">Property</th>
-                                        <th className="px-6 py-3">Amount</th>
-                                        <th className="px-6 py-3">Status</th>
+                                        <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                                            No transactions found.
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {transactions.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                                                No transactions found.
+                                ) : (
+                                    transactions.map((tx) => (
+                                        <tr key={tx._id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                {tx.payment_date ? format(new Date(tx.payment_date), "MMM d, yyyy") : "-"}
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                                {tx.property_title}
+                                            </td>
+                                            <td className="px-6 py-4 text-blue-900 font-bold">
+                                                ₹{tx.total_amount}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${tx.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    {tx.payment_status}
+                                                </span>
                                             </td>
                                         </tr>
-                                    ) : (
-                                        transactions.map((tx) => (
-                                            <tr key={tx._id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    {tx.payment_date ? format(new Date(tx.payment_date), "MMM d, yyyy") : "-"}
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-gray-900">
-                                                    {tx.property_title}
-                                                </td>
-                                                <td className="px-6 py-4 text-blue-900 font-bold">
-                                                    ₹{tx.total_amount}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${tx.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                                        }`}>
-                                                        {tx.payment_status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
 
                 {user?.user_type === "renter" && (
                     <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl shadow-lg p-8 text-white mb-8">

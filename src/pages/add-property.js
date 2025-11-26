@@ -29,11 +29,10 @@ export default function AddProperty() {
         amenities: [],
         images: [],
         status: "available",
-        offer: {
-            enabled: false,
-            required_duration: 0,
-            discount_percentage: 0
-        }
+        furnishing_status: "unfurnished",
+        required_duration: 0,
+        discount_percentage: 0,
+        governance: new Array(9).fill(false)
     });
     const [amenityInput, setAmenityInput] = useState("");
     const [isLoaded, setIsLoaded] = useState(false);
@@ -85,6 +84,16 @@ export default function AddProperty() {
         },
     });
 
+    // Handle Property Type Side Effects
+    useEffect(() => {
+        if (formData.property_type === 'studio') {
+            setFormData(prev => ({ ...prev, bedrooms: 1 }));
+        }
+        if (['hotel', 'resort'].includes(formData.property_type)) {
+            setFormData(prev => ({ ...prev, furnishing_status: 'furnished' }));
+        }
+    }, [formData.property_type]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (
@@ -103,6 +112,13 @@ export default function AddProperty() {
             alert("Please enter nightly price");
             return;
         }
+
+        // Governance Validation
+        if (!formData.governance || !formData.governance.every(Boolean) || formData.governance.length !== 9) {
+            alert("Please agree to all governance and safety rules to proceed.");
+            return;
+        }
+
         createPropertyMutation.mutate({
             ...formData,
             landlord_email: user.email.toLowerCase(),
@@ -228,8 +244,27 @@ export default function AddProperty() {
                                         <option value="condo">Condo</option>
                                         <option value="studio">Studio</option>
                                         <option value="villa">Villa</option>
+                                        <option value="pg">PG</option>
+                                        <option value="hotel">Hotel</option>
+                                        <option value="resort">Resort</option>
                                     </select>
                                 </div>
+
+                                {!['hotel', 'resort'].includes(formData.property_type) && (
+                                    <div>
+                                        <label htmlFor="furnishing_status">Furnishing Status *</label>
+                                        <select
+                                            id="furnishing_status"
+                                            value={formData.furnishing_status}
+                                            onChange={e => setFormData({ ...formData, furnishing_status: e.target.value })}
+                                            className="mt-1 w-full border px-3 py-2 rounded"
+                                        >
+                                            <option value="unfurnished">Unfurnished</option>
+                                            <option value="semi-furnished">Semi-Furnished</option>
+                                            <option value="furnished">Furnished</option>
+                                        </select>
+                                    </div>
+                                )}
 
                                 <div>
                                     {formData.rental_type === 'short_term' ? (
@@ -263,6 +298,18 @@ export default function AddProperty() {
                             </div>
 
                             <div>
+                                <label htmlFor="location">Location (Address) *</label>
+                                <input
+                                    id="location"
+                                    value={formData.location}
+                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                    placeholder="123 Main St, Apt 4B"
+                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    required
+                                />
+                            </div>
+
+                            <div>
                                 <label htmlFor="city">City *</label>
                                 <input
                                     id="city"
@@ -280,17 +327,19 @@ export default function AddProperty() {
                     <div className="bg-white rounded-2xl shadow-lg p-8">
                         <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Details</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label htmlFor="bedrooms">Bedrooms</label>
-                                <input
-                                    id="bedrooms"
-                                    type="number"
-                                    min="0"
-                                    value={formData.bedrooms}
-                                    onChange={e => setFormData({ ...formData, bedrooms: parseInt(e.target.value) })}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
-                                />
-                            </div>
+                            {formData.property_type !== 'studio' && (
+                                <div>
+                                    <label htmlFor="bedrooms">Bedrooms</label>
+                                    <input
+                                        id="bedrooms"
+                                        type="number"
+                                        min="0"
+                                        value={formData.bedrooms}
+                                        onChange={e => setFormData({ ...formData, bedrooms: parseInt(e.target.value) })}
+                                        className="mt-1 w-full border px-3 py-2 rounded"
+                                    />
+                                </div>
+                            )}
                             <div>
                                 <label htmlFor="bathrooms">Bathrooms</label>
                                 <input
@@ -397,6 +446,61 @@ export default function AddProperty() {
                         </div>
                     </div>
 
+
+                    {/* Governance Checklist */}
+                    <div className="bg-white rounded-2xl shadow-lg p-8">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Governance & Safety</h2>
+                        <div className="space-y-3">
+                            <div className="flex items-start">
+                                <input
+                                    type="checkbox"
+                                    id="agree_all"
+                                    checked={formData.governance?.every(i => i) && formData.governance?.length === 9}
+                                    onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            governance: checked ? new Array(9).fill(true) : new Array(9).fill(false)
+                                        }));
+                                    }}
+                                    className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                                />
+                                <label htmlFor="agree_all" className="ml-3 text-sm font-bold text-gray-900">
+                                    I agree to all JustRentIt governance, safety, and legal policies.
+                                </label>
+                            </div>
+                            <hr className="my-2" />
+                            {[
+                                "I am the legal owner/authorized representative of this property.",
+                                "I confirm all listing details are true and accurate.",
+                                "The property complies with government & municipal safety norms.",
+                                "I will provide the property in clean and hygienic condition.",
+                                "I will not engage in discrimination or illegal eviction practices.",
+                                "I follow housing society rules and will disclose all restrictions.",
+                                "I will upload real, unedited, and recent property photos.",
+                                "I authorize JustRentIt to verify my listing if necessary.",
+                                "I understand violation may lead to listing removal or account suspension."
+                            ].map((rule, idx) => (
+                                <div key={idx} className="flex items-start">
+                                    <input
+                                        type="checkbox"
+                                        id={`rule_${idx}`}
+                                        checked={formData.governance?.[idx] || false}
+                                        onChange={(e) => {
+                                            const newGov = [...(formData.governance || new Array(9).fill(false))];
+                                            newGov[idx] = e.target.checked;
+                                            setFormData(prev => ({ ...prev, governance: newGov }));
+                                        }}
+                                        className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                                    />
+                                    <label htmlFor={`rule_${idx}`} className="ml-3 text-sm text-gray-600">
+                                        {rule}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Submit */}
                     <div className="flex gap-4">
                         <button
@@ -422,7 +526,7 @@ export default function AddProperty() {
                         </button>
                     </div>
                 </form>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }

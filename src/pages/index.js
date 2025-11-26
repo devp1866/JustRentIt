@@ -38,6 +38,10 @@ export default function Home() {
             <Head>
                 <title>JustRentIt - Find Your Perfect Rental Home</title>
                 <meta name="description" content="Browse thousands of verified rental properties. Short-term and long-term rentals available with secure payments." />
+                <meta property="og:title" content="JustRentIt - Find Your Perfect Rental Home" />
+                <meta property="og:description" content="Browse thousands of verified rental properties. Short-term and long-term rentals available with secure payments." />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
             </Head>
             {/* Hero Section */}
             <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white">
@@ -84,6 +88,9 @@ export default function Home() {
                                     <option value="condo">Condo</option>
                                     <option value="studio">Studio</option>
                                     <option value="villa">Villa</option>
+                                    <option value="pg">PG</option>
+                                    <option value="hotel">Hotel</option>
+                                    <option value="resort">Resort</option>
                                 </select>
                                 <select
                                     value={rentalType}
@@ -152,7 +159,7 @@ export default function Home() {
                         </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {featuredProperties.map((property) => (
+                        {featuredProperties.slice(0, 6).map((property) => (
                             <PropertyCard key={property.id} property={property} />
                         ))}
                     </div>
