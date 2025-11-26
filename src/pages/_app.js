@@ -5,6 +5,7 @@ import '../styles/globals.css';
 import Layout from '../components/Layout';
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 export default function MyApp({ Component, pageProps }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -15,6 +16,7 @@ export default function MyApp({ Component, pageProps }) {
         <Layout>
           <Component {...pageProps} />
           <SpeedInsights />
+          <Analytics />
         </Layout>
       </QueryClientProvider>
     </SessionProvider>
