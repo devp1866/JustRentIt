@@ -56,13 +56,28 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: "Payment details missing" });
         }
 
-        let endDate;
         if (duration_days) {
             const startDateObj = new Date(start_date);
             startDateObj.setDate(startDateObj.getDate() + duration_days);
             endDate = format(startDateObj, "yyyy-MM-dd");
         } else {
             endDate = format(addMonths(new Date(start_date), duration_months), "yyyy-MM-dd");
+        }
+
+        // Check for overlapping bookings
+        const overlappingBooking = await Booking.findOne({
+            property_id,
+            status: { $in: ["confirmed", "active", "paid"] },
+            $or: [
+                {
+                    start_date: { $lte: endDate },
+                    end_date: { $gte: start_date }
+                }
+            ]
+        });
+
+        if (overlappingBooking) {
+            return res.status(400).json({ message: "Selected dates are already booked. Please choose different dates." });
         }
 
         const newBooking = new Booking({

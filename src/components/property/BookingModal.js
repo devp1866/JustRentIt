@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Loader2, CheckCircle, CreditCard } from "lucide-react";
-import { format } from "date-fns";
+import { format, addMonths, addDays } from "date-fns";
 import { isSameDay, parseISO } from 'date-fns';
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 
 // Simple Dialog/modal fallback. You can enhance this with a headless modal or popular UI kit.
 function SimpleModal({ open, onClose, children }) {
@@ -18,7 +20,7 @@ function SimpleModal({ open, onClose, children }) {
   );
 }
 
-export default function BookingModal({ property, user, onClose, bookedDates = [] }) {
+export default function BookingModal({ property, user, onClose }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [step, setStep] = useState("details");
@@ -29,6 +31,19 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
   const isShortTerm = property.rental_type === 'short_term';
   const price = isShortTerm ? (property.price_per_night || property.price_per_month / 30) : property.price_per_month;
   const baseTotal = Math.round(price * duration);
+
+  // Fetch booked dates
+  const { data: bookedData } = useQuery({
+    queryKey: ['booked-dates', property._id],
+    queryFn: async () => {
+      const res = await fetch(`/api/properties/${property._id}/booked-dates`);
+      if (!res.ok) throw new Error('Failed to fetch booked dates');
+      return res.json();
+    },
+    enabled: !!property._id,
+  });
+
+  const bookedRanges = bookedData?.bookings || [];
 
   let discountAmount = 0;
   let isOfferApplied = false;
@@ -66,6 +81,7 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
         setIsProcessing(false);
         setStep("success");
         queryClient.invalidateQueries({ queryKey: ["bookings"] });
+        queryClient.invalidateQueries({ queryKey: ["booked-dates", property._id] });
       }, 1500);
     },
     onError: (error) => {
@@ -94,17 +110,20 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
   const isDateRangeAvailable = (start, duration) => {
     if (!start) return true;
     const startDateObj = new Date(start);
-    const endDateObj = new Date(startDateObj);
+    let endDateObj;
 
     if (isShortTerm) {
-      endDateObj.setDate(endDateObj.getDate() + duration);
+      endDateObj = addDays(startDateObj, duration);
     } else {
-      endDateObj.setMonth(endDateObj.getMonth() + duration);
+      endDateObj = addMonths(startDateObj, duration);
     }
 
-    return !bookedDates.some(bookedDate =>
-      bookedDate >= startDateObj && bookedDate < endDateObj
-    );
+    // Check overlap with fetched booked ranges
+    return !bookedRanges.some(booking => {
+      const bookingStart = new Date(booking.start_date);
+      const bookingEnd = new Date(booking.end_date);
+      return (startDateObj < bookingEnd && endDateObj > bookingStart);
+    });
   };
 
   const handleBooking = () => {
@@ -228,15 +247,27 @@ export default function BookingModal({ property, user, onClose, bookedDates = []
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="start-date" className="font-medium block mb-1">Move-in Date</label>
-                <input
-                  id="start-date"
-                  type="date"
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                  min={format(new Date(), "yyyy-MM-dd")}
-                  className="w-full border p-2 rounded"
-                />
+                <label className="font-medium block mb-1">Move-in Date</label>
+                <div className="border rounded p-2 flex justify-center bg-white">
+                  <DayPicker
+                    mode="single"
+                    selected={startDate ? new Date(startDate) : undefined}
+                    onSelect={(date) => setStartDate(date ? format(date, "yyyy-MM-dd") : "")}
+                    disabled={[
+                      { before: new Date() },
+                      ...bookedRanges.map(range => ({
+                        from: new Date(range.start_date),
+                        to: new Date(range.end_date)
+                      }))
+                    ]}
+                    modifiersStyles={{
+                      disabled: { color: "gray", backgroundColor: "#f3f4f6", textDecoration: "line-through" }
+                    }}
+                    styles={{
+                      caption: { color: '#1e3a8a' }
+                    }}
+                  />
+                </div>
               </div>
               <div>
                 <label htmlFor="duration" className="font-medium block mb-1">
