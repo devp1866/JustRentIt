@@ -119,14 +119,46 @@ export default function EditProperty() {
 
     const handleImageUpload = async (e) => {
         const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        if (!formData.title) {
+            alert("Please enter a property title first before uploading images.");
+            return;
+        }
+
         setUploading(true);
-        // Mock upload: Replace with your API upload call
-        const imageUrls = files.map((file) => URL.createObjectURL(file));
-        setFormData((prev) => ({
-            ...prev,
-            images: [...prev.images, ...imageUrls],
-        }));
-        setUploading(false);
+        try {
+            const uploadPromises = files.map(async (file) => {
+                const data = new FormData();
+                data.append("file", file);
+                data.append("type", "property");
+                data.append("propertyName", formData.title);
+
+                const res = await fetch("/api/upload", {
+                    method: "POST",
+                    body: data,
+                });
+
+                if (!res.ok) {
+                    throw new Error("Failed to upload image");
+                }
+
+                const json = await res.json();
+                return json.url;
+            });
+
+            const uploadedUrls = await Promise.all(uploadPromises);
+
+            setFormData((prev) => ({
+                ...prev,
+                images: [...prev.images, ...uploadedUrls],
+            }));
+        } catch (error) {
+            console.error("Upload failed:", error);
+            alert("Failed to upload images. Please try again.");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const removeImage = (index) => {

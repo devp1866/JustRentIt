@@ -16,7 +16,12 @@ const BookingSchema = new mongoose.Schema({
   landlord_email: { type: String },
   razorpay_order_id: { type: String },
   razorpay_payment_id: { type: String },
-  razorpay_signature: { type: String }
+  razorpay_signature: { type: String },
+  // Cancellation details
+  cancellation_reason: { type: String },
+  cancelled_by: { type: String, enum: ["renter", "landlord"] },
+  refund_amount: { type: Number },
+  refund_status: { type: String, enum: ["pending", "processed", "none"] }
 }, { timestamps: true });
 
 // Prevent Mongoose OverwriteModelError

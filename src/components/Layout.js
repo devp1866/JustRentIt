@@ -117,7 +117,7 @@ export default function Layout({ children }) {
               ) : user ? (
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{user.full_name || user.email}</p>
+                    <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
                     <p className="text-xs text-gray-500 capitalize">{user.user_type || "renter"}</p>
                   </div>
                   <div className="relative" ref={profileMenuRef}>
@@ -189,7 +189,7 @@ export default function Layout({ children }) {
                 ) : user ? (
                   <div className="space-y-3">
                     <div className="px-4">
-                      <p className="text-sm font-medium text-gray-900">{user.full_name || user.email}</p>
+                      <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
                       <p className="text-xs text-gray-500 capitalize">{user.user_type || "renter"}</p>
                     </div>
                     <Link

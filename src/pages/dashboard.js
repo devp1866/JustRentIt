@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Loader2, Calendar as CalendarIcon, Building2 } from "lucide-react";
 import MyProperties from "../components/dashboard/MyProperties";
 import MyBookings from "../components/dashboard/MyBookings";
+import LandlordBookings from "../components/dashboard/LandlordBookings";
 import { useSession, signIn } from "next-auth/react";
 
 export default function Dashboard() {
@@ -21,7 +22,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (userType === "landlord" || userType === "both") {
-      setActiveTab("properties");
+      setActiveTab("received_bookings");
     } else if (user) {
       setActiveTab("bookings");
     }
@@ -59,21 +60,31 @@ export default function Dashboard() {
         </div>
 
         {/* Tabs Switcher */}
-        <div className="mb-8 flex gap-4">
+        <div className="mb-8 flex gap-4 overflow-x-auto pb-2">
           {(user.user_type === "landlord" || user.user_type === "both") && (
-            <button
-              className={`flex items-center gap-2 px-4 py-2 border rounded ${activeTab === "properties" ? "bg-blue-900 text-white" : "bg-white"
-                }`}
-              onClick={() => setActiveTab("properties")}
-            >
-              <Building2 className="w-4 h-4" />
-              My Properties
-            </button>
+            <>
+              <button
+                className={`flex items-center gap-2 px-4 py-2 border rounded whitespace-nowrap ${activeTab === "received_bookings" ? "bg-blue-900 text-white" : "bg-white"
+                  }`}
+                onClick={() => setActiveTab("received_bookings")}
+              >
+                <CalendarIcon className="w-4 h-4" />
+                Received Bookings
+              </button>
+              <button
+                className={`flex items-center gap-2 px-4 py-2 border rounded whitespace-nowrap ${activeTab === "properties" ? "bg-blue-900 text-white" : "bg-white"
+                  }`}
+                onClick={() => setActiveTab("properties")}
+              >
+                <Building2 className="w-4 h-4" />
+                My Properties
+              </button>
+            </>
           )}
 
           {(user.user_type === "renter" || user.user_type === "both") && (
             <button
-              className={`flex items-center gap-2 px-4 py-2 border rounded ${activeTab === "bookings" ? "bg-blue-900 text-white" : "bg-white"
+              className={`flex items-center gap-2 px-4 py-2 border rounded whitespace-nowrap ${activeTab === "bookings" ? "bg-blue-900 text-white" : "bg-white"
                 }`}
               onClick={() => setActiveTab("bookings")}
             >
@@ -84,6 +95,9 @@ export default function Dashboard() {
         </div>
 
         {/* Tab Contents */}
+        {(user.user_type === "landlord" || user.user_type === "both") && activeTab === "received_bookings" && (
+          <LandlordBookings />
+        )}
         {(user.user_type === "landlord" || user.user_type === "both") && activeTab === "properties" && (
           <MyProperties user={user} />
         )}

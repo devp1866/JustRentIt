@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const PropertySchema = new mongoose.Schema({
-  title: { type: String, required: true },
+  title: { type: String, required: true, unique: true },
   description: { type: String },
   property_type: { type: String, enum: ["apartment", "house", "condo", "studio", "villa", "pg", "hotel", "resort"], required: true },
   location: { type: String, required: true },

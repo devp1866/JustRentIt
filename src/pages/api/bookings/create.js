@@ -56,6 +56,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: "Payment details missing" });
         }
 
+        let endDate;
         if (duration_days) {
             const startDateObj = new Date(start_date);
             startDateObj.setDate(startDateObj.getDate() + duration_days);

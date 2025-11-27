@@ -1,26 +1,30 @@
-
-
 import React, { useState, useEffect } from "react";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, IndianRupee } from "lucide-react";
-import PropertyCard from "@/components/home/PropertyCard";
-
+import PropertyCard from "../components/property/PropertyCard";
+import Head from "next/head";
 
 export default function Properties() {
     const router = useRouter();
 
-    const searchCityDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('city') || "" : "";
     const propertyTypeDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('type') || "all" : "all";
     const rentalTypeDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('rental_type') || "all" : "all";
 
-    const [searchCity, setSearchCity] = useState(searchCityDefault);
+    const [searchCity, setSearchCity] = useState("");
     const [propertyType, setPropertyType] = useState(propertyTypeDefault);
     const [rentalType, setRentalType] = useState(rentalTypeDefault);
     const [priceRange, setPriceRange] = useState("all");
 
     const [showOffers, setShowOffers] = useState(false);
+
+    // Initialize searchCity from URL param
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const city = new URLSearchParams(window.location.search).get('city');
+            if (city) setSearchCity(city);
+        }
+    }, []);
 
     const { data: properties = [], isLoading } = useQuery({
         queryKey: ['properties'],

@@ -1,13 +1,10 @@
-// pages/index.js
-
 import React, { useState } from "react";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, IndianRupee, Home as HomeIcon, TrendingUp, CheckCircle, Search } from "lucide-react";
-import PropertyCard from "../components/home/PropertyCard";
-
+import PropertyCard from "../components/property/PropertyCard";
+import Head from "next/head";
 import Image from "next/image";
 
 export default function Home() {
@@ -23,7 +20,6 @@ export default function Home() {
         queryFn: async () =>
             fetch('/api/properties').then(res => res.json()),
     });
-
 
     const handleSearch = () => {
         const params = new URLSearchParams();

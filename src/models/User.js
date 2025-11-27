@@ -13,11 +13,16 @@ const UserSchema = new mongoose.Schema({
   city: { type: String },
   state: { type: String },
   country: { type: String },
-  govt_id: { type: String }, // Aadhar/PAN/Passport number
-  property_ownership_proof: { type: String }, // URL to uploaded file (optional)
+  govt_id: { type: String }, 
+  govt_id_image: { type: String }, 
+  property_ownership_proof: { type: String }, 
   // Renter specific
   preferred_city: { type: String },
-  budget_range: { type: String } // e.g. "10000-20000"
+  budget_range: { type: String }, 
+  // OTP Verification
+  otp_hash: { type: String },
+  otp_expiry: { type: Date },
+  otp_purpose: { type: String } 
 });
 
 // Prevent Mongoose OverwriteModelError

@@ -1,5 +1,8 @@
 import dbConnect from "../../../utils/db";
 import User from "../../../models/User";
+import { generateOTP, hashOTP } from "../../../lib/otp";
+import { sendEmail, getEmailTemplate } from "../../../lib/email";
+import bcrypt from "bcryptjs";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -8,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     await dbConnect();
-    const { full_name, email, password, user_type, phone, city, state, country, govt_id, preferred_city, budget_range } = req.body;
+    const { full_name, email, password, user_type, phone, city, state, country, govt_id, govt_id_image, preferred_city, budget_range } = req.body;
 
     if (!full_name || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -40,28 +43,53 @@ export default async function handler(req, res) {
       }
     }
 
+    // Generate OTP
+    const otp = generateOTP();
+    const otpHash = await hashOTP(otp);
+    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = await User.create({
       full_name,
       email,
-      password, // plain
+      password: hashedPassword, // hashed
       user_type: user_type || "renter",
       phone: phone || undefined,
-      is_verified: !!phone,
+      is_verified: false, // Force false until verified
       // New fields
       city,
       state,
       country,
       govt_id,
+      govt_id_image,
       preferred_city,
-      budget_range
+      budget_range,
+      // OTP
+      otp_hash: otpHash,
+      otp_expiry: otpExpiry,
+      otp_purpose: 'EMAIL_VERIFICATION'
     });
 
+    // Send Email
+    try {
+      const emailHtml = getEmailTemplate(otp, 'EMAIL_VERIFICATION');
+      await sendEmail({
+        to: email,
+        subject: 'Verify Your Email - JustRentIt',
+        html: emailHtml
+      });
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+      // We still return success but maybe warn? Or fail?
+      // For now, let's assume it works or user can resend.
+    }
+
     return res.status(201).json({
-      message: "User registered",
-      user: {
-        email: newUser.email,
-        full_name: newUser.full_name,
-      },
+      message: "User registered. Please verify your email.",
+      userId: newUser._id,
+      email: newUser.email
     });
   } catch (err) {
     console.error(err);

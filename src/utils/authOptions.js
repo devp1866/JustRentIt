@@ -1,6 +1,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "./db";
 import User from "../models/User";
+import bcrypt from "bcryptjs";
 
 export const authOptions = {
     providers: [
@@ -16,7 +17,20 @@ export const authOptions = {
                 if (!user) throw new Error("No user found");
                 if (user.is_active === false) throw new Error("Account is deactivated");
 
-                if (user.password !== credentials.password) throw new Error("Invalid password");
+                let isValid = false;
+                // Try bcrypt
+                try {
+                    isValid = await bcrypt.compare(credentials.password, user.password);
+                } catch (e) {
+                    // Ignore
+                }
+
+                // Fallback to plain text
+                if (!isValid && user.password === credentials.password) {
+                    isValid = true;
+                }
+
+                if (!isValid) throw new Error("Invalid password");
 
                 return {
                     id: user._id.toString(),
