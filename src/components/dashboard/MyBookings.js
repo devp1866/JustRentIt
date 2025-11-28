@@ -103,37 +103,37 @@ export default function MyBookings({ user }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-brand-dark">
           My Bookings ({filteredBookings.length})
         </h2>
         <input
           type="month"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm"
+          className="border border-brand-blue/20 rounded-xl px-4 py-2 text-sm bg-white text-brand-dark focus:ring-2 focus:ring-brand-blue/50 outline-none"
         />
       </div>
 
       {isLoading ? (
         <div className="space-y-4">
           {Array(3).fill(0).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl shadow-md p-6">
-              <div className="h-6 w-3/4 mb-4 bg-gray-200 animate-pulse rounded" />
-              <div className="h-4 w-1/2 mb-2 bg-gray-200 animate-pulse rounded" />
-              <div className="h-4 w-2/3 bg-gray-200 animate-pulse rounded" />
+            <div key={i} className="bg-white rounded-2xl shadow-md p-6 border border-brand-blue/10">
+              <div className="h-6 w-3/4 mb-4 bg-brand-cream/50 animate-pulse rounded" />
+              <div className="h-4 w-1/2 mb-2 bg-brand-cream/50 animate-pulse rounded" />
+              <div className="h-4 w-2/3 bg-brand-cream/50 animate-pulse rounded" />
             </div>
           ))}
         </div>
       ) : filteredBookings.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-md p-12 text-center">
-          <CalendarIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings found</h3>
-          <p className="text-gray-600 mb-6">
+        <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-brand-blue/10">
+          <CalendarIcon className="w-16 h-16 mx-auto mb-4 text-brand-dark/20" />
+          <h3 className="text-xl font-bold text-brand-dark mb-2">No bookings found</h3>
+          <p className="text-brand-dark/60 mb-6">
             {filterDate ? "Try changing the date filter" : "Browse properties and make your first booking"}
           </p>
           {!filterDate && (
             <Link href="/properties">
-              <button className="bg-blue-900 hover:bg-blue-800 text-white rounded px-4 py-2">
+              <button className="bg-brand-blue hover:bg-brand-blue/90 text-white rounded-xl px-6 py-3 font-bold shadow-lg shadow-brand-blue/20 transition-all hover:scale-105">
                 Browse Properties
               </button>
             </Link>
@@ -142,20 +142,20 @@ export default function MyBookings({ user }) {
       ) : (
         <div className="space-y-4">
           {filteredBookings.map((booking) => (
-            <div key={booking._id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
+            <div key={booking._id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all border border-brand-blue/10 group">
               <div className="flex flex-col md:flex-row">
                 {/* Property Image */}
-                <div className="md:w-48 h-48 md:h-auto relative">
+                <div className="md:w-48 h-48 md:h-auto relative overflow-hidden">
                   <div className="w-full h-full relative">
                     <Image
                       src={booking.property_image || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800"}
                       alt={booking.property_title}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   </div>
                   <div className="absolute top-2 left-2 z-10">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-white ${getStatusColor(booking.status)}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-white shadow-sm ${getStatusColor(booking.status)}`}>
                       {booking.status}
                     </span>
                   </div>
@@ -164,35 +164,35 @@ export default function MyBookings({ user }) {
                 <div className="flex-1 p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-xl font-bold text-gray-900">{booking.property_title}</h3>
+                      <h3 className="text-xl font-bold text-brand-dark">{booking.property_title}</h3>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-blue-900">₹{booking.total_amount}</p>
-                        <p className="text-xs text-gray-500">Total Paid</p>
+                        <p className="text-lg font-bold text-brand-blue">₹{booking.total_amount}</p>
+                        <p className="text-xs text-brand-dark/50">Total Paid</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                       <div className="flex items-start gap-3">
-                        <CalendarIcon className="w-5 h-5 text-blue-900 mt-0.5" />
+                        <CalendarIcon className="w-5 h-5 text-brand-blue mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Move-in</p>
-                          <p className="text-sm text-gray-600">{format(new Date(booking.start_date), "MMM d, yyyy")}</p>
+                          <p className="text-sm font-bold text-brand-dark">Move-in</p>
+                          <p className="text-sm text-brand-dark/70">{format(new Date(booking.start_date), "MMM d, yyyy")}</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CalendarIcon className="w-5 h-5 text-blue-900 mt-0.5" />
+                        <CalendarIcon className="w-5 h-5 text-brand-blue mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Move-out</p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm font-bold text-brand-dark">Move-out</p>
+                          <p className="text-sm text-brand-dark/70">
                             {booking.end_date ? format(new Date(booking.end_date), "MMM d, yyyy") : "N/A"}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
-                        <DollarSign className="w-5 h-5 text-blue-900 mt-0.5" />
+                        <DollarSign className="w-5 h-5 text-brand-blue mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Rate</p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm font-bold text-brand-dark">Rate</p>
+                          <p className="text-sm text-brand-dark/70">
                             {booking.duration_days
                               ? `${booking.duration_days} Nights`
                               : `${booking.duration_months} Months`}
@@ -200,33 +200,33 @@ export default function MyBookings({ user }) {
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-blue-900 mt-0.5" />
+                        <MapPin className="w-5 h-5 text-brand-blue mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">Landlord</p>
-                          <p className="text-sm text-gray-600">{booking.landlord_email}</p>
+                          <p className="text-sm font-bold text-brand-dark">Landlord</p>
+                          <p className="text-sm text-brand-dark/70">{booking.landlord_email}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {booking.status === "cancelled" && (
-                    <div className="mt-4 bg-red-50 p-3 rounded-lg border border-red-100 text-sm">
-                      <p className="font-semibold text-red-800 mb-1">Cancellation Details:</p>
+                    <div className="mt-4 bg-red-50 p-3 rounded-xl border border-red-100 text-sm">
+                      <p className="font-bold text-red-800 mb-1">Cancellation Details:</p>
                       <p className="text-red-700"><span className="font-medium">Reason:</span> {booking.cancellation_reason}</p>
                       <p className="text-red-700"><span className="font-medium">Refund Status:</span> {booking.refund_status} (₹{booking.refund_amount})</p>
                     </div>
                   )}
 
-                  <div className="mt-6 flex items-center justify-between border-t pt-4">
+                  <div className="mt-6 flex items-center justify-between border-t border-brand-blue/10 pt-4">
                     <div className="flex items-center gap-2">
                       {booking.payment_status === 'paid' ? (
-                        <span className="flex items-center text-green-600 text-sm font-medium">
-                          <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                        <span className="flex items-center text-brand-green text-sm font-bold">
+                          <span className="w-2 h-2 bg-brand-green rounded-full mr-2"></span>
                           Payment Successful
                         </span>
                       ) : (
-                        <span className="flex items-center text-yellow-600 text-sm font-medium">
-                          <span className="w-2 h-2 bg-yellow-600 rounded-full mr-2"></span>
+                        <span className="flex items-center text-brand-yellow text-sm font-bold">
+                          <span className="w-2 h-2 bg-brand-yellow rounded-full mr-2"></span>
                           Payment Pending
                         </span>
                       )}
@@ -235,13 +235,13 @@ export default function MyBookings({ user }) {
                       {booking.status === "confirmed" && (
                         <button
                           onClick={() => handleCancelClick(booking)}
-                          className="text-red-600 font-semibold hover:text-red-800 text-sm transition-colors"
+                          className="text-red-600 font-bold hover:text-red-800 text-sm transition-colors"
                         >
                           Cancel Booking
                         </button>
                       )}
                       <Link href={`/property-details/${booking.property_id}`}>
-                        <button className="text-blue-900 font-semibold hover:text-blue-700 text-sm transition-colors">
+                        <button className="text-brand-blue font-bold hover:text-brand-blue/80 text-sm transition-colors">
                           View Property Details →
                         </button>
                       </Link>
@@ -256,29 +256,29 @@ export default function MyBookings({ user }) {
 
       {/* Cancel Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Cancel Booking</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200 border border-brand-blue/10">
+            <h3 className="text-xl font-bold text-brand-dark mb-4">Cancel Booking</h3>
 
-            <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+            <div className="bg-brand-blue/5 p-4 rounded-xl mb-6 border border-brand-blue/10">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-blue-900 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-brand-blue mt-0.5" />
                 <div>
-                  <p className="font-semibold text-blue-900">Refund Estimate</p>
-                  <p className="text-blue-800 text-sm mt-1">
+                  <p className="font-bold text-brand-blue">Refund Estimate</p>
+                  <p className="text-brand-blue/80 text-sm mt-1">
                     Based on our cancellation policy, you are eligible for a refund of:
                   </p>
-                  <p className="text-2xl font-bold text-blue-900 mt-2">₹{refundEstimate}</p>
+                  <p className="text-2xl font-bold text-brand-blue mt-2">₹{refundEstimate}</p>
                 </div>
               </div>
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Cancellation <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-bold text-brand-dark mb-2">Reason for Cancellation <span className="text-red-500">*</span></label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none"
+                className="w-full px-4 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 outline-none h-24 resize-none bg-brand-cream/20"
                 placeholder="e.g., Change of plans..."
               />
             </div>
@@ -286,14 +286,14 @@ export default function MyBookings({ user }) {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCancelModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-3 border border-brand-blue/20 text-brand-dark/70 rounded-xl font-bold hover:bg-brand-cream transition-colors"
               >
                 Keep Booking
               </button>
               <button
                 onClick={handleConfirmCancel}
                 disabled={cancelMutation.isPending}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors disabled:opacity-50 shadow-lg shadow-red-600/20"
               >
                 {cancelMutation.isPending ? "Cancelling..." : "Confirm Cancel"}
               </button>

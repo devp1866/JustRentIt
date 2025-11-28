@@ -113,7 +113,7 @@ export default function PropertyDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-brand-cream py-8">
       <Head>
         <title>{property.title} | JustRentIt</title>
         <meta name="description" content={`Rent this ${property.property_type} in ${property.city}. ${property.description?.slice(0, 150)}...`} />
@@ -130,38 +130,38 @@ export default function PropertyDetails() {
             <div>
               <button
                 onClick={() => router.back()}
-                className="text-gray-500 hover:text-blue-900 mb-4 flex items-center text-sm font-medium"
+                className="text-brand-dark/50 hover:text-brand-blue mb-4 flex items-center text-sm font-medium transition-colors"
               >
                 ← Back to Properties
               </button>
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${property.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${property.status === 'available' ? 'bg-brand-green/10 text-brand-green' : 'bg-red-100 text-red-800'
                       }`}>
                       {property.status}
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wide">
+                    <span className="px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue text-xs font-bold uppercase tracking-wide">
                       {property.property_type}
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wide">
+                    <span className="px-3 py-1 rounded-full bg-brand-yellow/10 text-brand-yellow text-xs font-bold uppercase tracking-wide">
                       {property.rental_type === 'short_term' ? 'Short Term' : 'Long Term'}
                     </span>
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{property.title}</h1>
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="w-5 h-5 mr-2 text-blue-900" />
+                  <h1 className="text-3xl md:text-4xl font-bold text-brand-dark mb-2">{property.title}</h1>
+                  <div className="flex items-center text-brand-dark/70">
+                    <MapPin className="w-5 h-5 mr-2 text-brand-blue" />
                     <span className="text-lg">{property.location}, {property.city}</span>
                   </div>
                   {/* Price is shown in booking card, hiding here for cleaner layout on desktop */}
                   <div className="text-left md:text-right lg:hidden">
-                    <p className="text-3xl font-bold text-blue-900">
+                    <p className="text-3xl font-bold text-brand-blue">
                       {property.rental_type === 'short_term'
                         ? `₹${property.price_per_night}`
                         : `₹${property.price_per_month}`
                       }
                     </p>
-                    <p className="text-gray-500">
+                    <p className="text-brand-dark/50">
                       {property.rental_type === 'short_term' ? 'per night' : 'per month'}
                     </p>
                   </div>
@@ -170,7 +170,7 @@ export default function PropertyDetails() {
             </div>
 
             {/* Image Gallery */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-brand-blue/10">
               <div
                 className="relative h-[400px] md:h-[500px] w-full cursor-pointer group"
                 onClick={() => openGallery(0)}
@@ -191,14 +191,14 @@ export default function PropertyDetails() {
                     </div>
                   </>
                 ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                  <div className="w-full h-full bg-brand-cream flex items-center justify-center text-brand-dark/30">
                     <Home className="w-20 h-20" />
                   </div>
                 )}
               </div>
               {/* Thumbnail Grid (if more images existed) */}
               {property.images && property.images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2 p-2 bg-gray-100">
+                <div className="grid grid-cols-4 gap-2 p-2 bg-brand-cream/50">
                   {property.images.slice(1, 5).map((img, idx) => (
                     <div
                       key={idx}
@@ -218,38 +218,38 @@ export default function PropertyDetails() {
             </div>
 
             {/* Key Features */}
-            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Property Overview</h2>
+            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-brand-blue/10">
+              <h2 className="text-xl font-bold text-brand-dark mb-6">Property Overview</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-                  <Bed className="w-8 h-8 text-blue-900 mb-2" />
-                  <span className="font-bold text-lg text-gray-900">{property.bedrooms || 0}</span>
-                  <span className="text-sm text-gray-500">Bedrooms</span>
+                <div className="flex flex-col items-center p-4 bg-brand-cream rounded-xl">
+                  <Bed className="w-8 h-8 text-brand-blue mb-2" />
+                  <span className="font-bold text-lg text-brand-dark">{property.bedrooms || 0}</span>
+                  <span className="text-sm text-brand-dark/50">Bedrooms</span>
                 </div>
-                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-                  <Bath className="w-8 h-8 text-blue-900 mb-2" />
-                  <span className="font-bold text-lg text-gray-900">{property.bathrooms || 0}</span>
-                  <span className="text-sm text-gray-500">Bathrooms</span>
+                <div className="flex flex-col items-center p-4 bg-brand-cream rounded-xl">
+                  <Bath className="w-8 h-8 text-brand-blue mb-2" />
+                  <span className="font-bold text-lg text-brand-dark">{property.bathrooms || 0}</span>
+                  <span className="text-sm text-brand-dark/50">Bathrooms</span>
                 </div>
-                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-                  <Square className="w-8 h-8 text-blue-900 mb-2" />
-                  <span className="font-bold text-lg text-gray-900">{property.area_sqft || 0}</span>
-                  <span className="text-sm text-gray-500">Sq Ft</span>
+                <div className="flex flex-col items-center p-4 bg-brand-cream rounded-xl">
+                  <Square className="w-8 h-8 text-brand-blue mb-2" />
+                  <span className="font-bold text-lg text-brand-dark">{property.area_sqft || 0}</span>
+                  <span className="text-sm text-brand-dark/50">Sq Ft</span>
                 </div>
-                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-                  <Home className="w-8 h-8 text-blue-900 mb-2" />
-                  <span className="font-bold text-lg text-gray-900 capitalize">{property.property_type}</span>
-                  <span className="text-sm text-gray-500">Type</span>
+                <div className="flex flex-col items-center p-4 bg-brand-cream rounded-xl">
+                  <Home className="w-8 h-8 text-brand-blue mb-2" />
+                  <span className="font-bold text-lg text-brand-dark capitalize">{property.property_type}</span>
+                  <span className="text-sm text-brand-dark/50">Type</span>
                 </div>
               </div>
             </div>
 
             {/* Special Offer */}
             {property.offer?.enabled && (
-              <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-2xl shadow-sm p-6 md:p-8 text-white">
+              <div className="bg-gradient-to-r from-brand-blue to-brand-blue/80 rounded-2xl shadow-sm p-6 md:p-8 text-white">
                 <div className="flex items-start gap-4">
                   <div className="bg-white/20 p-3 rounded-full">
-                    <Star className="w-8 h-8 text-yellow-400 fill-current" />
+                    <Star className="w-8 h-8 text-brand-yellow fill-current" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold mb-2">Special Offer!</h2>
@@ -262,8 +262,8 @@ export default function PropertyDetails() {
             )}
 
             {/* Availability Calendar */}
-            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Availability</h2>
+            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-brand-blue/10">
+              <h2 className="text-xl font-bold text-brand-dark mb-6">Availability</h2>
               <div className="flex justify-center">
                 <DayPicker
                   mode="default"
@@ -275,58 +275,58 @@ export default function PropertyDetails() {
             </div>
 
             {/* Description */}
-            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Description</h2>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-brand-blue/10">
+              <h2 className="text-xl font-bold text-brand-dark mb-4">Description</h2>
+              <p className="text-brand-dark/70 leading-relaxed whitespace-pre-line">
                 {property.description || "No description available for this property."}
               </p>
             </div>
 
             {/* Amenities */}
-            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Amenities</h2>
+            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-brand-blue/10">
+              <h2 className="text-xl font-bold text-brand-dark mb-6">Amenities</h2>
               {property.amenities && property.amenities.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {property.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center text-gray-700">
-                      <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                    <div key={index} className="flex items-center text-brand-dark/80">
+                      <CheckCircle className="w-5 h-5 text-brand-green mr-3 flex-shrink-0" />
                       <span>{amenity}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 italic">No specific amenities listed.</p>
+                <p className="text-brand-dark/50 italic">No specific amenities listed.</p>
               )}
             </div>
           </div>
 
           {/* Right Column: Booking Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border border-brand-blue/10">
               <div className="mb-6">
-                <p className="text-sm text-gray-500 mb-1">
+                <p className="text-sm text-brand-dark/50 mb-1">
                   {property.rental_type === 'short_term' ? 'Nightly Price' : 'Monthly Rent'}
                 </p>
                 <div className="flex items-baseline">
-                  <span className="text-3xl font-bold text-blue-900">
+                  <span className="text-3xl font-bold text-brand-blue">
                     {property.rental_type === 'short_term'
                       ? `₹${property.price_per_night}`
                       : `₹${property.price_per_month}`
                     }
                   </span>
-                  <span className="text-gray-500 ml-1">
+                  <span className="text-brand-dark/50 ml-1">
                     {property.rental_type === 'short_term' ? '/night' : '/mo'}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-4 mb-6">
-                <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                  <Calendar className="w-4 h-4 mr-2 text-blue-900" />
+                <div className="flex items-center text-sm text-brand-dark/70 bg-brand-cream p-3 rounded-xl">
+                  <Calendar className="w-4 h-4 mr-2 text-brand-blue" />
                   <span>Available Now</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                  <Shield className="w-4 h-4 mr-2 text-blue-900" />
+                <div className="flex items-center text-sm text-brand-dark/70 bg-brand-cream p-3 rounded-xl">
+                  <Shield className="w-4 h-4 mr-2 text-brand-blue" />
                   <span>Verified Listing</span>
                 </div>
               </div>
@@ -341,14 +341,14 @@ export default function PropertyDetails() {
                 }}
                 disabled={property.status !== 'available'}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] ${property.status === 'available'
-                  ? 'bg-blue-900 text-white hover:bg-blue-800 shadow-lg hover:shadow-blue-900/20'
+                  ? 'bg-brand-blue text-white hover:bg-brand-blue/90 shadow-lg hover:shadow-brand-blue/20'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
               >
                 {property.status === 'available' ? 'Book Now' : 'Not Available'}
               </button>
 
-              <p className="text-xs text-center text-gray-400 mt-4">
+              <p className="text-xs text-center text-brand-dark/40 mt-4">
                 You won&apos;t be charged yet
               </p>
             </div>

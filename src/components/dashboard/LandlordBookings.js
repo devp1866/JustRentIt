@@ -60,19 +60,19 @@ export default function LandlordBookings() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-xl font-bold text-gray-900">Received Bookings</h2>
+            <h2 className="text-xl font-bold text-brand-dark">Received Bookings</h2>
 
             {bookings.length === 0 ? (
-                <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
+                <div className="bg-white p-8 rounded-2xl shadow-sm text-center text-brand-dark/50 border border-brand-blue/10">
                     No bookings found for your properties.
                 </div>
             ) : (
                 <div className="grid gap-6">
                     {bookings.map((booking) => (
-                        <div key={booking._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+                        <div key={booking._id} className="bg-white rounded-2xl shadow-sm border border-brand-blue/10 p-6 transition-all hover:shadow-md hover:border-brand-blue/20">
                             <div className="flex flex-col md:flex-row gap-6">
                                 {/* Property Image */}
-                                <div className="relative w-full md:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                                <div className="relative w-full md:w-48 h-32 rounded-xl overflow-hidden flex-shrink-0 bg-brand-cream/50">
                                     {booking.property_image ? (
                                         <Image
                                             src={booking.property_image}
@@ -81,7 +81,7 @@ export default function LandlordBookings() {
                                             className="object-cover"
                                         />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-gray-400">
+                                        <div className="flex items-center justify-center h-full text-brand-dark/20">
                                             <Building2 className="w-8 h-8" />
                                         </div>
                                     )}
@@ -91,12 +91,12 @@ export default function LandlordBookings() {
                                 <div className="flex-grow">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-900">{booking.property_title}</h3>
-                                            <p className="text-sm text-gray-500">Booking ID: {booking._id.slice(-6).toUpperCase()}</p>
+                                            <h3 className="text-lg font-bold text-brand-dark">{booking.property_title}</h3>
+                                            <p className="text-sm text-brand-dark/50">Booking ID: {booking._id.slice(-6).toUpperCase()}</p>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                                booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${booking.status === 'confirmed' ? 'bg-brand-green/10 text-brand-green' :
+                                            booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                                'bg-brand-yellow/10 text-brand-yellow'
                                             }`}>
                                             {booking.status}
                                         </span>
@@ -104,24 +104,24 @@ export default function LandlordBookings() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-sm">
                                         <div>
-                                            <p className="text-gray-500 mb-1">Renter Details</p>
-                                            <p className="font-medium text-gray-900">{booking.renter_name || "N/A"}</p>
-                                            <p className="text-gray-600">{booking.renter_email}</p>
+                                            <p className="text-brand-dark/50 mb-1">Renter Details</p>
+                                            <p className="font-bold text-brand-dark">{booking.renter_name || "N/A"}</p>
+                                            <p className="text-brand-dark/70">{booking.renter_email}</p>
                                         </div>
                                         <div>
-                                            <p className="text-gray-500 mb-1">Booking Period</p>
-                                            <p className="font-medium text-gray-900">
+                                            <p className="text-brand-dark/50 mb-1">Booking Period</p>
+                                            <p className="font-bold text-brand-dark">
                                                 {format(new Date(booking.start_date), "MMM d, yyyy")} - {booking.end_date ? format(new Date(booking.end_date), "MMM d, yyyy") : "N/A"}
                                             </p>
-                                            <p className="text-gray-600">
+                                            <p className="text-brand-dark/70">
                                                 {booking.duration_months ? `${booking.duration_months} Months` : `${booking.duration_days} Days`}
                                             </p>
                                         </div>
                                     </div>
 
                                     {booking.status === "cancelled" && (
-                                        <div className="mt-4 bg-red-50 p-3 rounded-lg border border-red-100 text-sm">
-                                            <p className="font-semibold text-red-800 mb-1">Cancellation Details:</p>
+                                        <div className="mt-4 bg-red-50 p-3 rounded-xl border border-red-100 text-sm">
+                                            <p className="font-bold text-red-800 mb-1">Cancellation Details:</p>
                                             <p className="text-red-700"><span className="font-medium">Reason:</span> {booking.cancellation_reason}</p>
                                             <p className="text-red-700"><span className="font-medium">Cancelled By:</span> {booking.cancelled_by === "landlord" ? "You" : "Renter"}</p>
                                             <p className="text-red-700"><span className="font-medium">Refund Status:</span> {booking.refund_status} (₹{booking.refund_amount})</p>
@@ -131,12 +131,12 @@ export default function LandlordBookings() {
 
                                 {/* Actions */}
                                 <div className="flex flex-col justify-center items-end min-w-[120px]">
-                                    <p className="text-xl font-bold text-blue-900 mb-4">₹{booking.total_amount}</p>
+                                    <p className="text-xl font-bold text-brand-blue mb-4">₹{booking.total_amount}</p>
 
                                     {booking.status === "confirmed" && (
                                         <button
                                             onClick={() => handleRevokeClick(booking)}
-                                            className="w-full px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-50 transition-colors flex items-center justify-center"
+                                            className="w-full px-4 py-2 bg-white border border-red-200 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors flex items-center justify-center"
                                         >
                                             <XCircle className="w-4 h-4 mr-2" />
                                             Revoke
@@ -151,19 +151,19 @@ export default function LandlordBookings() {
 
             {/* Revoke Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Revoke Booking</h3>
-                        <p className="text-gray-600 mb-4 text-sm">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200 border border-brand-blue/10">
+                        <h3 className="text-xl font-bold text-brand-dark mb-4">Revoke Booking</h3>
+                        <p className="text-brand-dark/70 mb-4 text-sm">
                             Are you sure you want to revoke this booking? This action will cancel the booking and initiate a full refund to the renter.
                         </p>
 
                         <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Revocation <span className="text-red-500">*</span></label>
+                            <label className="block text-sm font-bold text-brand-dark mb-2">Reason for Revocation <span className="text-red-500">*</span></label>
                             <textarea
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none h-24 resize-none"
+                                className="w-full px-4 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-red-500 outline-none h-24 resize-none bg-brand-cream/20"
                                 placeholder="e.g., Property maintenance required..."
                             />
                         </div>
@@ -171,14 +171,14 @@ export default function LandlordBookings() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                                className="flex-1 px-4 py-3 border border-brand-blue/20 text-brand-dark/70 rounded-xl font-bold hover:bg-brand-cream transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleConfirmRevoke}
                                 disabled={cancelMutation.isPending}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors disabled:opacity-50 shadow-lg shadow-red-600/20"
                             >
                                 {cancelMutation.isPending ? "Revoking..." : "Confirm Revoke"}
                             </button>

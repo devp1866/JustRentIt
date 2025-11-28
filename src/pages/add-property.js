@@ -211,65 +211,65 @@ export default function AddProperty() {
         return null;
     }
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-brand-cream py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">List Your Property</h1>
-                    <p className="text-gray-600">Fill in the details to list your property on JustRentIt</p>
+                    <h1 className="text-3xl font-bold text-brand-dark mb-2">List Your Property</h1>
+                    <p className="text-brand-dark/70">Fill in the details to list your property on JustRentIt</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Basic Information */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-brand-blue/10">
+                        <h2 className="text-xl font-bold text-brand-dark mb-6">Basic Information</h2>
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="title">Property Title *</label>
+                                <label htmlFor="title" className="block text-sm font-medium text-brand-dark mb-1">Property Title *</label>
                                 <input
                                     id="title"
                                     value={formData.title}
                                     onChange={e => setFormData({ ...formData, title: e.target.value })}
                                     placeholder="e.g., Modern 2BR Apartment in Downtown"
-                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="description">Description</label>
+                                <label htmlFor="description" className="block text-sm font-medium text-brand-dark mb-1">Description</label>
                                 <textarea
                                     id="description"
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="Describe your property..."
                                     rows={4}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all resize-none bg-brand-cream/20 text-brand-dark"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="rental_type">Rental Type *</label>
+                                <label htmlFor="rental_type" className="block text-sm font-medium text-brand-dark mb-1">Rental Type *</label>
                                 <select
                                     id="rental_type"
                                     value={formData.rental_type}
                                     onChange={e => setFormData({ ...formData, rental_type: e.target.value })}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                 >
                                     <option value="long_term">Long Term (Monthly)</option>
                                     <option value="short_term">Short Term (Daily/Weekly)</option>
                                 </select>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-brand-dark/50 mt-1">
                                     Long-term rentals are typically for 6+ months. Short-term are for holidays or temporary stays.
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label htmlFor="property_type">Property Type *</label>
+                                    <label htmlFor="property_type" className="block text-sm font-medium text-brand-dark mb-1">Property Type *</label>
                                     <select
                                         value={formData.property_type}
                                         onChange={e => setFormData({ ...formData, property_type: e.target.value })}
-                                        className="mt-1 w-full border px-3 py-2 rounded"
+                                        className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     >
                                         <option value="apartment">Apartment</option>
                                         <option value="house">House</option>
@@ -284,12 +284,12 @@ export default function AddProperty() {
 
                                 {!['hotel', 'resort'].includes(formData.property_type) && (
                                     <div>
-                                        <label htmlFor="furnishing_status">Furnishing Status *</label>
+                                        <label htmlFor="furnishing_status" className="block text-sm font-medium text-brand-dark mb-1">Furnishing Status *</label>
                                         <select
                                             id="furnishing_status"
                                             value={formData.furnishing_status}
                                             onChange={e => setFormData({ ...formData, furnishing_status: e.target.value })}
-                                            className="mt-1 w-full border px-3 py-2 rounded"
+                                            className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                         >
                                             <option value="unfurnished">Unfurnished</option>
                                             <option value="semi-furnished">Semi-Furnished</option>
@@ -301,27 +301,27 @@ export default function AddProperty() {
                                 <div>
                                     {formData.rental_type === 'short_term' ? (
                                         <>
-                                            <label htmlFor="price_night">Nightly Price (₹) *</label>
+                                            <label htmlFor="price_night" className="block text-sm font-medium text-brand-dark mb-1">Nightly Price (₹) *</label>
                                             <input
                                                 id="price_night"
                                                 type="number"
                                                 min="0"
                                                 value={formData.price_per_night}
                                                 onChange={e => setFormData({ ...formData, price_per_night: parseFloat(e.target.value) })}
-                                                className="mt-1 w-full border px-3 py-2 rounded"
+                                                className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                                 required
                                             />
                                         </>
                                     ) : (
                                         <>
-                                            <label htmlFor="price">Monthly Rent (₹) *</label>
+                                            <label htmlFor="price" className="block text-sm font-medium text-brand-dark mb-1">Monthly Rent (₹) *</label>
                                             <input
                                                 id="price"
                                                 type="number"
                                                 min="0"
                                                 value={formData.price_per_month}
                                                 onChange={e => setFormData({ ...formData, price_per_month: parseFloat(e.target.value) })}
-                                                className="mt-1 w-full border px-3 py-2 rounded"
+                                                className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                                 required
                                             />
                                         </>
@@ -330,25 +330,25 @@ export default function AddProperty() {
                             </div>
 
                             <div>
-                                <label htmlFor="location">Location (Address) *</label>
+                                <label htmlFor="location" className="block text-sm font-medium text-brand-dark mb-1">Location (Address) *</label>
                                 <input
                                     id="location"
                                     value={formData.location}
                                     onChange={e => setFormData({ ...formData, location: e.target.value })}
                                     placeholder="123 Main St, Apt 4B"
-                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="city">City *</label>
+                                <label htmlFor="city" className="block text-sm font-medium text-brand-dark mb-1">City *</label>
                                 <input
                                     id="city"
                                     value={formData.city}
                                     onChange={e => setFormData({ ...formData, city: e.target.value })}
                                     placeholder="New York"
-                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     required
                                 />
                             </div>
@@ -356,24 +356,24 @@ export default function AddProperty() {
                     </div>
 
                     {/* Property Details */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Details</h2>
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-brand-blue/10">
+                        <h2 className="text-xl font-bold text-brand-dark mb-6">Property Details</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {formData.property_type !== 'studio' && (
                                 <div>
-                                    <label htmlFor="bedrooms">Bedrooms</label>
+                                    <label htmlFor="bedrooms" className="block text-sm font-medium text-brand-dark mb-1">Bedrooms</label>
                                     <input
                                         id="bedrooms"
                                         type="number"
                                         min="0"
                                         value={formData.bedrooms}
                                         onChange={e => setFormData({ ...formData, bedrooms: parseInt(e.target.value) })}
-                                        className="mt-1 w-full border px-3 py-2 rounded"
+                                        className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     />
                                 </div>
                             )}
                             <div>
-                                <label htmlFor="bathrooms">Bathrooms</label>
+                                <label htmlFor="bathrooms" className="block text-sm font-medium text-brand-dark mb-1">Bathrooms</label>
                                 <input
                                     id="bathrooms"
                                     type="number"
@@ -381,46 +381,46 @@ export default function AddProperty() {
                                     step="0.5"
                                     value={formData.bathrooms}
                                     onChange={e => setFormData({ ...formData, bathrooms: parseFloat(e.target.value) })}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="area">Area (sq ft)</label>
+                                <label htmlFor="area" className="block text-sm font-medium text-brand-dark mb-1">Area (sq ft)</label>
                                 <input
                                     id="area"
                                     type="number"
                                     min="0"
                                     value={formData.area_sqft}
                                     onChange={e => setFormData({ ...formData, area_sqft: parseInt(e.target.value) })}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Amenities */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Amenities</h2>
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-brand-blue/10">
+                        <h2 className="text-xl font-bold text-brand-dark mb-6">Amenities</h2>
                         <div className="flex gap-2 mb-4">
                             <input
                                 value={amenityInput}
                                 onChange={e => setAmenityInput(e.target.value)}
                                 placeholder="Add amenity (e.g., Parking, Pool)"
                                 onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
-                                className="border px-3 py-2 rounded w-full"
+                                className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                             />
-                            <button type="button" onClick={addAmenity} className="border rounded bg-white px-3 ">
-                                <PlusCircle className="w-4 h-4" />
+                            <button type="button" onClick={addAmenity} className="border border-brand-blue/20 rounded-xl bg-white px-4 hover:bg-brand-cream transition-colors">
+                                <PlusCircle className="w-5 h-5 text-brand-blue" />
                             </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {formData.amenities.map((amenity, idx) => (
-                                <span key={idx} className="bg-gray-200 px-3 py-1 rounded flex items-center">
+                                <span key={idx} className="bg-brand-blue/10 text-brand-blue px-3 py-1 rounded-full flex items-center font-medium text-sm">
                                     {amenity}
                                     <button
                                         type="button"
                                         onClick={() => removeAmenity(idx)}
-                                        className="ml-2 hover:text-red-600"
+                                        className="ml-2 hover:text-red-600 transition-colors"
                                     >
                                         <X className="w-3 h-3" />
                                     </button>
@@ -430,10 +430,10 @@ export default function AddProperty() {
                     </div>
 
                     {/* Images */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Images</h2>
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-brand-blue/10">
+                        <h2 className="text-xl font-bold text-brand-dark mb-6">Property Images</h2>
                         <div className="space-y-4">
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors">
+                            <div className="border-2 border-dashed border-brand-blue/20 rounded-xl p-8 text-center hover:border-brand-blue/50 transition-colors bg-brand-cream/10">
                                 <input
                                     type="file"
                                     multiple
@@ -445,13 +445,13 @@ export default function AddProperty() {
                                 />
                                 <label htmlFor="image-upload" className="cursor-pointer">
                                     {uploading
-                                        ? <Loader2 className="w-12 h-12 mx-auto mb-4 text-blue-900 animate-spin" />
-                                        : <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                                        ? <Loader2 className="w-12 h-12 mx-auto mb-4 text-brand-blue animate-spin" />
+                                        : <Upload className="w-12 h-12 mx-auto mb-4 text-brand-blue/50" />
                                     }
-                                    <p className="text-gray-600 mb-2">
+                                    <p className="text-brand-dark mb-2 font-medium">
                                         {uploading ? "Uploading..." : "Click to upload images"}
                                     </p>
-                                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
+                                    <p className="text-sm text-brand-dark/50">PNG, JPG up to 10MB each</p>
                                 </label>
                             </div>
                             {formData.images.length > 0 && (
@@ -462,12 +462,12 @@ export default function AddProperty() {
                                                 src={img}
                                                 alt="Property preview"
                                                 fill
-                                                className="object-cover rounded-lg"
+                                                className="object-cover rounded-xl"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => removeImage(idx)}
-                                                className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                                className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -480,8 +480,8 @@ export default function AddProperty() {
 
 
                     {/* Governance Checklist */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Governance & Safety</h2>
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-brand-blue/10">
+                        <h2 className="text-xl font-bold text-brand-dark mb-6">Governance & Safety</h2>
                         <div className="space-y-3">
                             <div className="flex items-start">
                                 <input
@@ -495,13 +495,13 @@ export default function AddProperty() {
                                             governance: checked ? new Array(9).fill(true) : new Array(9).fill(false)
                                         }));
                                     }}
-                                    className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                                    className="mt-1 h-4 w-4 text-brand-blue rounded border-brand-blue/30 focus:ring-brand-blue"
                                 />
-                                <label htmlFor="agree_all" className="ml-3 text-sm font-bold text-gray-900">
+                                <label htmlFor="agree_all" className="ml-3 text-sm font-bold text-brand-dark">
                                     I agree to all JustRentIt governance, safety, and legal policies.
                                 </label>
                             </div>
-                            <hr className="my-2" />
+                            <hr className="my-2 border-brand-blue/10" />
                             {[
                                 "I am the legal owner/authorized representative of this property.",
                                 "I confirm all listing details are true and accurate.",
@@ -523,9 +523,9 @@ export default function AddProperty() {
                                             newGov[idx] = e.target.checked;
                                             setFormData(prev => ({ ...prev, governance: newGov }));
                                         }}
-                                        className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                                        className="mt-1 h-4 w-4 text-brand-blue rounded border-brand-blue/30 focus:ring-brand-blue"
                                     />
-                                    <label htmlFor={`rule_${idx}`} className="ml-3 text-sm text-gray-600">
+                                    <label htmlFor={`rule_${idx}`} className="ml-3 text-sm text-brand-dark/70">
                                         {rule}
                                     </label>
                                 </div>
@@ -538,13 +538,13 @@ export default function AddProperty() {
                         <button
                             type="button"
                             onClick={() => router.push("/dashboard")}
-                            className="flex-1 border rounded py-3 bg-white"
+                            className="flex-1 border border-brand-blue/20 rounded-xl py-3 bg-white text-brand-dark font-medium hover:bg-brand-cream transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 bg-blue-900 hover:bg-blue-800 h-12 text-white font-semibold rounded"
+                            className="flex-1 bg-brand-blue hover:bg-brand-blue/90 h-12 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.01]"
                             disabled={createPropertyMutation.isPending}
                         >
                             {createPropertyMutation.isPending ? (

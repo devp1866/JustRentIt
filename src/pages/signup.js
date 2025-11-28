@@ -143,9 +143,9 @@ export default function Signup() {
   };
 
   return (
-    <div className="h-screen overflow-hidden flex bg-white">
+    <div className="h-screen overflow-hidden flex bg-brand-cream">
       {/* Left Side - Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-brand-dark">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-center items-center p-12 text-white z-10 text-center">
           <h2 className="text-4xl font-bold mb-4">Join Our Community</h2>
@@ -156,13 +156,13 @@ export default function Signup() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 sm:p-12 lg:p-16 bg-gray-50 overflow-y-auto h-screen">
-        <div className="w-full max-w-lg space-y-8 bg-white p-8 rounded-2xl shadow-xl my-auto">
+      <div className="flex-1 flex items-center justify-center p-8 sm:p-12 lg:p-16 bg-brand-cream overflow-y-auto h-screen">
+        <div className="w-full max-w-lg space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-brand-blue/10 my-auto">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-brand-dark">
               {step === 1 ? "Create Account" : "Verify Email"}
             </h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-brand-dark/70">
               {step === 1 ? "Get started with JustRentIt today" : `Enter the code sent to ${formData.email}`}
             </p>
           </div>
@@ -178,10 +178,10 @@ export default function Signup() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <label className="block text-sm font-medium text-brand-dark mb-1">Full Name</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400" />
+                        <User className="h-5 w-5 text-brand-blue" />
                       </div>
                       <input
                         type="text"
@@ -190,15 +190,15 @@ export default function Signup() {
                         value={formData.full_name}
                         onChange={handleChange}
                         required
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all outline-none"
+                        className="block w-full pl-10 pr-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent transition-all outline-none bg-brand-cream/20 text-brand-dark"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <label className="block text-sm font-medium text-brand-dark mb-1">Phone Number</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Phone className="h-5 w-5 text-gray-400" />
+                        <Phone className="h-5 w-5 text-brand-blue" />
                       </div>
                       <input
                         type="tel"
@@ -208,17 +208,17 @@ export default function Signup() {
                         onChange={handleChange}
                         required
                         pattern="[0-9]{10}"
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all outline-none"
+                        className="block w-full pl-10 pr-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent transition-all outline-none bg-brand-cream/20 text-brand-dark"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <label className="block text-sm font-medium text-brand-dark mb-1">Email Address</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
+                      <Mail className="h-5 w-5 text-brand-blue" />
                     </div>
                     <input
                       type="email"
@@ -227,16 +227,16 @@ export default function Signup() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all outline-none"
+                      className="block w-full pl-10 pr-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent transition-all outline-none bg-brand-cream/20 text-brand-dark"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-brand-dark mb-1">Password</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
+                      <Lock className="h-5 w-5 text-brand-blue" />
                     </div>
                     <input
                       type="password"
@@ -246,23 +246,23 @@ export default function Signup() {
                       onChange={handleChange}
                       required
                       minLength={8}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent transition-all outline-none"
+                      className="block w-full pl-10 pr-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent transition-all outline-none bg-brand-cream/20 text-brand-dark"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
+                  <p className="text-xs text-brand-dark/50 mt-1">Must be at least 8 characters</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">I want to:</label>
+                  <label className="block text-sm font-medium text-brand-dark mb-2">I want to:</label>
                   <div className="grid grid-cols-3 gap-3">
                     {['renter', 'landlord', 'both'].map((type) => (
                       <button
                         key={type}
                         type="button"
                         onClick={() => setFormData({ ...formData, user_type: type })}
-                        className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${formData.user_type === type
-                          ? 'bg-blue-900 text-white border-blue-900 ring-2 ring-blue-200'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        className={`py-2 px-3 rounded-xl border text-sm font-bold transition-all ${formData.user_type === type
+                          ? 'bg-brand-blue text-white border-brand-blue ring-2 ring-brand-blue/20 shadow-md'
+                          : 'bg-white text-brand-dark border-brand-blue/20 hover:bg-brand-cream/50'
                           }`}
                       >
                         {type === 'renter' && 'Rent'}
@@ -275,9 +275,9 @@ export default function Signup() {
 
                 {/* Landlord Specific Fields */}
                 {(formData.user_type === "landlord" || formData.user_type === "both") && (
-                  <div className="space-y-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2">
-                    <h3 className="font-semibold text-gray-900 flex items-center">
-                      <Building className="w-4 h-4 mr-2 text-blue-900" />
+                  <div className="space-y-4 pt-4 border-t border-brand-blue/10 animate-in fade-in slide-in-from-top-2">
+                    <h3 className="font-bold text-brand-dark flex items-center">
+                      <Building className="w-4 h-4 mr-2 text-brand-blue" />
                       Landlord Details
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -288,7 +288,7 @@ export default function Signup() {
                           placeholder="City"
                           value={formData.city || ""}
                           onChange={handleChange}
-                          className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
+                          className="block w-full px-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none bg-brand-cream/20 text-brand-dark"
                         />
                       </div>
                       <div className="relative">
@@ -298,7 +298,7 @@ export default function Signup() {
                           placeholder="State"
                           value={formData.state || ""}
                           onChange={handleChange}
-                          className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
+                          className="block w-full px-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none bg-brand-cream/20 text-brand-dark"
                         />
                       </div>
                     </div>
@@ -309,13 +309,13 @@ export default function Signup() {
                         placeholder="Country"
                         value={formData.country || ""}
                         onChange={handleChange}
-                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
+                        className="block w-full px-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none bg-brand-cream/20 text-brand-dark"
                       />
                     </div>
                     <div>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <FileText className="h-5 w-5 text-gray-400" />
+                          <FileText className="h-5 w-5 text-brand-blue" />
                         </div>
                         <input
                           type="text"
@@ -323,26 +323,26 @@ export default function Signup() {
                           placeholder="Govt ID (12 digits)"
                           value={formData.govt_id || ""}
                           onChange={handleChange}
-                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
+                          className="block w-full pl-10 pr-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none bg-brand-cream/20 text-brand-dark"
                         />
                       </div>
-                      <p className="text-xs text-amber-600 mt-1 ml-1">
+                      <p className="text-xs text-brand-yellow/80 mt-1 ml-1 font-medium">
                         Required for verification. Cannot be changed later.
                       </p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Govt ID Image</label>
+                      <label className="block text-sm font-medium text-brand-dark mb-1">Govt ID Image</label>
                       <div className="relative">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleGovtIdUpload}
                           disabled={uploadingId}
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="block w-full text-sm text-brand-dark/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-blue/10 file:text-brand-blue hover:file:bg-brand-blue/20 cursor-pointer"
                         />
-                        {uploadingId && <Loader2 className="w-4 h-4 animate-spin absolute right-2 top-3 text-blue-900" />}
+                        {uploadingId && <Loader2 className="w-4 h-4 animate-spin absolute right-2 top-3 text-brand-blue" />}
                         {formData.govt_id_image && !uploadingId && (
-                          <span className="text-xs text-green-600 absolute right-2 top-3 flex items-center">
+                          <span className="text-xs text-brand-green absolute right-2 top-3 flex items-center font-bold">
                             <CheckCircle2 className="w-3 h-3 mr-1" /> Uploaded
                           </span>
                         )}
@@ -353,9 +353,9 @@ export default function Signup() {
 
                 {/* Renter Specific Fields */}
                 {(formData.user_type === "renter" || formData.user_type === "both") && (
-                  <div className="space-y-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2">
-                    <h3 className="font-semibold text-gray-900 flex items-center">
-                      <MapPin className="w-4 h-4 mr-2 text-blue-900" />
+                  <div className="space-y-4 pt-4 border-t border-brand-blue/10 animate-in fade-in slide-in-from-top-2">
+                    <h3 className="font-bold text-brand-dark flex items-center">
+                      <MapPin className="w-4 h-4 mr-2 text-brand-blue" />
                       Renter Preferences
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -365,7 +365,7 @@ export default function Signup() {
                         placeholder="Preferred City"
                         value={formData.preferred_city || ""}
                         onChange={handleChange}
-                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
+                        className="block w-full px-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none bg-brand-cream/20 text-brand-dark"
                       />
                       <input
                         type="text"
@@ -373,7 +373,7 @@ export default function Signup() {
                         placeholder="Budget (e.g. 10k-20k)"
                         value={formData.budget_range || ""}
                         onChange={handleChange}
-                        className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
+                        className="block w-full px-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none bg-brand-cream/20 text-brand-dark"
                       />
                     </div>
                   </div>
@@ -383,7 +383,7 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-brand-blue hover:bg-brand-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue transition-all disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
               >
                 {loading ? (
                   <>
@@ -398,9 +398,9 @@ export default function Signup() {
                 )}
               </button>
 
-              <p className="text-center text-sm text-gray-600">
+              <p className="text-center text-sm text-brand-dark/70">
                 Already have an account?{" "}
-                <Link href="/login" className="font-bold text-blue-900 hover:text-blue-800 transition-colors">
+                <Link href="/login" className="font-bold text-brand-blue hover:text-brand-dark transition-colors">
                   Sign In
                 </Link>
               </p>
@@ -420,13 +420,13 @@ export default function Signup() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
+                <label className="block text-sm font-medium text-brand-dark mb-1">Verification Code</label>
                 <input
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="Enter 6-digit code"
-                  className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none text-center text-2xl tracking-widest font-mono"
+                  className="block w-full px-3 py-3 border border-brand-blue/20 rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none text-center text-2xl tracking-widest font-mono bg-brand-cream/20 text-brand-dark"
                   maxLength={6}
                   required
                 />
@@ -435,7 +435,7 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-brand-blue hover:bg-brand-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue transition-all disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
               >
                 {loading ? (
                   <>
@@ -450,7 +450,7 @@ export default function Signup() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="w-full text-sm text-gray-500 hover:text-gray-700"
+                className="w-full text-sm text-brand-dark/50 hover:text-brand-dark transition-colors"
               >
                 Back to Signup
               </button>

@@ -76,23 +76,23 @@ export default function Layout({ children }) {
       </Head>
       <style>{`
         :root {
-          --primary: #1e3a8a;
-          --primary-dark: #1e40af;
-          --accent: #f59e0b;
+          --primary: #2563EB;
+          --primary-dark: #1d4ed8;
+          --accent: #F59E0B;
           --accent-dark: #d97706;
         }
       `}</style>
 
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <header className="bg-brand-cream/90 backdrop-blur-md border-b border-brand-blue/20 sticky top-0 z-50 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg flex items-center justify-center transform group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-brand-blue to-brand-blue/80 rounded-xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">JustRentIt</span>
+              <span className="text-xl font-bold text-brand-dark tracking-tight">JustRentIt</span>
             </Link>
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
@@ -100,9 +100,9 @@ export default function Layout({ children }) {
                 <Link
                   key={item.title}
                   href={item.url}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isActive(item.url)
-                    ? "bg-blue-50 text-blue-900 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${isActive(item.url)
+                    ? "bg-brand-blue text-white font-medium shadow-md transform scale-105"
+                    : "text-brand-dark/70 hover:bg-brand-blue/10 hover:text-brand-dark"
                     }`}
                 >
                   <item.icon className="w-4 h-4" />
@@ -137,6 +137,13 @@ export default function Layout({ children }) {
                         >
                           Profile
                         </Link>
+                        <Link
+                          href="/help-center"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setProfileMenuOpen(false)}
+                        >
+                          Help Center
+                        </Link>
                         <button
                           onClick={() => { setProfileMenuOpen(false); signOut(); }}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -150,7 +157,7 @@ export default function Layout({ children }) {
               ) : (
                 <button
                   onClick={() => signIn()}
-                  className="bg-blue-900 hover:bg-blue-800 text-white rounded px-4 py-2"
+                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-brand-dark font-semibold rounded-full px-6 py-2 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   Sign In
                 </button>
@@ -200,6 +207,14 @@ export default function Layout({ children }) {
                       <User className="w-5 h-5" />
                       Profile
                     </Link>
+                    <Link
+                      href="/help-center"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    >
+                      <User className="w-5 h-5" />
+                      Help Center
+                    </Link>
                     <button
                       onClick={() => { setMobileMenuOpen(false); signOut(); }}
                       className="w-full border rounded px-4 py-2 flex gap-2 items-center justify-center"
@@ -229,17 +244,17 @@ export default function Layout({ children }) {
 
       {/* Footer */}
       {!isAuthPage && (
-        <footer className="bg-white border-t border-gray-200 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <footer className="bg-brand-blue/10 border-t border-brand-blue/20 mt-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
               <div className="col-span-1">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-blue-700 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-brand-blue to-brand-blue/80 rounded-xl flex items-center justify-center shadow-lg">
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
-                  <span className="text-xl font-bold text-gray-900">JustRentIt</span>
+                  <span className="text-xl font-bold text-brand-dark">JustRentIt</span>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-brand-dark/70">
                   Your trusted platform for finding and listing rental properties. Simple, secure, and reliable.
                 </p>
               </div>
@@ -247,14 +262,14 @@ export default function Layout({ children }) {
               {/* Role-based Sections */}
               {(!user || user.user_type === 'renter' || user.user_type === 'both') && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-4">For Renters</h3>
-                  <ul className="space-y-2 text-sm text-gray-600">
+                  <h3 className="font-semibold text-brand-dark mb-4">For Renters</h3>
+                  <ul className="space-y-2 text-sm text-brand-dark/70">
                     <li>
-                      <Link href="/properties" className="hover:text-blue-900 transition-colors">Browse Properties</Link>
+                      <Link href="/properties" className="hover:text-brand-blue transition-colors">Browse Properties</Link>
                     </li>
                     {user && (
                       <li>
-                        <Link href="/dashboard" className="hover:text-blue-900 transition-colors">My Bookings</Link>
+                        <Link href="/dashboard" className="hover:text-brand-blue transition-colors">My Bookings</Link>
                       </li>
                     )}
                   </ul>
@@ -263,14 +278,14 @@ export default function Layout({ children }) {
 
               {(!user || user.user_type === 'landlord' || user.user_type === 'both') && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-4">For Landlords</h3>
-                  <ul className="space-y-2 text-sm text-gray-600">
+                  <h3 className="font-semibold text-brand-dark mb-4">For Landlords</h3>
+                  <ul className="space-y-2 text-sm text-brand-dark/70">
                     <li>
-                      <Link href="/add-property" className="hover:text-blue-900 transition-colors">List Property</Link>
+                      <Link href="/add-property" className="hover:text-brand-blue transition-colors">List Property</Link>
                     </li>
                     {user && (
                       <li>
-                        <Link href="/dashboard" className="hover:text-blue-900 transition-colors">Manage Listings</Link>
+                        <Link href="/dashboard" className="hover:text-brand-blue transition-colors">Manage Listings</Link>
                       </li>
                     )}
                   </ul>
@@ -278,30 +293,34 @@ export default function Layout({ children }) {
               )}
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <h3 className="font-semibold text-brand-dark mb-4">Company</h3>
+                <ul className="space-y-2 text-sm text-brand-dark/70">
                   <li>
-                    <Link href="/about" className="hover:text-blue-900 transition-colors">About Us</Link>
+                    <Link href="/about" className="hover:text-brand-blue transition-colors">About Us</Link>
                   </li>
                   <li>
-                    <Link href="/contact" className="hover:text-blue-900 transition-colors">Contact Us</Link>
+                    <Link href="/contact" className="hover:text-brand-blue transition-colors">Contact Us</Link>
                   </li>
                   <li>
-                    <Link href="/terms" className="hover:text-blue-900 transition-colors">Terms of Service</Link>
+                    <Link href="/terms" className="hover:text-brand-blue transition-colors">Terms of Service</Link>
                   </li>
                   <li>
-                    <Link href="/privacy" className="hover:text-blue-900 transition-colors">Privacy Policy</Link>
+                    <Link href="/privacy" className="hover:text-brand-blue transition-colors">Privacy Policy</Link>
+                  </li>
+                  <li>
+                    <Link href="/help-center" className="hover:text-brand-blue transition-colors">Help Center</Link>
                   </li>
                 </ul>
               </div>
             </div>
-            <div className="pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
+            <div className="pt-8 border-t border-brand-blue/20 text-center text-sm text-brand-dark/60">
               © 2025 JustRentIt. All rights reserved.
             </div>
           </div>
         </footer>
       )}
-    </div>
+
+    </div >
   );
 }
 

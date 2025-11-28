@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, IndianRupee, Home as HomeIcon, TrendingUp, CheckCircle, Search } from "lucide-react";
+import { MapPin, IndianRupee, Home as HomeIcon, TrendingUp, CheckCircle, Search, ArrowRight, Shield, Star, Users } from "lucide-react";
 import PropertyCard from "../components/property/PropertyCard";
 import Head from "next/head";
 import Image from "next/image";
@@ -30,139 +30,247 @@ export default function Home() {
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-brand-cream font-sans selection:bg-brand-blue selection:text-white">
             <Head>
-                <title>JustRentIt - Find Your Perfect Rental Home</title>
-                <meta name="description" content="Browse thousands of verified rental properties. Short-term and long-term rentals available with secure payments." />
-                <meta property="og:title" content="JustRentIt - Find Your Perfect Rental Home" />
-                <meta property="og:description" content="Browse thousands of verified rental properties. Short-term and long-term rentals available with secure payments." />
-                <meta property="og:type" content="website" />
-                <meta name="twitter:card" content="summary_large_image" />
+                <title>JustRentIt - Premier Rental Marketplace for Homes & Apartments</title>
+                <meta name="description" content="Find your dream rental home with JustRentIt. Browse thousands of verified listings for apartments, houses, and condos. Secure booking and trusted landlords." />
+                <meta property="og:title" content="JustRentIt - Premier Rental Marketplace" />
+                <meta property="og:description" content="Find your dream rental home with JustRentIt. Browse thousands of verified listings for apartments, houses, and condos." />
             </Head>
+
             {/* Hero Section */}
-            <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white">
-                <div className="absolute inset-0">
-                    <Image
-                        src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600"
-                        alt="Hero background"
-                        fill
-                        className="object-cover object-center opacity-10"
-                        priority
-                        fetchPriority="high"
-                    />
-                </div>
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-                    <div className="max-w-3xl">
-                        <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                            Find Your Perfect
-                            <span className="block text-amber-400">Rental Home</span>
+            <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+                {/* Background Gradients */}
+                <div className="absolute inset-0 bg-brand-cream" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-blue/20 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-brand-purple/20 via-transparent to-transparent" />
+                <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern opacity-30" />
+
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
+                    <div className="text-center max-w-4xl mx-auto mb-12">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-sm border border-brand-blue/20 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-green"></span>
+                            </span>
+                            <span className="text-sm font-medium text-brand-dark/80">#1 Trusted Rental Platform</span>
+                        </div>
+                        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-brand-dark tracking-tight animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+                            Find Your Perfect <br />
+                            <span className="text-gradient">Rental Home</span>
                         </h1>
-                        <p className="text-xl md:text-2xl text-blue-100 mb-12">
-                            Discover quality properties from verified landlords. Simple, secure, and stress-free.
+                        <p className="text-xl md:text-2xl text-brand-dark/60 mb-12 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+                            Discover quality properties from verified landlords. Simple, secure, and stress-free renting experience.
                         </p>
-                        {/* Search Bar */}
-                        <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6">
+
+                        {/* Glass Search Bar */}
+                        <div className="glass-panel rounded-3xl p-4 md:p-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 mx-auto max-w-4xl">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="relative">
-                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <div className="relative group">
+                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-blue group-focus-within:text-brand-purple transition-colors" />
                                     <input
                                         placeholder="Enter city..."
                                         value={searchCity}
                                         onChange={e => setSearchCity(e.target.value)}
-                                        className="pl-10 h-12 text-gray-900 w-full border border-gray-300 rounded"
+                                        className="pl-12 h-14 text-brand-dark w-full border border-brand-blue/10 rounded-2xl focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none bg-white/50 transition-all hover:bg-white/80"
                                         onKeyPress={e => e.key === 'Enter' && handleSearch()}
                                     />
                                 </div>
-                                <select
-                                    value={propertyType}
-                                    onChange={e => setPropertyType(e.target.value)}
-                                    className="h-12 text-gray-900 rounded border border-gray-300 w-full"
-                                >
-                                    <option value="all">All Property Types</option>
-                                    <option value="apartment">Apartment</option>
-                                    <option value="house">House</option>
-                                    <option value="condo">Condo</option>
-                                    <option value="studio">Studio</option>
-                                    <option value="villa">Villa</option>
-                                    <option value="pg">PG</option>
-                                    <option value="hotel">Hotel</option>
-                                    <option value="resort">Resort</option>
-                                </select>
-                                <select
-                                    value={rentalType}
-                                    onChange={e => setRentalType(e.target.value)}
-                                    className="h-12 text-gray-900 rounded border border-gray-300 w-full"
-                                >
-                                    <option value="all">All Rental Types</option>
-                                    <option value="long_term">Long Term (Monthly)</option>
-                                    <option value="short_term">Short Term (Daily)</option>
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        value={propertyType}
+                                        onChange={e => setPropertyType(e.target.value)}
+                                        className="h-14 text-brand-dark rounded-2xl border border-brand-blue/10 w-full px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none bg-white/50 transition-all hover:bg-white/80 appearance-none"
+                                    >
+                                        <option value="all">All Property Types</option>
+                                        <option value="apartment">Apartment</option>
+                                        <option value="house">House</option>
+                                        <option value="condo">Condo</option>
+                                        <option value="studio">Studio</option>
+                                        <option value="villa">Villa</option>
+                                        <option value="pg">PG</option>
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <HomeIcon className="w-5 h-5 text-brand-dark/40" />
+                                    </div>
+                                </div>
+                                <div className="relative">
+                                    <select
+                                        value={rentalType}
+                                        onChange={e => setRentalType(e.target.value)}
+                                        className="h-14 text-brand-dark rounded-2xl border border-brand-blue/10 w-full px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none bg-white/50 transition-all hover:bg-white/80 appearance-none"
+                                    >
+                                        <option value="all">All Rental Types</option>
+                                        <option value="long_term">Long Term</option>
+                                        <option value="short_term">Short Term</option>
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <TrendingUp className="w-5 h-5 text-brand-dark/40" />
+                                    </div>
+                                </div>
                                 <button
                                     onClick={handleSearch}
-                                    className="h-12 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded"
+                                    className="h-14 bg-gradient-to-r from-brand-blue to-brand-purple hover:from-brand-blue/90 hover:to-brand-purple/90 text-white font-bold rounded-2xl shadow-lg shadow-brand-blue/20 hover:shadow-brand-blue/40 transition-all transform hover:-translate-y-0.5"
                                 >
                                     <Search className="w-5 h-5 mr-2 inline" />
-                                    Search Properties
+                                    Search
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto pt-12 border-t border-brand-dark/5">
+                        {[
+                            { label: "Active Listings", value: "5,000+" },
+                            { label: "Happy Tenants", value: "12,000+" },
+                            { label: "Cities", value: "50+" },
+                            { label: "Verified Landlords", value: "2,500+" },
+                        ].map((stat, idx) => (
+                            <div key={idx} className="text-center">
+                                <p className="text-3xl font-bold text-brand-dark mb-1">{stat.value}</p>
+                                <p className="text-sm text-brand-dark/50 font-medium uppercase tracking-wider">{stat.label}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
             {/* Features Section */}
-            <section className="py-16 bg-white">
+            <section className="py-24 bg-white relative">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <span className="text-brand-blue font-bold tracking-wider uppercase text-sm mb-2 block">Why Choose Us</span>
+                        <h2 className="text-4xl font-bold text-brand-dark mb-4">Everything you need to rent</h2>
+                        <p className="text-xl text-brand-dark/60 max-w-2xl mx-auto">We&apos;ve streamlined the entire rental process to make it easier for both landlords and tenants.</p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <TrendingUp className="w-8 h-8 text-blue-900" />
+                        {[
+                            {
+                                icon: Shield,
+                                title: "Verified Properties",
+                                desc: "Every property is physically verified by our team to ensure authenticity.",
+                                color: "text-brand-blue",
+                                bg: "bg-brand-blue/10"
+                            },
+                            {
+                                icon: IndianRupee,
+                                title: "Secure Payments",
+                                desc: "Your money is safe with our escrow-like payment system until you move in.",
+                                color: "text-brand-yellow",
+                                bg: "bg-brand-yellow/10"
+                            },
+                            {
+                                icon: CheckCircle,
+                                title: "Instant Booking",
+                                desc: "No more waiting. Book your dream home instantly with real-time availability.",
+                                color: "text-brand-green",
+                                bg: "bg-brand-green/10"
+                            }
+                        ].map((feature, idx) => (
+                            <div key={idx} className="group p-8 rounded-3xl bg-brand-cream/30 border border-brand-dark/5 hover:border-brand-blue/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                                <div className={`w-16 h-16 ${feature.bg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                                    <feature.icon className={`w-8 h-8 ${feature.color}`} />
+                                </div>
+                                <h3 className="text-xl font-bold text-brand-dark mb-3">{feature.title}</h3>
+                                <p className="text-brand-dark/60 leading-relaxed">{feature.desc}</p>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">Wide Selection</h3>
-                            <p className="text-gray-600">Browse thousands of verified rental properties in your area</p>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* How It Works Section */}
+            <section className="py-24 bg-brand-dark relative overflow-hidden text-white">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-blue/10 to-transparent"></div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-16">
+                        <div className="md:w-1/2">
+                            <span className="text-brand-yellow font-bold tracking-wider uppercase text-sm mb-2 block">How It Works</span>
+                            <h2 className="text-4xl md:text-5xl font-bold mb-6">Simple steps to your <br /><span className="text-brand-blue">new home</span></h2>
+                            <p className="text-white/60 text-lg mb-8">Skip the brokers and paperwork. We&apos;ve digitized the entire rental journey for you.</p>
+
+                            <div className="space-y-8">
+                                {[
+                                    { step: "01", title: "Search", desc: "Filter by city, budget, and amenities to find your match." },
+                                    { step: "02", title: "Book", desc: "Pay a small token amount to reserve the property instantly." },
+                                    { step: "03", title: "Move In", desc: "Sign the digital agreement and get the keys. It&apos;s that simple." }
+                                ].map((item, idx) => (
+                                    <div key={idx} className="flex items-start gap-4">
+                                        <span className="text-4xl font-bold text-brand-dark/20 stroke-text">{item.step}</span>
+                                        <div>
+                                            <h4 className="text-xl font-bold text-white mb-1">{item.title}</h4>
+                                            <p className="text-white/50">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <IndianRupee className="w-8 h-8 text-amber-600" />
+                        <div className="md:w-1/2 relative">
+                            <div className="relative z-10 glass-panel-dark p-8 rounded-3xl border border-white/10 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                                <div className="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
+                                    <div className="w-12 h-12 rounded-full bg-brand-blue flex items-center justify-center">
+                                        <User className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold">John Doe</p>
+                                        <p className="text-xs text-white/50">Just booked a flat in Mumbai</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="h-4 bg-white/10 rounded w-3/4"></div>
+                                    <div className="h-4 bg-white/10 rounded w-1/2"></div>
+                                    <div className="h-24 bg-brand-blue/20 rounded-xl mt-4 flex items-center justify-center border border-brand-blue/30">
+                                        <CheckCircle className="w-8 h-8 text-brand-blue" />
+                                    </div>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">Secure Payments</h3>
-                            <p className="text-gray-600">Safe and encrypted payment processing for your peace of mind</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <CheckCircle className="w-8 h-8 text-green-600" />
-                            </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">Easy Booking</h3>
-                            <p className="text-gray-600">Simple booking process with instant confirmation</p>
+                            {/* Decorative blobs */}
+                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-purple/30 rounded-full blur-3xl"></div>
+                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-brand-blue/30 rounded-full blur-3xl"></div>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Featured Properties */}
-            <section className="py-16 bg-gray-50">
+            <section className="py-24 bg-brand-cream relative">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center mb-8">
+                    <div className="flex justify-between items-end mb-12">
                         <div>
-                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Properties</h2>
-                            <p className="text-gray-600">Handpicked properties just for you</p>
+                            <span className="text-brand-purple font-bold tracking-wider uppercase text-sm mb-2 block">Exclusive Listings</span>
+                            <h2 className="text-4xl font-bold text-brand-dark mb-4">Featured Properties</h2>
+                            <p className="text-xl text-brand-dark/60">Handpicked premium properties just for you</p>
                         </div>
                         <button
                             onClick={() => router.push("/properties")}
-                            className="hidden md:flex border border-blue-900 text-blue-900 px-4 py-2 rounded"
+                            className="hidden md:flex items-center gap-2 text-brand-blue font-bold hover:text-brand-dark transition-colors group"
                         >
-                            View All Properties
+                            View All Properties <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {featuredProperties.slice(0, 6).map((property) => (
-                            <PropertyCard key={property.id} property={property} />
-                        ))}
-                    </div>
-                    <div className="mt-8 text-center md:hidden">
+
+                    {isLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="h-96 bg-white rounded-3xl animate-pulse"></div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {featuredProperties.slice(0, 3).map((property) => (
+                                <PropertyCard key={property.id} property={property} />
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="mt-12 text-center md:hidden">
                         <button
                             onClick={() => router.push("/properties")}
-                            className="border border-blue-900 text-blue-900 px-4 py-2 rounded"
+                            className="bg-white border-2 border-brand-blue text-brand-blue px-8 py-3 rounded-xl font-bold w-full"
                         >
                             View All Properties
                         </button>
@@ -171,36 +279,60 @@ export default function Home() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-16 bg-gradient-to-r from-blue-900 to-blue-800 text-white">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    {user && user.user_type === 'renter' ? (
-                        <>
-                            <p className="text-xl text-blue-100 mb-8">
-                                To list your property, you need a Landlord account.
-                                Upgrade your account to start listing properties.
-                            </p>
-                            <button
-                                onClick={() => router.push("/profile")}
-                                className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-lg"
-                            >
-                                Become a Landlord
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <p className="text-xl text-blue-100 mb-8">
-                                List your property on JustRentIt and connect with verified renters today
-                            </p>
-                            <button
-                                onClick={() => router.push("/add-property")}
-                                className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-lg"
-                            >
-                                List Your Property
-                            </button>
-                        </>
-                    )}
+            <section className="py-24 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue to-brand-purple"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    <div className="glass-panel p-12 rounded-[2.5rem] border border-white/20 shadow-2xl">
+                        {user && user.user_type === 'renter' ? (
+                            <>
+                                <h2 className="text-4xl font-bold text-brand-dark mb-6">Ready to become a Landlord?</h2>
+                                <p className="text-xl text-brand-dark/70 mb-10 max-w-2xl mx-auto">
+                                    Unlock the potential of your property. Upgrade your account to start listing properties and earning passive income today.
+                                </p>
+                                <button
+                                    onClick={() => router.push("/profile")}
+                                    className="px-10 py-4 bg-brand-dark text-white hover:bg-brand-blue font-bold rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"
+                                >
+                                    Become a Landlord
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <h2 className="text-4xl font-bold text-brand-dark mb-6">List Your Property Today</h2>
+                                <p className="text-xl text-brand-dark/70 mb-10 max-w-2xl mx-auto">
+                                    Join thousands of landlords who trust JustRentIt. Connect with verified renters and manage everything in one place.
+                                </p>
+                                <button
+                                    onClick={() => router.push("/add-property")}
+                                    className="px-10 py-4 bg-brand-dark text-white hover:bg-brand-blue font-bold rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"
+                                >
+                                    List Your Property
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
-            </section >
+            </section>
         </div >
     );
+}
+
+function User({ className }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+        >
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+        </svg>
+    )
 }

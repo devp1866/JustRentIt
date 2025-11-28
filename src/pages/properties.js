@@ -55,37 +55,39 @@ export default function Properties() {
     const offerProperties = properties.filter(p => p.offer && p.offer.enabled);
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-brand-cream py-8 font-sans">
             <Head>
                 <title>Browse Properties - JustRentIt</title>
                 <meta name="description" content="Search and filter through our extensive collection of rental properties. Find apartments, houses, and studios in your preferred location." />
+                <meta property="og:title" content="Browse Properties - JustRentIt" />
+                <meta property="og:description" content="Find your perfect rental home. Filter by city, price, and type." />
             </Head>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Browse Properties</h1>
-                    <p className="text-gray-600">Find your perfect rental from our collection</p>
+                    <h1 className="text-3xl md:text-4xl font-bold text-brand-dark mb-2">Browse Properties</h1>
+                    <p className="text-brand-dark/60">Find your perfect rental from our collection</p>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-2xl shadow-md p-6 mb-8">
+                <div className="bg-white rounded-2xl shadow-sm border border-brand-blue/10 p-6 mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <SlidersHorizontal className="w-5 h-5 text-gray-600" />
-                            <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                            <SlidersHorizontal className="w-5 h-5 text-brand-blue" />
+                            <h2 className="text-lg font-semibold text-brand-dark">Filters</h2>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-gray-600 hidden sm:block">
+                            <span className="text-sm font-medium text-brand-dark/60 hidden sm:block">
                                 Check out special offers!
                             </span>
                             <button
                                 onClick={() => setShowOffers(!showOffers)}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold shadow-sm transition-all duration-300 ${showOffers
-                                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    : 'bg-gradient-to-r from-amber-500 to-red-500 text-white hover:shadow-md hover:scale-105'
+                                    ? 'bg-brand-cream text-brand-dark hover:bg-brand-blue/5'
+                                    : 'bg-gradient-to-r from-brand-yellow to-orange-500 text-white hover:shadow-md hover:scale-105'
                                     }`}
                             >
-                                <IndianRupee className={`w-4 h-4 ${showOffers ? 'text-gray-600' : 'text-white'}`} />
+                                <IndianRupee className={`w-4 h-4 ${showOffers ? 'text-brand-dark' : 'text-white'}`} />
                                 {showOffers ? 'Hide Offers' : 'View Special Offers'}
                             </button>
                         </div>
@@ -96,12 +98,12 @@ export default function Properties() {
                             placeholder="Search by city or location"
                             value={searchCity}
                             onChange={e => setSearchCity(e.target.value)}
-                            className="h-11 rounded border px-3"
+                            className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm"
                         />
                         <select
                             value={propertyType}
                             onChange={e => setPropertyType(e.target.value)}
-                            className="h-11 rounded border px-3"
+                            className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm bg-white"
                         >
                             <option value="all">All Property Types</option>
                             <option value="apartment">Apartment</option>
@@ -116,7 +118,7 @@ export default function Properties() {
                         <select
                             value={rentalType}
                             onChange={e => setRentalType(e.target.value)}
-                            className="h-11 rounded border px-3"
+                            className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm bg-white"
                         >
                             <option value="all">All Rental Types</option>
                             <option value="long_term">Long Term</option>
@@ -125,7 +127,7 @@ export default function Properties() {
                         <select
                             value={priceRange}
                             onChange={e => setPriceRange(e.target.value)}
-                            className="h-11 rounded border px-3"
+                            className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm bg-white"
                         >
                             <option value="all">All Prices</option>
                             <option value="under_2k">Under ₹2,000</option>
@@ -142,7 +144,7 @@ export default function Properties() {
                                 setPriceRange('all');
                                 setShowOffers(false);
                             }}
-                            className="h-11 border rounded px-3 bg-gray-100 font-semibold"
+                            className="h-11 border border-brand-blue/20 rounded-xl px-4 bg-brand-cream text-brand-dark font-semibold hover:bg-brand-blue/5 transition-colors text-sm"
                         >
                             Reset Filters
                         </button>

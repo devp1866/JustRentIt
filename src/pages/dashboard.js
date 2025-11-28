@@ -52,11 +52,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-brand-cream py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Dashboard</h1>
-          <p className="text-gray-600">Manage your properties and bookings</p>
+          <h1 className="text-3xl font-bold text-brand-dark mb-2">My Dashboard</h1>
+          <p className="text-brand-dark/70">Manage your properties and bookings</p>
         </div>
 
         {/* Tabs Switcher */}
@@ -64,7 +64,9 @@ export default function Dashboard() {
           {(user.user_type === "landlord" || user.user_type === "both") && (
             <>
               <button
-                className={`flex items-center gap-2 px-4 py-2 border rounded whitespace-nowrap ${activeTab === "received_bookings" ? "bg-blue-900 text-white" : "bg-white"
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${activeTab === "received_bookings"
+                  ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/20"
+                  : "bg-white text-brand-dark/70 hover:bg-brand-blue/5 hover:text-brand-blue border border-brand-blue/10"
                   }`}
                 onClick={() => setActiveTab("received_bookings")}
               >
@@ -72,7 +74,9 @@ export default function Dashboard() {
                 Received Bookings
               </button>
               <button
-                className={`flex items-center gap-2 px-4 py-2 border rounded whitespace-nowrap ${activeTab === "properties" ? "bg-blue-900 text-white" : "bg-white"
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${activeTab === "properties"
+                  ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/20"
+                  : "bg-white text-brand-dark/70 hover:bg-brand-blue/5 hover:text-brand-blue border border-brand-blue/10"
                   }`}
                 onClick={() => setActiveTab("properties")}
               >
@@ -84,7 +88,9 @@ export default function Dashboard() {
 
           {(user.user_type === "renter" || user.user_type === "both") && (
             <button
-              className={`flex items-center gap-2 px-4 py-2 border rounded whitespace-nowrap ${activeTab === "bookings" ? "bg-blue-900 text-white" : "bg-white"
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${activeTab === "bookings"
+                ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/20"
+                : "bg-white text-brand-dark/70 hover:bg-brand-blue/5 hover:text-brand-blue border border-brand-blue/10"
                 }`}
               onClick={() => setActiveTab("bookings")}
             >
@@ -95,15 +101,17 @@ export default function Dashboard() {
         </div>
 
         {/* Tab Contents */}
-        {(user.user_type === "landlord" || user.user_type === "both") && activeTab === "received_bookings" && (
-          <LandlordBookings />
-        )}
-        {(user.user_type === "landlord" || user.user_type === "both") && activeTab === "properties" && (
-          <MyProperties user={user} />
-        )}
-        {(user.user_type === "renter" || user.user_type === "both") && activeTab === "bookings" && (
-          <MyBookings user={user} />
-        )}
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-brand-blue/10 min-h-[500px]">
+          {(user.user_type === "landlord" || user.user_type === "both") && activeTab === "received_bookings" && (
+            <LandlordBookings />
+          )}
+          {(user.user_type === "landlord" || user.user_type === "both") && activeTab === "properties" && (
+            <MyProperties user={user} />
+          )}
+          {(user.user_type === "renter" || user.user_type === "both") && activeTab === "bookings" && (
+            <MyBookings user={user} />
+          )}
+        </div>
       </div>
     </div>
   );

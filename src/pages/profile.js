@@ -12,7 +12,6 @@ import Image from "next/image";
 export default function Profile() {
     const { data: session, status, update } = useSession();
     const [activeTab, setActiveTab] = useState("basic");
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Editing States
     const [isEditing, setIsEditing] = useState(false);
@@ -229,28 +228,28 @@ export default function Profile() {
     const renderBasicDetails = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <div className="flex items-center text-gray-600">
-                    <Shield className="w-5 h-5 mr-3 text-blue-900" />
+                <div className="flex items-center text-brand-dark/80">
+                    <Shield className="w-5 h-5 mr-3 text-brand-blue" />
                     <span className="font-medium">Account Type</span>
                 </div>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold capitalize">
+                <span className="px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-semibold capitalize">
                     {user?.user_type === "both" ? "Landlord & Renter" : user?.user_type}
                 </span>
             </div>
 
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <div className="flex items-center text-gray-600">
-                    <Phone className="w-5 h-5 mr-3 text-blue-900" />
+                <div className="flex items-center text-brand-dark/80">
+                    <Phone className="w-5 h-5 mr-3 text-brand-blue" />
                     <span className="font-medium">Phone Number</span>
                 </div>
                 <div className="flex items-center">
                     {!isEditingPhone ? (
                         <>
-                            <span className="text-gray-900 mr-4">{user?.phone || "Not set"}</span>
+                            <span className="text-brand-dark mr-4">{user?.phone || "Not set"}</span>
                             {!user?.phone && (
                                 <button
                                     onClick={() => { setIsEditingPhone(true); setNewPhone(""); }}
-                                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                    className="text-sm text-brand-blue hover:text-brand-blue/80 font-medium"
                                 >
                                     Add
                                 </button>
@@ -263,18 +262,18 @@ export default function Profile() {
                                 value={newPhone}
                                 onChange={(e) => setNewPhone(e.target.value)}
                                 placeholder="10-digit number"
-                                className="border rounded px-2 py-1 text-sm w-32"
+                                className="border border-brand-blue/20 rounded px-2 py-1 text-sm w-32 focus:ring-2 focus:ring-brand-blue/50 outline-none"
                             />
                             <button
                                 onClick={handleUpdatePhone}
                                 disabled={updatePhoneMutation.isPending}
-                                className="text-sm bg-blue-900 text-white px-2 py-1 rounded hover:bg-blue-800"
+                                className="text-sm bg-brand-blue text-white px-2 py-1 rounded hover:bg-brand-blue/90"
                             >
                                 Save
                             </button>
                             <button
                                 onClick={() => setIsEditingPhone(false)}
-                                className="text-sm text-gray-500 hover:text-gray-700"
+                                className="text-sm text-brand-dark/50 hover:text-brand-dark"
                             >
                                 Cancel
                             </button>
@@ -284,20 +283,20 @@ export default function Profile() {
             </div>
 
             <div className="flex items-center justify-between pb-2">
-                <div className="flex items-center text-gray-600">
-                    <CheckCircle className="w-5 h-5 mr-3 text-blue-900" />
+                <div className="flex items-center text-brand-dark/80">
+                    <CheckCircle className="w-5 h-5 mr-3 text-brand-blue" />
                     <span className="font-medium">Verification Status</span>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user?.is_verified ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${user?.is_verified ? "bg-brand-green/10 text-brand-green" : "bg-brand-yellow/10 text-brand-yellow"}`}>
                     {user?.is_verified ? "Verified" : "Unverified"}
                 </span>
             </div>
 
             {!user?.is_verified && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-2">
+                <div className="bg-brand-yellow/5 border-l-4 border-brand-yellow p-4 mt-2">
                     <div className="flex">
                         <div className="ml-3">
-                            <p className="text-sm text-yellow-700">
+                            <p className="text-sm text-brand-dark/80">
                                 Please add a phone number to verify your account.
                             </p>
                         </div>
@@ -306,17 +305,17 @@ export default function Profile() {
             )}
 
             {user?.user_type === "renter" && (
-                <div className="mt-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="mt-8 bg-gradient-to-r from-brand-yellow to-orange-500 rounded-xl shadow-lg p-6 text-white">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div>
                             <h3 className="text-xl font-bold mb-1">Become a Landlord</h3>
-                            <p className="text-amber-100 text-sm">
+                            <p className="text-white/90 text-sm">
                                 List properties and reach thousands of tenants.
                             </p>
                         </div>
                         <button
                             onClick={handleUpgradeClick}
-                            className="bg-white text-orange-600 px-4 py-2 rounded-lg font-bold hover:bg-amber-50 transition-colors shadow-md text-sm whitespace-nowrap"
+                            className="bg-white text-orange-600 px-4 py-2 rounded-lg font-bold hover:bg-white/90 transition-colors shadow-md text-sm whitespace-nowrap"
                         >
                             Upgrade Now
                         </button>
@@ -329,46 +328,46 @@ export default function Profile() {
     const renderAdditionalDetails = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Location Details</h3>
+                <h3 className="text-lg font-semibold text-brand-dark">Location Details</h3>
                 {!isEditing ? (
-                    <button onClick={startEditing} className="text-sm text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                    <button onClick={startEditing} className="text-sm text-brand-blue hover:text-brand-blue/80 font-medium">Edit</button>
                 ) : (
                     <div className="flex gap-2">
-                        <button onClick={() => setIsEditing(false)} className="text-sm text-gray-500">Cancel</button>
-                        <button onClick={handleUpdateProfile} className="text-sm bg-blue-900 text-white px-3 py-1 rounded">Save</button>
+                        <button onClick={() => setIsEditing(false)} className="text-sm text-brand-dark/50">Cancel</button>
+                        <button onClick={handleUpdateProfile} className="text-sm bg-brand-blue text-white px-3 py-1 rounded hover:bg-brand-blue/90">Save</button>
                     </div>
                 )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">City</label>
+                    <label className="block text-sm font-medium text-brand-dark/60 mb-1">City</label>
                     {isEditing ? (
                         <input
                             value={editData.city}
                             onChange={(e) => setEditData({ ...editData, city: e.target.value })}
-                            className="w-full border rounded px-3 py-2 text-sm"
+                            className="w-full border border-brand-blue/20 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/50 outline-none"
                         />
-                    ) : <p className="text-gray-900 font-medium">{user?.city || "-"}</p>}
+                    ) : <p className="text-brand-dark font-medium">{user?.city || "-"}</p>}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">State</label>
+                    <label className="block text-sm font-medium text-brand-dark/60 mb-1">State</label>
                     {isEditing ? (
                         <input
                             value={editData.state}
                             onChange={(e) => setEditData({ ...editData, state: e.target.value })}
-                            className="w-full border rounded px-3 py-2 text-sm"
+                            className="w-full border border-brand-blue/20 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/50 outline-none"
                         />
-                    ) : <p className="text-gray-900 font-medium">{user?.state || "-"}</p>}
+                    ) : <p className="text-brand-dark font-medium">{user?.state || "-"}</p>}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Country</label>
+                    <label className="block text-sm font-medium text-brand-dark/60 mb-1">Country</label>
                     {isEditing ? (
                         <input
                             value={editData.country}
                             onChange={(e) => setEditData({ ...editData, country: e.target.value })}
-                            className="w-full border rounded px-3 py-2 text-sm"
+                            className="w-full border border-brand-blue/20 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/50 outline-none"
                         />
-                    ) : <p className="text-gray-900 font-medium">{user?.country || "-"}</p>}
+                    ) : <p className="text-brand-dark font-medium">{user?.country || "-"}</p>}
                 </div>
             </div>
         </div>
@@ -376,34 +375,34 @@ export default function Profile() {
 
     const renderGovtIds = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
+            <div className="bg-brand-cream/50 rounded-xl border border-brand-blue/10 p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg text-blue-900">
+                        <div className="p-2 bg-brand-blue/10 rounded-lg text-brand-blue">
                             <IdCard className="w-6 h-6" />
                         </div>
                         <div>
-                            <h4 className="text-base font-bold text-gray-900">Government ID Verification</h4>
-                            <p className="text-sm text-gray-500">Official Identity Document</p>
+                            <h4 className="text-base font-bold text-brand-dark">Government ID Verification</h4>
+                            <p className="text-sm text-brand-dark/60">Official Identity Document</p>
                         </div>
                     </div>
-                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wide">
+                    <span className="px-2 py-1 bg-brand-green/10 text-brand-green text-xs font-bold rounded-full uppercase tracking-wide">
                         Verified
                     </span>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
                     <div>
-                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">ID Number</label>
-                        <p className="text-gray-900 font-mono text-lg tracking-wide bg-white border border-gray-200 rounded-lg px-4 py-3">
+                        <label className="block text-xs font-semibold text-brand-dark/50 uppercase tracking-wider mb-2">ID Number</label>
+                        <p className="text-brand-dark font-mono text-lg tracking-wide bg-white border border-brand-blue/10 rounded-lg px-4 py-3">
                             {user?.govt_id || "Not provided"}
                         </p>
                     </div>
 
                     {user?.govt_id_image && (
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Document Preview</label>
-                            <div className="relative h-48 w-full md:w-96 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
+                            <label className="block text-xs font-semibold text-brand-dark/50 uppercase tracking-wider mb-2">Document Preview</label>
+                            <div className="relative h-48 w-full md:w-96 rounded-lg overflow-hidden border border-brand-blue/10 shadow-sm group">
                                 <Image
                                     src={user.govt_id_image}
                                     alt="Government ID"
@@ -414,7 +413,7 @@ export default function Profile() {
                         </div>
                     )}
                 </div>
-                <div className="mt-4 flex items-center text-xs text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-100">
+                <div className="mt-4 flex items-center text-xs text-brand-yellow bg-brand-yellow/10 p-3 rounded-lg border border-brand-yellow/20">
                     <Shield className="w-4 h-4 mr-2" />
                     This document is locked for security reasons. Contact support to update.
                 </div>
@@ -425,36 +424,36 @@ export default function Profile() {
     const renderPreferences = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Renter Preferences</h3>
+                <h3 className="text-lg font-semibold text-brand-dark">Renter Preferences</h3>
                 {!isEditing ? (
-                    <button onClick={startEditing} className="text-sm text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                    <button onClick={startEditing} className="text-sm text-brand-blue hover:text-brand-blue/80 font-medium">Edit</button>
                 ) : (
                     <div className="flex gap-2">
-                        <button onClick={() => setIsEditing(false)} className="text-sm text-gray-500">Cancel</button>
-                        <button onClick={handleUpdateProfile} className="text-sm bg-blue-900 text-white px-3 py-1 rounded">Save</button>
+                        <button onClick={() => setIsEditing(false)} className="text-sm text-brand-dark/50">Cancel</button>
+                        <button onClick={handleUpdateProfile} className="text-sm bg-brand-blue text-white px-3 py-1 rounded hover:bg-brand-blue/90">Save</button>
                     </div>
                 )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Preferred City</label>
+                    <label className="block text-sm font-medium text-brand-dark/60 mb-1">Preferred City</label>
                     {isEditing ? (
                         <input
                             value={editData.preferred_city}
                             onChange={(e) => setEditData({ ...editData, preferred_city: e.target.value })}
-                            className="w-full border rounded px-3 py-2 text-sm"
+                            className="w-full border border-brand-blue/20 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/50 outline-none"
                         />
-                    ) : <p className="text-gray-900 font-medium">{user?.preferred_city || "-"}</p>}
+                    ) : <p className="text-brand-dark font-medium">{user?.preferred_city || "-"}</p>}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Budget Range</label>
+                    <label className="block text-sm font-medium text-brand-dark/60 mb-1">Budget Range</label>
                     {isEditing ? (
                         <input
                             value={editData.budget_range}
                             onChange={(e) => setEditData({ ...editData, budget_range: e.target.value })}
-                            className="w-full border rounded px-3 py-2 text-sm"
+                            className="w-full border border-brand-blue/20 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue/50 outline-none"
                         />
-                    ) : <p className="text-gray-900 font-medium">{user?.budget_range || "-"}</p>}
+                    ) : <p className="text-brand-dark font-medium">{user?.budget_range || "-"}</p>}
                 </div>
             </div>
         </div>
@@ -463,41 +462,41 @@ export default function Profile() {
     const renderSecurity = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Password & Security</h3>
+                <h3 className="text-lg font-semibold text-brand-dark">Password & Security</h3>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="bg-white border border-brand-blue/10 rounded-xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                     <div>
-                        <h4 className="font-medium text-gray-900">Change Password</h4>
-                        <p className="text-sm text-gray-500">Update your password to keep your account secure.</p>
+                        <h4 className="font-medium text-brand-dark">Change Password</h4>
+                        <p className="text-sm text-brand-dark/60">Update your password to keep your account secure.</p>
                     </div>
                     <button
                         onClick={() => setShowChangePassword(!showChangePassword)}
-                        className="text-sm text-blue-900 font-medium hover:underline"
+                        className="text-sm text-brand-blue font-medium hover:underline"
                     >
                         {showChangePassword ? "Cancel" : "Update"}
                     </button>
                 </div>
 
                 {showChangePassword && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-4 max-w-md">
+                    <div className="mt-4 pt-4 border-t border-brand-blue/10 space-y-4 max-w-md">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                            <label className="block text-sm font-medium text-brand-dark/80 mb-1">Current Password</label>
                             <input
                                 type="password"
                                 value={editData.oldPassword || ""}
                                 onChange={(e) => setEditData({ ...editData, oldPassword: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 outline-none"
+                                className="w-full px-3 py-2 border border-brand-blue/20 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                            <label className="block text-sm font-medium text-brand-dark/80 mb-1">New Password</label>
                             <input
                                 type="password"
                                 value={editData.newPassword || ""}
                                 onChange={(e) => setEditData({ ...editData, newPassword: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 outline-none"
+                                className="w-full px-3 py-2 border border-brand-blue/20 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none"
                             />
                         </div>
                         <button
@@ -521,7 +520,7 @@ export default function Profile() {
                                     alert(err.message);
                                 }
                             }}
-                            className="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors"
+                            className="bg-brand-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-blue/90 transition-colors"
                         >
                             Update Password
                         </button>
@@ -533,11 +532,11 @@ export default function Profile() {
 
     const renderTransactions = () => (
         <div className="space-y-6 animate-in fade-in duration-300">
-            <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <h3 className="text-lg font-semibold text-brand-dark">Transaction History</h3>
+            <div className="bg-white rounded-xl border border-brand-blue/10 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-gray-600">
-                        <thead className="bg-gray-50 text-gray-900 font-semibold">
+                    <table className="w-full text-left text-sm text-brand-dark/70">
+                        <thead className="bg-brand-blue/5 text-brand-dark font-semibold">
                             <tr>
                                 <th className="px-6 py-3">Date</th>
                                 <th className="px-6 py-3">Property</th>
@@ -545,27 +544,27 @@ export default function Profile() {
                                 <th className="px-6 py-3">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-brand-blue/5">
                             {transactions.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                                    <td colSpan="4" className="px-6 py-8 text-center text-brand-dark/50">
                                         No transactions found.
                                     </td>
                                 </tr>
                             ) : (
                                 transactions.map((tx) => (
-                                    <tr key={tx._id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={tx._id} className="hover:bg-brand-blue/5 transition-colors">
                                         <td className="px-6 py-4">
                                             {tx.payment_date ? format(new Date(tx.payment_date), "MMM d, yyyy") : "-"}
                                         </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                        <td className="px-6 py-4 font-medium text-brand-dark">
                                             {tx.property_title}
                                         </td>
-                                        <td className="px-6 py-4 text-blue-900 font-bold">
+                                        <td className="px-6 py-4 text-brand-blue font-bold">
                                             ₹{tx.total_amount}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${tx.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${tx.payment_status === 'paid' ? 'bg-brand-green/10 text-brand-green' : 'bg-brand-yellow/10 text-brand-yellow'}`}>
                                                 {tx.payment_status}
                                             </span>
                                         </td>
@@ -598,28 +597,42 @@ export default function Profile() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Mobile Header */}
-            <div className="md:hidden bg-white border-b p-4 flex items-center justify-between sticky top-0 z-20">
-                <h1 className="text-xl font-bold text-gray-900">My Profile</h1>
-                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-600">
-                    {isMobileMenuOpen ? <X /> : <Menu />}
-                </button>
+        <div className="min-h-screen bg-brand-cream font-sans">
+            {/* Mobile Navigation (Horizontal Scroll) */}
+            <div className="md:hidden sticky top-16 z-40 bg-white border-b border-brand-blue/10 shadow-sm overflow-x-auto scrollbar-hide">
+                <div className="flex p-2 gap-2 min-w-max">
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${activeTab === item.id
+                                    ? "bg-brand-blue text-white shadow-md"
+                                    : "bg-brand-cream text-brand-dark/70 hover:bg-brand-blue/5"
+                                    }`}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {item.label}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col md:flex-row gap-8">
-                    {/* Sidebar Navigation */}
-                    <div className={`md:w-64 flex-shrink-0 ${isMobileMenuOpen ? 'block' : 'hidden md:block'}`}>
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
-                            <div className="p-6 bg-blue-900 text-white">
+                    {/* Sidebar Navigation (Desktop) */}
+                    <div className="hidden md:block md:w-64 flex-shrink-0">
+                        <div className="bg-white rounded-2xl shadow-sm border border-brand-blue/10 overflow-hidden sticky top-24">
+                            <div className="p-6 bg-brand-blue text-white">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="bg-white/20 p-2 rounded-full">
                                         <User className="w-6 h-6" />
                                     </div>
                                     <div className="overflow-hidden">
                                         <h2 className="font-bold truncate">{user?.full_name}</h2>
-                                        <p className="text-xs text-blue-200 truncate">{user?.email}</p>
+                                        <p className="text-xs text-white/80 truncate">{user?.email}</p>
                                     </div>
                                 </div>
                             </div>
@@ -629,17 +642,17 @@ export default function Profile() {
                                     return (
                                         <button
                                             key={item.id}
-                                            onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
+                                            onClick={() => setActiveTab(item.id)}
                                             className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors mb-1 ${activeTab === item.id
-                                                    ? "bg-blue-50 text-blue-900"
-                                                    : "text-gray-600 hover:bg-gray-50"
+                                                ? "bg-brand-blue/5 text-brand-blue"
+                                                : "text-brand-dark/70 hover:bg-brand-blue/5"
                                                 } ${item.className || ""}`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Icon className={`w-5 h-5 ${activeTab === item.id ? "text-blue-900" : "text-gray-400"}`} />
+                                                <Icon className={`w-5 h-5 ${activeTab === item.id ? "text-brand-blue" : "text-brand-dark/40"}`} />
                                                 {item.label}
                                             </div>
-                                            {activeTab === item.id && <ChevronRight className="w-4 h-4 text-blue-900" />}
+                                            {activeTab === item.id && <ChevronRight className="w-4 h-4 text-brand-blue" />}
                                         </button>
                                     );
                                 })}
@@ -649,7 +662,7 @@ export default function Profile() {
 
                     {/* Main Content */}
                     <div className="flex-1">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 min-h-[500px]">
+                        <div className="bg-white rounded-2xl shadow-sm border border-brand-blue/10 p-6 md:p-8 min-h-[500px]">
                             {activeTab === "basic" && renderBasicDetails()}
                             {activeTab === "additional" && renderAdditionalDetails()}
                             {activeTab === "govt_id" && renderGovtIds()}
@@ -658,111 +671,115 @@ export default function Profile() {
                             {activeTab === "transactions" && renderTransactions()}
                             {activeTab === "danger" && renderDangerZone()}
                         </div>
-                    </div>
-                </div>
-            </div>
+                    </div >
+                </div >
+            </div >
 
             {/* Modals (Delete Confirm & Upgrade) */}
-            {showDeleteConfirm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 relative animate-in zoom-in duration-200">
-                        <button
-                            onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmationText(""); setError(""); }}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                        >
-                            ✕
-                        </button>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4">Delete Account?</h3>
-                        <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6">
-                            <p className="text-red-800 text-sm font-medium">Warning: This action cannot be undone.</p>
-                            <ul className="list-disc list-inside text-red-700 text-sm mt-2 space-y-1">
-                                <li>You will lose access immediately.</li>
-                                <li>All active bookings will be cancelled.</li>
-                                <li>Your profile will be permanently deactivated.</li>
-                            </ul>
-                        </div>
-                        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Type <strong>DELETE</strong> to confirm</label>
-                                <input
-                                    type="text"
-                                    value={deleteConfirmationText}
-                                    onChange={(e) => setDeleteConfirmationText(e.target.value)}
-                                    placeholder="DELETE"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                                />
-                            </div>
+            {
+                showDeleteConfirm && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 relative animate-in zoom-in duration-200 border border-brand-blue/10">
                             <button
-                                onClick={handleDeleteAccount}
-                                disabled={deleteAccountMutation.isPending || deleteConfirmationText !== "DELETE"}
-                                className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
+                                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmationText(""); setError(""); }}
+                                className="absolute top-4 right-4 text-brand-dark/40 hover:text-brand-dark/60"
                             >
-                                {deleteAccountMutation.isPending ? "Deleting..." : "Permanently Delete Account"}
+                                ✕
                             </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showUpgrade && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 relative animate-in zoom-in duration-200">
-                        <button
-                            onClick={() => { setShowUpgrade(false); setOtpSent(false); setError(""); setMessage(""); }}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                        >
-                            ✕
-                        </button>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-6">Verify Phone Number</h3>
-                        {message && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">{message}</div>}
-                        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
-                        {!otpSent ? (
-                            <div className="space-y-4">
-                                <p className="text-gray-600">To become a landlord, we need to verify your phone number.</p>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                    <input
-                                        type="tel"
-                                        value={phoneInput}
-                                        onChange={(e) => setPhoneInput(e.target.value)}
-                                        placeholder="Enter 10-digit number"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    />
-                                </div>
-                                <button
-                                    onClick={() => upgradeMutation.mutate({ action: "send_phone_otp", phone: phoneInput })}
-                                    disabled={upgradeMutation.isPending}
-                                    className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors"
-                                >
-                                    {upgradeMutation.isPending ? "Sending..." : "Send OTP"}
-                                </button>
+                            <h3 className="text-2xl font-bold text-brand-dark mb-4">Delete Account?</h3>
+                            <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6">
+                                <p className="text-red-800 text-sm font-medium">Warning: This action cannot be undone.</p>
+                                <ul className="list-disc list-inside text-red-700 text-sm mt-2 space-y-1">
+                                    <li>You will lose access immediately.</li>
+                                    <li>All active bookings will be cancelled.</li>
+                                    <li>Your profile will be permanently deactivated.</li>
+                                </ul>
                             </div>
-                        ) : (
+                            {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
                             <div className="space-y-4">
-                                <p className="text-gray-600">Enter the OTP sent to <strong>{phoneInput}</strong>.</p>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">OTP Code</label>
+                                    <label className="block text-sm font-medium text-brand-dark/70 mb-1">Type <strong>DELETE</strong> to confirm</label>
                                     <input
                                         type="text"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
-                                        placeholder="Enter OTP"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-center tracking-widest font-mono text-lg"
+                                        value={deleteConfirmationText}
+                                        onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                                        placeholder="DELETE"
+                                        className="w-full px-4 py-2 border border-brand-blue/20 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
                                     />
                                 </div>
                                 <button
-                                    onClick={() => upgradeMutation.mutate({ action: "verify_phone_otp", otp, phone: phoneInput })}
-                                    disabled={upgradeMutation.isPending}
-                                    className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors"
+                                    onClick={handleDeleteAccount}
+                                    disabled={deleteAccountMutation.isPending || deleteConfirmationText !== "DELETE"}
+                                    className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
                                 >
-                                    {upgradeMutation.isPending ? "Verifying..." : "Verify & Upgrade"}
+                                    {deleteAccountMutation.isPending ? "Deleting..." : "Permanently Delete Account"}
                                 </button>
                             </div>
-                        )}
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {
+                showUpgrade && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 relative animate-in zoom-in duration-200 border border-brand-blue/10">
+                            <button
+                                onClick={() => { setShowUpgrade(false); setOtpSent(false); setError(""); setMessage(""); }}
+                                className="absolute top-4 right-4 text-brand-dark/40 hover:text-brand-dark/60"
+                            >
+                                ✕
+                            </button>
+                            <h3 className="text-2xl font-bold text-brand-dark mb-6">Verify Phone Number</h3>
+                            {message && <div className="mb-4 p-3 bg-brand-green/10 text-brand-green rounded-lg text-sm">{message}</div>}
+                            {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
+                            {!otpSent ? (
+                                <div className="space-y-4">
+                                    <p className="text-brand-dark/70">To become a landlord, we need to verify your phone number.</p>
+                                    <div>
+                                        <label className="block text-sm font-medium text-brand-dark/70 mb-1">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            value={phoneInput}
+                                            onChange={(e) => setPhoneInput(e.target.value)}
+                                            placeholder="Enter 10-digit number"
+                                            className="w-full px-4 py-2 border border-brand-blue/20 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={() => upgradeMutation.mutate({ action: "send_phone_otp", phone: phoneInput })}
+                                        disabled={upgradeMutation.isPending}
+                                        className="w-full bg-brand-blue text-white py-3 rounded-lg font-bold hover:bg-brand-blue/90 transition-colors"
+                                    >
+                                        {upgradeMutation.isPending ? "Sending..." : "Send OTP"}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <p className="text-brand-dark/70">Enter the OTP sent to <strong>{phoneInput}</strong>.</p>
+                                    <div>
+                                        <label className="block text-sm font-medium text-brand-dark/70 mb-1">OTP Code</label>
+                                        <input
+                                            type="text"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            placeholder="Enter OTP"
+                                            className="w-full px-4 py-2 border border-brand-blue/20 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none text-center tracking-widest font-mono text-lg"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={() => upgradeMutation.mutate({ action: "verify_phone_otp", otp, phone: phoneInput })}
+                                        disabled={upgradeMutation.isPending}
+                                        className="w-full bg-brand-green text-white py-3 rounded-lg font-bold hover:bg-brand-green/90 transition-colors"
+                                    >
+                                        {upgradeMutation.isPending ? "Verifying..." : "Verify & Upgrade"}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 }

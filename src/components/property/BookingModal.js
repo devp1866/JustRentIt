@@ -11,9 +11,11 @@ import "react-day-picker/dist/style.css";
 function SimpleModal({ open, onClose, children }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-2 right-3 text-gray-400 hover:text-gray-900 text-xl">&times;</button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border border-brand-blue/10">
+        <button onClick={onClose} className="absolute top-4 right-4 text-brand-dark/40 hover:text-brand-dark transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
         {children}
       </div>
     </div>
@@ -207,7 +209,7 @@ export default function BookingModal({ property, user, onClose }) {
           address: "Razorpay Corporate Office",
         },
         theme: {
-          color: "#1e3a8a", // blue-900
+          color: "#82C8E5", // brand-blue
         },
         modal: {
           ondismiss: function () {
@@ -230,7 +232,7 @@ export default function BookingModal({ property, user, onClose }) {
   return (
     <SimpleModal open={true} onClose={onClose}>
       <div>
-        <h2 className="text-2xl font-bold mb-4">
+        <h2 className="text-2xl font-bold mb-4 text-brand-dark">
           {step === "details" && "Book This Property"}
           {step === "payment" && "Payment Details"}
           {step === "success" && "Booking Confirmed!"}
@@ -238,17 +240,17 @@ export default function BookingModal({ property, user, onClose }) {
 
         {step === "details" && (
           <div className="space-y-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">{property.title}</h3>
-              <p className="text-sm text-gray-600">{property.location}</p>
-              <p className="text-lg font-bold text-blue-900 mt-2">
+            <div className="bg-brand-cream/30 rounded-xl p-4 border border-brand-blue/10">
+              <h3 className="font-bold text-brand-dark mb-2">{property.title}</h3>
+              <p className="text-sm text-brand-dark/70">{property.location}</p>
+              <p className="text-lg font-bold text-brand-blue mt-2">
                 ₹{isShortTerm ? property.price_per_night : property.price_per_month}/{isShortTerm ? "night" : "month"}
               </p>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="font-medium block mb-1">Move-in Date</label>
-                <div className="border rounded p-2 flex justify-center bg-white">
+                <label className="font-bold block mb-1 text-brand-dark">Move-in Date</label>
+                <div className="border border-brand-blue/20 rounded-xl p-2 flex justify-center bg-white">
                   <DayPicker
                     mode="single"
                     selected={startDate ? new Date(startDate) : undefined}
@@ -264,13 +266,13 @@ export default function BookingModal({ property, user, onClose }) {
                       disabled: { color: "gray", backgroundColor: "#f3f4f6", textDecoration: "line-through" }
                     }}
                     styles={{
-                      caption: { color: '#1e3a8a' }
+                      caption: { color: '#1e293b' }
                     }}
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="duration" className="font-medium block mb-1">
+                <label htmlFor="duration" className="font-bold block mb-1 text-brand-dark">
                   {isShortTerm ? "Duration (Nights)" : "Rental Duration (months)"}
                 </label>
                 <input
@@ -280,40 +282,38 @@ export default function BookingModal({ property, user, onClose }) {
                   max={isShortTerm ? "30" : "24"}
                   value={duration}
                   onChange={e => setDuration(parseInt(e.target.value))}
-                  className="w-full border p-2 rounded"
+                  className="w-full border border-brand-blue/20 p-3 rounded-xl focus:ring-2 focus:ring-brand-blue/50 outline-none bg-brand-cream/20"
                 />
               </div>
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <div className="bg-brand-blue/5 rounded-xl p-4 border border-brand-blue/10">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">{isShortTerm ? "Nightly Rate" : "Monthly Rent"}</span>
-                  <span className="font-semibold">₹{Math.round(price)}</span>
+                  <span className="text-brand-dark/70">{isShortTerm ? "Nightly Rate" : "Monthly Rent"}</span>
+                  <span className="font-bold text-brand-dark">₹{Math.round(price)}</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">Duration</span>
-                  <span className="font-semibold">{duration} {isShortTerm ? "nights" : "months"}</span>
+                  <span className="text-brand-dark/70">Duration</span>
+                  <span className="font-bold text-brand-dark">{duration} {isShortTerm ? "nights" : "months"}</span>
                 </div>
-                <div className="flex justify-between items-center pt-2 border-t border-blue-200">
-                  <span className="font-semibold text-gray-900">Subtotal</span>
-                  <span className="font-semibold text-gray-900">₹{baseTotal}</span>
+                <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10">
+                  <span className="font-bold text-brand-dark">Subtotal</span>
+                  <span className="font-bold text-brand-dark">₹{baseTotal}</span>
                 </div>
                 {isOfferApplied && (
-                  <div className="flex justify-between items-center text-green-600">
+                  <div className="flex justify-between items-center text-brand-green">
                     <span>Discount ({property.offer.discount_percentage}% off)</span>
                     <span>-₹{discountAmount}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center pt-2 border-t border-blue-200 mt-2">
-                  <span className="font-bold text-lg text-gray-900">Total Amount</span>
-                  <span className="text-xl font-bold text-blue-900">₹{totalAmount}</span>
+                <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10 mt-2">
+                  <span className="font-bold text-lg text-brand-dark">Total Amount</span>
+                  <span className="text-xl font-bold text-brand-blue">₹{totalAmount}</span>
                 </div>
               </div>
             </div>
 
-
-
             {/* Tenant Terms Checklist */}
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-3">Terms & Conditions</h3>
+            <div className="bg-white rounded-xl p-4 border border-brand-blue/10">
+              <h3 className="font-bold text-brand-dark mb-3">Terms & Conditions</h3>
               <div className="space-y-2">
                 <div className="flex items-start">
                   <input
@@ -324,13 +324,13 @@ export default function BookingModal({ property, user, onClose }) {
                       const checked = e.target.checked;
                       setTermsAccepted(checked ? new Array(12).fill(true) : new Array(12).fill(false));
                     }}
-                    className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                    className="mt-1 h-4 w-4 text-brand-blue rounded border-brand-blue/30 focus:ring-brand-blue"
                   />
-                  <label htmlFor="agree_all_terms" className="ml-3 text-sm font-bold text-gray-900">
+                  <label htmlFor="agree_all_terms" className="ml-3 text-sm font-bold text-brand-dark">
                     I agree to all JustRentIt Tenant Terms & Conditions.
                   </label>
                 </div>
-                <hr className="my-2" />
+                <hr className="my-2 border-brand-blue/10" />
                 {[
                   "I confirm all details provided are accurate and authentic.",
                   "I agree to sign a legal rental agreement with the landlord.",
@@ -352,23 +352,15 @@ export default function BookingModal({ property, user, onClose }) {
                       onChange={(e) => {
                         const newTerms = [...termsAccepted];
                         newTerms[idx] = e.target.checked;
-                        // Update the last "Select All" checkbox logic if needed, but for now independent
-                        // Actually, let's keep the last one as the master "Select All" in the UI array logic if we want
-                        // But here I'm mapping the first 11. The 12th is the "Select All" which I put at the top.
-                        // Let's just keep the state simple: array of 12. Index 11 is "Select All" conceptually but I'll handle it separately in UI or just map 11 items and use a separate state or logic.
-                        // Simpler approach: Array of 11 specific terms. The "Select All" toggles all 11.
-                        // The user request said: "I agree to all JustRentIt Tenant Terms & Conditions. (same like for landlord last check box)"
-                        // So I will use 12 items in state, where the 12th is the "Select All" one, or just use the "Select All" to toggle the others.
-                        // Let's stick to the pattern used in add-property: Array of N items. "Select All" toggles all.
                         setTermsAccepted(prev => {
                           const updated = [...prev];
                           updated[idx] = e.target.checked;
                           return updated;
                         });
                       }}
-                      className="mt-1 h-4 w-4 text-blue-900 rounded border-gray-300 focus:ring-blue-900"
+                      className="mt-1 h-4 w-4 text-brand-blue rounded border-brand-blue/30 focus:ring-brand-blue"
                     />
-                    <label htmlFor={`term_${idx}`} className="ml-3 text-sm text-gray-600">
+                    <label htmlFor={`term_${idx}`} className="ml-3 text-sm text-brand-dark/70">
                       {term}
                     </label>
                   </div>
@@ -378,7 +370,7 @@ export default function BookingModal({ property, user, onClose }) {
 
             <button
               onClick={handleBooking}
-              className="w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded"
+              className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold rounded-xl shadow-lg shadow-brand-blue/20 transition-all hover:scale-105"
               disabled={!startDate || !duration}
             >
               Continue to Payment
@@ -389,18 +381,18 @@ export default function BookingModal({ property, user, onClose }) {
         {
           step === "payment" && (
             <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-brand-cream/30 rounded-xl p-4 border border-brand-blue/10">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Amount</span>
-                  <span className="text-2xl font-bold text-blue-900">₹{totalAmount}</span>
+                  <span className="text-brand-dark/70">Total Amount</span>
+                  <span className="text-2xl font-bold text-brand-blue">₹{totalAmount}</span>
                 </div>
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <p className="text-sm text-blue-800 mb-2">
+              <div className="bg-brand-blue/5 p-4 rounded-xl border border-brand-blue/10">
+                <p className="text-sm text-brand-blue mb-2 font-medium">
                   You are about to pay securely with Razorpay.
                 </p>
-                <p className="text-xs text-blue-600">
+                <p className="text-xs text-brand-blue/70">
                   Your booking details are saved. If you cancel the payment, you can try again without re-entering details.
                 </p>
               </div>
@@ -408,14 +400,14 @@ export default function BookingModal({ property, user, onClose }) {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep("details")}
-                  className="flex-1 border rounded py-3 bg-white"
+                  className="flex-1 border border-brand-blue/20 rounded-xl py-3 bg-white text-brand-dark/70 font-bold hover:bg-brand-cream transition-colors"
                   disabled={isProcessing}
                 >
                   Back
                 </button>
                 <button
                   onClick={handlePayment}
-                  className="flex-1 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded py-3"
+                  className="flex-1 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold rounded-xl py-3 shadow-lg shadow-brand-blue/20 transition-all hover:scale-105"
                   disabled={isProcessing}
                 >
                   {isProcessing ? (
@@ -438,16 +430,16 @@ export default function BookingModal({ property, user, onClose }) {
         {
           step === "success" && (
             <div className="text-center py-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-10 h-10 text-green-600" />
+              <div className="w-16 h-16 bg-brand-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-10 h-10 text-brand-green" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Payment Successful!</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl font-bold text-brand-dark mb-2">Payment Successful!</h3>
+              <p className="text-brand-dark/70 mb-6">
                 Your booking has been confirmed. Check your email for details.
               </p>
               <button
                 onClick={() => router.push("/dashboard")}
-                className="w-full bg-blue-900 hover:bg-blue-800 py-3 rounded text-white font-semibold"
+                className="w-full bg-brand-blue hover:bg-brand-blue/90 py-3 rounded-xl text-white font-bold shadow-lg shadow-brand-blue/20 transition-all hover:scale-105"
               >
                 View My Bookings
               </button>

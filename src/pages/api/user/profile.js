@@ -50,14 +50,14 @@ export default async function handler(req, res) {
                 if (country) user.country = country;
                 if (preferred_city) user.preferred_city = preferred_city;
                 if (budget_range) user.budget_range = budget_range;
-                
+
                 await user.save();
                 return res.status(200).json({ message: "Profile updated successfully" });
             }
 
             if (action === "change_password") {
                 const { oldPassword, newPassword } = req.body;
-                
+
                 if (!oldPassword || !newPassword) {
                     return res.status(400).json({ error: "Missing fields" });
                 }
@@ -66,16 +66,13 @@ export default async function handler(req, res) {
                     return res.status(400).json({ error: "New password must be at least 8 characters" });
                 }
 
-                // Verify old password
                 let isValid = false;
-                // Try bcrypt first (if user has hashed password)
                 try {
                     isValid = await bcrypt.compare(oldPassword, user.password);
                 } catch (e) {
-                    // Ignore error (likely data and hash arguments required if password is empty or invalid format)
+                   
                 }
 
-                // If not valid yet, try plain text (legacy)
                 if (!isValid && user.password === oldPassword) {
                     isValid = true;
                 }
@@ -107,22 +104,16 @@ export default async function handler(req, res) {
                 user.otp_purpose = "phone_verification";
                 await user.save();
 
-                // In a real app, send SMS. Here we mock it or send email.
-                // Sending email as fallback/mock
-                await sendEmail({
-                    to: user.email,
-                    subject: "Phone Verification OTP",
-                    html: getEmailTemplate("verification", { otp, name: user.full_name })
-                });
-
-                console.log(`[MOCK SMS] OTP for ${phone}: ${otp}`);
+                // Send SMS
+                const { sendSMS } = await import("../../../lib/sms");
+                await sendSMS(`+91${phone}`, `Your JustRentIt verification code is: ${otp}`);
 
                 return res.status(200).json({ message: "OTP sent successfully" });
             }
 
             if (action === "verify_phone_otp") {
                 const { otp, phone } = req.body;
-                
+
                 if (!user.otp_hash || !user.otp_expiry || user.otp_purpose !== "phone_verification") {
                     return res.status(400).json({ error: "No OTP request found" });
                 }
@@ -142,12 +133,12 @@ export default async function handler(req, res) {
                 if (user.user_type === "renter") {
                     user.user_type = "both";
                 }
-                
+
                 // Clear OTP
                 user.otp_hash = undefined;
                 user.otp_expiry = undefined;
                 user.otp_purpose = undefined;
-                
+
                 await user.save();
 
                 return res.status(200).json({ message: "Profile upgraded successfully" });
@@ -164,20 +155,20 @@ export default async function handler(req, res) {
             }
 
             if (action === "delete_account") {
-                 // Cancel active bookings
-                 const Booking = (await import("../../../models/Booking")).default;
-                 await Booking.updateMany(
-                     {
-                         renter_email: user.email,
-                         status: { $in: ["confirmed", "active", "pending"] }
-                     },
-                     {
-                         $set: { status: "cancelled" }
-                     }
-                 );
-                 
-                 await User.deleteOne({ _id: user._id });
-                 return res.status(200).json({ message: "Account deleted successfully" });
+                // Cancel active bookings
+                const Booking = (await import("../../../models/Booking")).default;
+                await Booking.updateMany(
+                    {
+                        renter_email: user.email,
+                        status: { $in: ["confirmed", "active", "pending"] }
+                    },
+                    {
+                        $set: { status: "cancelled" }
+                    }
+                );
+
+                await User.deleteOne({ _id: user._id });
+                return res.status(200).json({ message: "Account deleted successfully" });
             }
 
             return res.status(400).json({ error: "Invalid action" });
