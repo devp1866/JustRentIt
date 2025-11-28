@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     User, Phone, Shield, CheckCircle, History, DollarSign,
-    IdCard, Lock, MapPin, AlertTriangle, Menu, X, ChevronRight
+    IdCard, Lock, MapPin, AlertTriangle, Menu, X, ChevronRight, Mail
 } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
@@ -235,6 +235,14 @@ export default function Profile() {
                 <span className="px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-semibold capitalize">
                     {user?.user_type === "both" ? "Landlord & Renter" : user?.user_type}
                 </span>
+            </div>
+
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <div className="flex items-center text-brand-dark/80">
+                    <Mail className="w-5 h-5 mr-3 text-brand-blue" />
+                    <span className="font-medium">Email Address</span>
+                </div>
+                <span className="text-brand-dark font-medium">{user?.email}</span>
             </div>
 
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
