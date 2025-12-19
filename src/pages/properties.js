@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, IndianRupee } from "lucide-react";
 import PropertyCard from "../components/property/PropertyCard";
 import Head from "next/head";
+import SEO from "../components/SEO";
 
 export default function Properties() {
     const router = useRouter();
@@ -56,12 +57,10 @@ export default function Properties() {
 
     return (
         <div className="min-h-screen bg-brand-cream py-8 font-sans">
-            <Head>
-                <title>Browse Properties - JustRentIt</title>
-                <meta name="description" content="Search and filter through our extensive collection of rental properties. Find apartments, houses, and studios in your preferred location." />
-                <meta property="og:title" content="Browse Properties - JustRentIt" />
-                <meta property="og:description" content="Find your perfect rental home. Filter by city, price, and type." />
-            </Head>
+            <SEO
+                title="Browse Properties"
+                description="Search and filter through our extensive collection of rental properties. Find apartments, houses, and studios in your preferred location."
+            />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">

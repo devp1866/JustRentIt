@@ -19,6 +19,8 @@ import BookingModal from "../../components/property/BookingModal";
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { isSameDay, parseISO } from 'date-fns';
+import StarRating from "../../components/reviews/StarRating";
+import SEO from "../../components/SEO";
 
 export default function PropertyDetails() {
   const router = useRouter();
@@ -30,6 +32,7 @@ export default function PropertyDetails() {
   const [error, setError] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookedDates, setBookedDates] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   // Gallery State
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -54,6 +57,7 @@ export default function PropertyDetails() {
 
   useEffect(() => {
     if (id) {
+      // Fetch Property
       fetch(`/api/properties/${id}`)
         .then(res => {
           if (!res.ok) throw new Error("Failed to fetch property details");
@@ -76,15 +80,20 @@ export default function PropertyDetails() {
           const dates = [];
           data.forEach(booking => {
             let currentDate = parseISO(booking.start_date);
-            const endDate = booking.end_date ? parseISO(booking.end_date) : parseISO(booking.start_date); // Fallback if end_date missing
-
-            while (currentDate <= endDate) {
+            const endDate = booking.end_date ? parseISO(booking.end_date) : parseISO(booking.start_date);
+            while (currentDate < endDate) {
               dates.push(new Date(currentDate));
               currentDate.setDate(currentDate.getDate() + 1);
             }
           });
           setBookedDates(dates);
         })
+        .catch(console.error);
+
+      // Fetch Reviews
+      fetch(`/api/properties/${id}/reviews`)
+        .then(res => res.json())
+        .then(setReviews)
         .catch(console.error);
     }
   }, [id]);
@@ -114,13 +123,11 @@ export default function PropertyDetails() {
 
   return (
     <div className="min-h-screen bg-brand-cream py-8">
-      <Head>
-        <title>{property.title} | JustRentIt</title>
-        <meta name="description" content={`Rent this ${property.property_type} in ${property.city}. ${property.description?.slice(0, 150)}...`} />
-        <meta property="og:title" content={property.title} />
-        <meta property="og:description" content={`Rent this ${property.property_type} in ${property.city}.`} />
-        <meta property="og:image" content={property.images?.[0] || ""} />
-      </Head>
+      <SEO
+        title={property.title}
+        description={`Rent this ${property.property_type} in ${property.city}. ${property.description?.slice(0, 150)}...`}
+        image={property.images?.[0]}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Images & Details */}
@@ -149,9 +156,18 @@ export default function PropertyDetails() {
                     </span>
                   </div>
                   <h1 className="text-3xl md:text-4xl font-bold text-brand-dark mb-2">{property.title}</h1>
-                  <div className="flex items-center text-brand-dark/70">
-                    <MapPin className="w-5 h-5 mr-2 text-brand-blue" />
-                    <span className="text-lg">{property.location}, {property.city}</span>
+                  <div className="flex flex-wrap items-center gap-4 text-brand-dark/70 mb-2">
+                    <div className="flex items-center">
+                      <MapPin className="w-5 h-5 mr-1 text-brand-blue" />
+                      <span className="text-lg">{property.location}, {property.city}</span>
+                    </div>
+                    {property.rating > 0 && (
+                      <div className="flex items-center bg-brand-yellow/10 px-2 py-1 rounded-lg">
+                        <StarRating rating={property.rating} size="sm" />
+                        <span className="ml-2 font-bold text-brand-dark">{property.rating}</span>
+                        <span className="ml-1 text-sm text-brand-dark/50">({property.review_count} reviews)</span>
+                      </div>
+                    )}
                   </div>
                   {/* Price is shown in booking card, hiding here for cleaner layout on desktop */}
                   <div className="text-left md:text-right lg:hidden">
@@ -280,6 +296,66 @@ export default function PropertyDetails() {
               <p className="text-brand-dark/70 leading-relaxed whitespace-pre-line">
                 {property.description || "No description available for this property."}
               </p>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-brand-blue/10">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-brand-dark">Guest Reviews</h2>
+                {property.rating > 0 && (
+                  <div className="flex items-center">
+                    <Star className="w-6 h-6 text-brand-yellow fill-brand-yellow mr-2" />
+                    <span className="text-2xl font-bold text-brand-dark">{property.rating}</span>
+                    <span className="text-brand-dark/50 ml-2">({property.review_count} reviews)</span>
+                  </div>
+                )}
+              </div>
+
+              {reviews.length > 0 ? (
+                <div className="space-y-8">
+                  {reviews.map((review) => (
+                    <div key={review._id} className="border-b border-gray-100 last:border-0 pb-8 last:pb-0">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold mr-3">
+                            {review.renter_name?.charAt(0) || "U"}
+                          </div>
+                          <div>
+                            <p className="font-bold text-brand-dark">{review.renter_name || "JustRentIt User"}</p>
+                            <p className="text-xs text-brand-dark/40">{new Date(review.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <StarRating rating={review.rating} size="sm" />
+                      </div>
+                      <p className="text-brand-dark/70 text-sm leading-relaxed mb-4">
+                        {review.comment}
+                      </p>
+                      {/* Detailed Categories */}
+                      <div className="flex flex-wrap gap-4 mt-2">
+                        {(() => {
+                          const isGroupA = ["hotel", "resort", "pg", "villa"].includes(property.property_type?.toLowerCase());
+                          const allowedCategories = isGroupA
+                            ? ['cleanliness', 'safety', 'service_staff', 'amenities', 'accuracy', 'value', 'communication', 'location', 'maintenance']
+                            : ['cleanliness', 'safety', 'check_in', 'amenities', 'accuracy', 'value', 'communication', 'location', 'maintenance'];
+
+                          return Object.entries(review.categories || {})
+                            .filter(([key, value]) => allowedCategories.includes(key) && value > 0)
+                            .map(([key, value]) => (
+                              <div key={key} className="flex items-center text-xs text-brand-dark/50 bg-gray-50 px-2 py-1 rounded">
+                                <span className="capitalize mr-2">{key.replace('_', ' ')}</span>
+                                <span className="font-bold text-brand-dark">{value}</span>
+                              </div>
+                            ));
+                        })()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-brand-cream/30 rounded-xl">
+                  <p className="text-brand-dark/50 italic">No reviews yet. Be the first to rent and review!</p>
+                </div>
+              )}
             </div>
 
             {/* Amenities */}

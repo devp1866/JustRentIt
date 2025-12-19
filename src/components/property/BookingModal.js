@@ -259,7 +259,7 @@ export default function BookingModal({ property, user, onClose }) {
                       { before: new Date() },
                       ...bookedRanges.map(range => ({
                         from: new Date(range.start_date),
-                        to: new Date(range.end_date)
+                        to: addDays(new Date(range.end_date), -1)
                       }))
                     ]}
                     modifiersStyles={{
@@ -306,7 +306,20 @@ export default function BookingModal({ property, user, onClose }) {
                 )}
                 <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10 mt-2">
                   <span className="font-bold text-lg text-brand-dark">Total Amount</span>
-                  <span className="text-xl font-bold text-brand-blue">₹{totalAmount}</span>
+                </div>
+              </div>
+
+              <div className="bg-brand-yellow/10 border border-brand-yellow/30 p-4 rounded-xl flex items-start gap-3">
+                <div className="bg-brand-yellow/20 p-2 rounded-full text-brand-dark/70">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <div>
+                  <h4 className="font-bold text-brand-dark text-sm">Important Timing</h4>
+                  <p className="text-xs text-brand-dark/70 mt-1">
+                    Standard Check-in: <span className="font-bold">10:00 AM</span>
+                    <br />
+                    Standard Check-out: <span className="font-bold">10:00 AM</span>
+                  </p>
                 </div>
               </div>
             </div>

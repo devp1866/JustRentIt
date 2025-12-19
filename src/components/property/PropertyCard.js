@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { MapPin, Bed, Bath, Square } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Star } from "lucide-react";
 import Image from "next/image";
 
 export default function PropertyCard({ property }) {
@@ -41,6 +41,13 @@ export default function PropertyCard({ property }) {
           <h3 className="text-xl font-bold text-brand-dark mb-2 group-hover:text-brand-blue transition-colors truncate">
             {property.title}
           </h3>
+          {property.rating > 0 && (
+            <div className="flex items-center mb-2">
+              <Star className="w-4 h-4 text-brand-yellow fill-brand-yellow mr-1" />
+              <span className="font-bold text-brand-dark">{property.rating}</span>
+              <span className="text-xs text-brand-dark/50 ml-1">({property.review_count})</span>
+            </div>
+          )}
           <div className="flex items-center text-brand-dark/70 mb-4">
             <MapPin className="w-4 h-4 mr-1 text-brand-blue" />
             <span className="text-sm truncate">{property.location}</span>

@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import SEO from '../components/SEO';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Search, ChevronDown, ChevronUp, HelpCircle, Book, Shield, CreditCard, Home } from 'lucide-react';
@@ -35,8 +36,8 @@ export default function HelpCenter() {
                     answer: "We accept all major credit/debit cards, UPI, and net banking. All payments are processed securely through our payment partners."
                 },
                 {
-                    question: "Can I cancel my booking?",
-                    answer: "Yes, you can cancel your booking. Cancellation policies vary by property (Flexible, Moderate, or Strict). Please check the specific policy on the property page before booking."
+                    question: "What is the cancellation and refund policy?",
+                    answer: "Our standard cancellation policy is designed to be fair to both guests and landlords:\n• More than 30 days before check-in: 100% Refund\n• 7 to 30 days before check-in: 70% Refund\n• 3 to 7 days before check-in: 50% Refund\n• Less than 3 days: No Refund"
                 }
             ]
         },
@@ -70,10 +71,7 @@ export default function HelpCenter() {
 
     return (
         <div className="min-h-screen bg-brand-cream">
-            <Head>
-                <title>Help Center | JustRentIt</title>
-                <meta name="description" content="Find answers to your questions and get support from JustRentIt." />
-            </Head>
+            <SEO title="Help Center" description="Find answers to your questions and get support from JustRentIt." />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-br from-brand-blue to-brand-blue/80 text-white py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -159,7 +157,7 @@ export default function HelpCenter() {
                                                     </button>
                                                     {isOpen && (
                                                         <div className="px-8 pb-6 animate-in slide-in-from-top-2 duration-200">
-                                                            <p className="text-brand-dark/70 leading-relaxed">{item.answer}</p>
+                                                            <p className="text-brand-dark/70 leading-relaxed whitespace-pre-line">{item.answer}</p>
                                                         </div>
                                                     )}
                                                 </div>

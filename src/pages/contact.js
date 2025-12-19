@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import SEO from '../components/SEO';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useState } from 'react';
 
@@ -39,10 +40,7 @@ export default function Contact() {
 
     return (
         <div className="min-h-screen bg-brand-cream py-12">
-            <Head>
-                <title>Contact Us | JustRentIt</title>
-                <meta name="description" content="Get in touch with the JustRentIt team for support or inquiries." />
-            </Head>
+            <SEO title="Contact Us" description="Get in touch with the JustRentIt team for support or inquiries." />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">

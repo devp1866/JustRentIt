@@ -71,8 +71,8 @@ export default async function handler(req, res) {
             status: { $in: ["confirmed", "active", "paid"] },
             $or: [
                 {
-                    start_date: { $lte: endDate },
-                    end_date: { $gte: start_date }
+                    start_date: { $lt: endDate },
+                    end_date: { $gt: start_date }
                 }
             ]
         });

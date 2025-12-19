@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, MapPin, DollarSign, AlertTriangle } from "lucide-react";
-import { format, differenceInDays, parseISO } from "date-fns";
+import { Calendar as CalendarIcon, MapPin, DollarSign, AlertTriangle, CheckCircle, AlertCircle } from "lucide-react";
+import { format, differenceInDays, parseISO, addDays, isWithinInterval, startOfDay } from "date-fns";
 import Image from "next/image";
+import ReviewModal from "../reviews/ReviewModal";
 
 export default function MyBookings({ user }) {
   const queryClient = useQueryClient();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [reviewBooking, setReviewBooking] = useState(null);
   const [refundEstimate, setRefundEstimate] = useState(0);
   const [reason, setReason] = useState("");
 
@@ -46,13 +49,14 @@ export default function MyBookings({ user }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'confirmed':
       case 'active':
-        return 'bg-green-600';
+        return 'bg-brand-green animate-pulse'; // Distinction for active living
+      case 'confirmed':
+        return 'bg-brand-blue';
       case 'pending':
         return 'bg-yellow-600';
       case 'completed':
-        return 'bg-blue-600';
+        return 'bg-gray-600';
       case 'cancelled':
         return 'bg-red-600';
       default:
@@ -72,9 +76,9 @@ export default function MyBookings({ user }) {
     if (daysUntilCheckIn > 30) {
       amount = booking.total_amount;
     } else if (daysUntilCheckIn >= 7) {
-      amount = booking.total_amount * 0.5;
-    } else if (daysUntilCheckIn >= 3) {
       amount = booking.total_amount * 0.7;
+    } else if (daysUntilCheckIn >= 3) {
+      amount = booking.total_amount * 0.5;
     } else {
       amount = 0;
     }
@@ -206,6 +210,18 @@ export default function MyBookings({ user }) {
                           <p className="text-sm text-brand-dark/70">{booking.landlord_email}</p>
                         </div>
                       </div>
+                      <div className="flex items-start gap-3 col-span-1 sm:col-span-2 bg-brand-yellow/10 p-2 rounded-lg border border-brand-yellow/20">
+                        <div className="bg-brand-yellow/20 p-1 rounded-full text-brand-dark/70 mt-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-brand-dark">Standard Timings</p>
+                          <div className="flex justify-between items-center text-xs text-brand-dark/70 mt-0.5">
+                            <span>Check-in: <span className="font-bold">10:00 AM</span></span>
+                            <span>Check-out: <span className="font-bold">10:00 AM</span></span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -245,6 +261,69 @@ export default function MyBookings({ user }) {
                           View Property Details →
                         </button>
                       </Link>
+                      {/* Review Logic */}
+                      {/* Review Logic */}
+                      {(booking.status === 'active' || booking.status === 'completed') && (() => {
+                        const now = new Date();
+                        const moveIn = parseISO(booking.start_date);
+                        const moveOut = booking.end_date ? parseISO(booking.end_date) : moveIn;
+                        const deadline = addDays(moveOut, 3);
+                        const isWithinDeadline = isWithinInterval(now, { start: startOfDay(moveIn), end: deadline });
+
+                        // Notification for last day (if review not submitted)
+                        const isLastDay = !booking.has_review && differenceInDays(deadline, now) <= 1 && differenceInDays(deadline, now) >= 0;
+
+                        if (booking.has_review) {
+                          // Check for 12 hours edit window
+                          const reviewTime = parseISO(booking.review_createdAt);
+                          const hoursSinceReview = (now - reviewTime) / (1000 * 60 * 60);
+
+                          if (hoursSinceReview <= 12) {
+                            return (
+                              <button
+                                onClick={() => {
+                                  setReviewBooking(booking);
+                                  setShowReviewModal(true);
+                                }}
+                                className="ml-3 px-4 py-2 border border-brand-dark/20 text-brand-dark text-sm font-bold rounded-lg hover:bg-brand-cream transition-colors"
+                              >
+                                Edit Review
+                              </button>
+                            );
+                          } else {
+                            return (
+                              <span className="ml-3 px-4 py-2 text-brand-green text-sm font-bold flex items-center">
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Review Submitted
+                              </span>
+                            );
+                          }
+                        }
+
+                        if (isWithinDeadline) {
+                          return (
+                            <div className="flex items-center gap-2">
+                              {isLastDay && (
+                                <div className="flex items-center gap-1 text-xs font-bold text-red-500 animate-pulse bg-red-50 px-2 py-1 rounded-lg border border-red-100">
+                                  <AlertCircle className="w-3 h-3" />
+                                  Review closes today!
+                                </div>
+                              )}
+                              <button
+                                onClick={() => {
+                                  setReviewBooking(booking);
+                                  setShowReviewModal(true);
+                                }}
+                                className="ml-3 px-4 py-2 bg-brand-dark text-white text-sm font-bold rounded-lg hover:bg-brand-blue transition-colors shadow-md"
+                              >
+                                Write Review
+                              </button>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()
+                      }
                     </div>
                   </div>
                 </div>
@@ -252,7 +331,8 @@ export default function MyBookings({ user }) {
             </div>
           ))}
         </div>
-      )}
+      )
+      }
 
       {/* Cancel Modal */}
       {showCancelModal && (
@@ -300,6 +380,18 @@ export default function MyBookings({ user }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Review Modal */}
+      {showReviewModal && reviewBooking && (
+        <ReviewModal
+          booking={reviewBooking}
+          initialData={reviewBooking?.review_data}
+          onClose={(success) => {
+            setShowReviewModal(false);
+            if (success) setReviewBooking(null);
+          }}
+        />
       )}
     </div>
   );

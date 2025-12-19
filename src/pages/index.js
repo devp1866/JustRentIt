@@ -4,8 +4,7 @@ import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, IndianRupee, Home as HomeIcon, TrendingUp, CheckCircle, Search, ArrowRight, Shield, Star, Users } from "lucide-react";
 import PropertyCard from "../components/property/PropertyCard";
-import Head from "next/head";
-import Image from "next/image";
+import SEO from "../components/SEO";
 
 export default function Home() {
     const router = useRouter();
@@ -31,12 +30,10 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-brand-cream font-sans selection:bg-brand-blue selection:text-white">
-            <Head>
-                <title>JustRentIt - Premier Rental Marketplace for Homes & Apartments</title>
-                <meta name="description" content="Find your dream rental home with JustRentIt. Browse thousands of verified listings for apartments, houses, and condos. Secure booking and trusted landlords." />
-                <meta property="og:title" content="JustRentIt - Premier Rental Marketplace" />
-                <meta property="og:description" content="Find your dream rental home with JustRentIt. Browse thousands of verified listings for apartments, houses, and condos." />
-            </Head>
+            <SEO
+                title="JustRentIt - Premier Rental Marketplace"
+                description="Find your dream rental home with JustRentIt. Browse thousands of verified listings for apartments, houses, and condos."
+            />
 
             {/* Hero Section */}
             <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">

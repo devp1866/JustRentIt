@@ -21,7 +21,9 @@ const PropertySchema = new mongoose.Schema({
     enabled: { type: Boolean, default: false },
     required_duration: { type: Number }, // days for short_term, months for long_term
     discount_percentage: { type: Number }
-  }
+  },
+  rating: { type: Number, default: 0 },
+  review_count: { type: Number, default: 0 }
 }, { timestamps: true });
 
 if (mongoose.models.Property) {

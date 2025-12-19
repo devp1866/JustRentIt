@@ -13,16 +13,19 @@ const UserSchema = new mongoose.Schema({
   city: { type: String },
   state: { type: String },
   country: { type: String },
-  govt_id: { type: String }, 
-  govt_id_image: { type: String }, 
-  property_ownership_proof: { type: String }, 
+  govt_id: { type: String },
+  govt_id_image: { type: String },
+  property_ownership_proof: { type: String },
   // Renter specific
   preferred_city: { type: String },
-  budget_range: { type: String }, 
+  budget_range: { type: String },
   // OTP Verification
   otp_hash: { type: String },
   otp_expiry: { type: Date },
-  otp_purpose: { type: String } 
+  otp_purpose: { type: String },
+  // Review System
+  landlord_rating: { type: Number, default: 0 },
+  landlord_review_count: { type: Number, default: 0 }
 });
 
 // Prevent Mongoose OverwriteModelError

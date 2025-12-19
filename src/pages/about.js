@@ -1,13 +1,10 @@
-import Head from 'next/head';
 import { Users, Target, Shield } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function About() {
     return (
         <div className="min-h-screen bg-gray-50">
-            <Head>
-                <title>About Us | JustRentIt</title>
-                <meta name="description" content="Learn more about JustRentIt and our mission to simplify rental management." />
-            </Head>
+            <SEO title="About Us" description="Learn more about JustRentIt and our mission to simplify rental management." />
 
             {/* Hero Section */}
             <div className="bg-blue-900 text-white py-20">
