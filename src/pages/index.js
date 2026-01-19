@@ -85,7 +85,6 @@ export default function Home() {
                                         <option value="condo">Condo</option>
                                         <option value="studio">Studio</option>
                                         <option value="villa">Villa</option>
-                                        <option value="pg">PG</option>
                                     </select>
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                                         <HomeIcon className="w-5 h-5 text-brand-dark/40" />

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://justrentit.vercel.app/sitemap.xml
+Sitemap: https://justrent-it.vercel.app/sitemap.xml

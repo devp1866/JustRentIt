@@ -42,7 +42,18 @@ export default function Properties() {
         const rentalMatch = rentalType === "all" || property.rental_type === rentalType;
 
         let priceMatch = true;
-        const price = property.rental_type === 'short_term' ? property.price_per_night * 30 : property.price_per_month;
+        // Calculate price for filtering. If rooms exist, use the lowest price room.
+        let price = 0;
+
+        if (property.rooms && property.rooms.length > 0) {
+            // Get min price from rooms
+            const roomPrices = property.rooms.map(r => property.rental_type === 'short_term' ? (r.price_per_night * 30) : r.price_per_month).filter(p => p);
+            if (roomPrices.length > 0) {
+                price = Math.min(...roomPrices);
+            }
+        } else {
+            price = property.rental_type === 'short_term' ? property.price_per_night * 30 : property.price_per_month;
+        }
 
         if (priceRange === "under_2k") priceMatch = price < 2000;
         else if (priceRange === "2k_5k") priceMatch = price >= 2000 && price <= 5000;
@@ -50,7 +61,10 @@ export default function Properties() {
         else if (priceRange === "20k_50k") priceMatch = price > 20000 && price <= 50000;
         else if (priceRange === "above_50k") priceMatch = price > 50000;
 
-        return cityMatch && typeMatch && rentalMatch && priceMatch;
+        // Amenities Filter (Room Level for Hotels/Resorts)
+        let amenityMatch = true;
+
+        return cityMatch && typeMatch && rentalMatch && priceMatch && amenityMatch;
     });
 
     const offerProperties = properties.filter(p => p.offer && p.offer.enabled);
@@ -110,7 +124,6 @@ export default function Properties() {
                             <option value="condo">Condo</option>
                             <option value="studio">Studio</option>
                             <option value="villa">Villa</option>
-                            <option value="pg">PG</option>
                             <option value="hotel">Hotel</option>
                             <option value="resort">Resort</option>
                         </select>
@@ -148,6 +161,20 @@ export default function Properties() {
                             Reset Filters
                         </button>
                     </div>
+
+                    {/* Extra Filters for Hotels/Resorts */}
+                    {['hotel', 'resort'].includes(propertyType) && (
+                        <div className="mt-4 pt-4 border-t border-brand-blue/10 flex items-center gap-4">
+                            <span className="text-sm font-medium text-brand-dark">Hotel Features:</span>
+                            {['Pool', 'Spa', 'Gym', 'WiFi', 'Parking'].map(amenity => (
+                                <label key={amenity} className="flex items-center gap-2 text-sm text-brand-dark/70 cursor-pointer">
+                                    <input type="checkbox" className="rounded border-brand-blue/30 text-brand-blue focus:ring-brand-blue" />
+                                    {amenity}
+                                </label>
+                            ))}
+                            <span className="text-xs text-brand-dark/50 ml-auto italic">Feature filtering coming soon</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Special Offers Section */}

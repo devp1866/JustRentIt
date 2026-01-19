@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 
         // 4. Recalculate Rating
         const property = await Property.findById(review.property_id);
-        const isGroupA = ["hotel", "resort", "pg", "villa"].includes(property.property_type?.toLowerCase());
+        const isGroupA = ["hotel", "resort", "villa"].includes(property.property_type?.toLowerCase());
 
         const weights = isGroupA ? {
             cleanliness: 0.20,

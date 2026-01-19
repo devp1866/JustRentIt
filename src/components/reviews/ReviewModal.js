@@ -5,8 +5,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function ReviewModal({ booking, onClose, initialData = null }) {
     // 1. Determine Property Group
-    // Group A (Serviced): Hotel, Resort, PG, Villa
-    const isGroupA = ["hotel", "resort", "pg", "villa"].includes(booking.property_type?.toLowerCase());
+    // Group A (Serviced): Hotel, Resort, Villa
+    const isGroupA = ["hotel", "resort", "villa"].includes(booking.property_type?.toLowerCase());
 
     const initialCategories = initialData?.categories || {
         cleanliness: 0,

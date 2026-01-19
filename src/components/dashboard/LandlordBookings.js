@@ -67,6 +67,9 @@ export default function LandlordBookings() {
                                     <h3 className="text-xl font-bold text-gray-900 mt-2">
                                         {booking.property_title}
                                     </h3>
+                                    {booking.room_name && (
+                                        <p className="text-sm font-medium text-blue-600 mt-1">Room: {booking.room_name}</p>
+                                    )}
                                 </div>
                                 <div className="mt-4 md:mt-0 text-right">
                                     <div className="text-2xl font-bold text-blue-600">₹{booking.total_amount}</div>

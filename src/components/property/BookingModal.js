@@ -22,23 +22,34 @@ function SimpleModal({ open, onClose, children }) {
   );
 }
 
-export default function BookingModal({ property, user, onClose }) {
+export default function BookingModal({ property, user, onClose, selectedRoom, rentalType }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [step, setStep] = useState("details");
   const [startDate, setStartDate] = useState("");
-  const [duration, setDuration] = useState(property.rental_type === 'short_term' ? 3 : 6);
+  const isShortTerm = (rentalType || property.rental_type) === 'short_term';
+  const [duration, setDuration] = useState(isShortTerm ? 3 : 6);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const isShortTerm = property.rental_type === 'short_term';
-  const price = isShortTerm ? (property.price_per_night || property.price_per_month / 30) : property.price_per_month;
+  // Price Logic: Use selectedRoom price if available, fallback to property base price
+  const basePricePerMonth = selectedRoom ? selectedRoom.price_per_month : property.price_per_month;
+  const basePricePerNight = selectedRoom ? selectedRoom.price_per_night : property.price_per_night;
+
+  const price = isShortTerm
+    ? (basePricePerNight || basePricePerMonth / 30)
+    : basePricePerMonth;
+
   const baseTotal = Math.round(price * duration);
 
   // Fetch booked dates
   const { data: bookedData } = useQuery({
-    queryKey: ['booked-dates', property._id],
+    queryKey: ['booked-dates', property._id, selectedRoom?._id],
     queryFn: async () => {
-      const res = await fetch(`/api/properties/${property._id}/booked-dates`);
+      const queryParams = new URLSearchParams();
+      if (selectedRoom?._id) {
+        queryParams.append('room_id', selectedRoom._id);
+      }
+      const res = await fetch(`/api/properties/${property._id}/booked-dates?${queryParams.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch booked dates');
       return res.json();
     },
@@ -193,11 +204,12 @@ export default function BookingModal({ property, user, onClose }) {
             start_date: startDate,
             duration_months: isShortTerm ? 0 : duration,
             duration_days: isShortTerm ? duration : 0,
-            rental_type: property.rental_type,
+            rental_type: rentalType || property.rental_type,
             total_amount: totalAmount,
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
+            room_id: selectedRoom?._id // Include room_id if selected
           });
         },
         prefill: {
@@ -241,10 +253,13 @@ export default function BookingModal({ property, user, onClose }) {
         {step === "details" && (
           <div className="space-y-6">
             <div className="bg-brand-cream/30 rounded-xl p-4 border border-brand-blue/10">
-              <h3 className="font-bold text-brand-dark mb-2">{property.title}</h3>
+              <h3 className="font-bold text-brand-dark mb-1">{property.title}</h3>
+              {selectedRoom && (
+                <p className="text-sm font-semibold text-brand-blue mb-1">Room: {selectedRoom.name}</p>
+              )}
               <p className="text-sm text-brand-dark/70">{property.location}</p>
               <p className="text-lg font-bold text-brand-blue mt-2">
-                ₹{isShortTerm ? property.price_per_night : property.price_per_month}/{isShortTerm ? "night" : "month"}
+                ₹{isShortTerm ? (selectedRoom?.price_per_night || property.price_per_night) : (selectedRoom?.price_per_month || property.price_per_month)}/{isShortTerm ? "night" : "month"}
               </p>
             </div>
             <div className="space-y-4">

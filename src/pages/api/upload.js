@@ -34,9 +34,9 @@ export default async function handler(req, res) {
         let folderPath = "";
         let fileName = file.originalFilename;
 
-        if (type === "property") {
+        if (type === "property" || type === "room") {
             if (!propertyName) {
-                return res.status(400).json({ message: "Property name is required for property images" });
+                return res.status(400).json({ message: "Property name is required for property/room images" });
             }
             // Sanitize property name to be safe for URL/Folder
             const safePropertyName = propertyName.replace(/[^a-zA-Z0-9-_]/g, "_");

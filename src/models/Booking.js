@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 
 const BookingSchema = new mongoose.Schema({
   property_id: { type: String, required: true },
+  room_id: { type: String }, // Required for multi-room properties
+  room_name: { type: String }, // Snapshot for history
   renter_email: { type: String, required: true },
   renter_name: { type: String },
   start_date: { type: String, required: true },

@@ -33,9 +33,11 @@ export default function EditProperty() {
             enabled: false,
             required_duration: 0,
             discount_percentage: 0
-        }
+        },
+        rooms: [] // For Hotels/Resorts
     });
     const [amenityInput, setAmenityInput] = useState("");
+    const [uploadingRooms, setUploadingRooms] = useState({});
 
     // Fetch existing property data
     const { data: property, isLoading: isLoadingProperty } = useQuery({
@@ -70,7 +72,8 @@ export default function EditProperty() {
                     enabled: false,
                     required_duration: 0,
                     discount_percentage: 0
-                }
+                },
+                rooms: property.rooms || []
             });
         }
     }, [property]);
@@ -107,10 +110,24 @@ export default function EditProperty() {
             alert("Please enter monthly rent");
             return;
         }
-        if (formData.rental_type === 'short_term' && !formData.price_per_night) {
+        if (formData.rental_type === 'short_term' && !formData.price_per_night && !['hotel', 'resort'].includes(formData.property_type)) {
             alert("Please enter nightly price");
             return;
         }
+
+        // Multi-Room Validation
+        if (['hotel', 'resort'].includes(formData.property_type)) {
+            if (!formData.rooms || formData.rooms.length === 0) {
+                alert("Please add at least one room type for your hotel/resort.");
+                return;
+            }
+            const validRooms = formData.rooms.every(r => r.name && r.count > 0 && (r.price_per_night || r.price_per_month));
+            if (!validRooms) {
+                alert("Please ensure all rooms have a name, inventory count, and price.");
+                return;
+            }
+        }
+
         updatePropertyMutation.mutate({
             ...formData,
             landlord_email: user.email,
@@ -183,6 +200,80 @@ export default function EditProperty() {
             ...prev,
             amenities: prev.amenities.filter((_, i) => i !== index),
         }));
+    };
+
+    // --- MULTI-ROOM HANDLERS ---
+    const addRoom = () => {
+        setFormData(prev => ({
+            ...prev,
+            rooms: [...prev.rooms, {
+                name: "",
+                price_per_night: 0,
+                price_per_month: 0,
+                capacity: 2,
+                count: 1,
+                amenities: [],
+                images: [],
+                bedrooms: 1,
+                bathrooms: 1,
+                available: true
+            }]
+        }));
+    };
+
+    const removeRoom = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            rooms: prev.rooms.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateRoom = (index, field, value) => {
+        setFormData(prev => {
+            const newRooms = [...prev.rooms];
+            newRooms[index] = { ...newRooms[index], [field]: value };
+            return { ...prev, rooms: newRooms };
+        });
+    };
+
+    const handleRoomImageUpload = async (e, roomIndex) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        setUploadingRooms(prev => ({ ...prev, [roomIndex]: true }));
+        try {
+            const uploadPromises = files.map(async (file) => {
+                const data = new FormData();
+                data.append("file", file);
+                data.append("type", "room");
+                data.append("propertyName", formData.title);
+
+                const res = await fetch("/api/upload", {
+                    method: "POST",
+                    body: data,
+                });
+
+                if (!res.ok) throw new Error("Failed to upload image");
+                const json = await res.json();
+                return json.url;
+            });
+
+            const uploadedUrls = await Promise.all(uploadPromises);
+
+            setFormData(prev => {
+                const newRooms = [...prev.rooms];
+                newRooms[roomIndex] = {
+                    ...newRooms[roomIndex],
+                    images: [...newRooms[roomIndex].images, ...uploadedUrls]
+                };
+                return { ...prev, rooms: newRooms };
+            });
+        } catch (error) {
+            console.error("Upload failed:", error);
+            alert("Failed to upload images.");
+        } finally {
+            setUploadingRooms(prev => ({ ...prev, [roomIndex]: false }));
+        }
     };
 
     // --- AUTH GUARD ---
@@ -428,45 +519,163 @@ export default function EditProperty() {
                         </div>
                     </div>
 
-                    {/* Property Details */}
+                    {/* Property Details / Room Configuration */}
                     <div className="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Details</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label htmlFor="bedrooms">Bedrooms</label>
-                                <input
-                                    id="bedrooms"
-                                    type="number"
-                                    min="0"
-                                    value={formData.bedrooms}
-                                    onChange={e => setFormData({ ...formData, bedrooms: parseInt(e.target.value) })}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
-                                />
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                            {['hotel', 'resort'].includes(formData.property_type) ? "Room Configuration" : "Property Details"}
+                        </h2>
+
+                        {['hotel', 'resort'].includes(formData.property_type) ? (
+                            <div className="space-y-6">
+                                {formData.rooms && formData.rooms.map((room, index) => (
+                                    <div key={index} className="bg-gray-50 p-6 rounded-xl border border-gray-200 relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => removeRoom(index)}
+                                            className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                        <h3 className="font-bold text-gray-800 mb-4">Room Type {index + 1}</h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Room Name *</label>
+                                                <input
+                                                    value={room.name}
+                                                    onChange={e => updateRoom(index, 'name', e.target.value)}
+                                                    placeholder="e.g. Deluxe Suite"
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Inventory Count *</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={room.count}
+                                                    onChange={e => updateRoom(index, 'count', parseInt(e.target.value))}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={room.bedrooms || 1}
+                                                    onChange={e => updateRoom(index, 'bedrooms', parseInt(e.target.value))}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Bathrooms</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.5"
+                                                    value={room.bathrooms || 1}
+                                                    onChange={e => updateRoom(index, 'bathrooms', parseFloat(e.target.value))}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Max Guests *</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={room.capacity}
+                                                    onChange={e => updateRoom(index, 'capacity', parseInt(e.target.value))}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    {formData.rental_type === 'short_term' ? 'Price per Night (₹)' : 'Price per Month (₹)'} *
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month}
+                                                    onChange={e => updateRoom(index, formData.rental_type === 'short_term' ? 'price_per_night' : 'price_per_month', parseFloat(e.target.value))}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Room Images */}
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Room Images</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {room.images && room.images.map((img, imgIdx) => (
+                                                    <div key={imgIdx} className="relative w-20 h-20">
+                                                        <Image src={img} alt="Room" fill className="object-cover rounded-lg" />
+                                                    </div>
+                                                ))}
+                                                <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100">
+                                                    <input type="file" multiple accept="image/*" onChange={(e) => handleRoomImageUpload(e, index)} className="hidden" disabled={uploadingRooms[index]} />
+                                                    {uploadingRooms[index] ? (
+                                                        <Loader2 className="w-6 h-6 text-blue-900 animate-spin" />
+                                                    ) : (
+                                                        <PlusCircle className="w-6 h-6 text-gray-400" />
+                                                    )}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={addRoom}
+                                    className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-blue-900 font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <PlusCircle className="w-5 h-5" />
+                                    Add Another Room Type
+                                </button>
                             </div>
-                            <div>
-                                <label htmlFor="bathrooms">Bathrooms</label>
-                                <input
-                                    id="bathrooms"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={formData.bathrooms}
-                                    onChange={e => setFormData({ ...formData, bathrooms: parseFloat(e.target.value) })}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
-                                />
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label htmlFor="bedrooms">Bedrooms</label>
+                                    <input
+                                        id="bedrooms"
+                                        type="number"
+                                        min="0"
+                                        value={formData.bedrooms}
+                                        onChange={e => setFormData({ ...formData, bedrooms: parseInt(e.target.value) })}
+                                        className="mt-1 w-full border px-3 py-2 rounded"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="bathrooms">Bathrooms</label>
+                                    <input
+                                        id="bathrooms"
+                                        type="number"
+                                        min="0"
+                                        step="0.5"
+                                        value={formData.bathrooms}
+                                        onChange={e => setFormData({ ...formData, bathrooms: parseFloat(e.target.value) })}
+                                        className="mt-1 w-full border px-3 py-2 rounded"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="area">Area (sq ft)</label>
+                                    <input
+                                        id="area"
+                                        type="number"
+                                        min="0"
+                                        value={formData.area_sqft}
+                                        onChange={e => setFormData({ ...formData, area_sqft: parseInt(e.target.value) })}
+                                        className="mt-1 w-full border px-3 py-2 rounded"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label htmlFor="area">Area (sq ft)</label>
-                                <input
-                                    id="area"
-                                    type="number"
-                                    min="0"
-                                    value={formData.area_sqft}
-                                    onChange={e => setFormData({ ...formData, area_sqft: parseInt(e.target.value) })}
-                                    className="mt-1 w-full border px-3 py-2 rounded"
-                                />
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Amenities */}

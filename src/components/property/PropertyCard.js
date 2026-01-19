@@ -21,10 +21,18 @@ export default function PropertyCard({ property }) {
           />
           <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
             <span className="bg-white/90 backdrop-blur-sm text-brand-dark font-bold px-3 py-1 rounded-xl shadow-sm border border-brand-blue/10">
-              {property.rental_type === 'short_term'
-                ? `₹${property.price_per_night}/night`
-                : `₹${property.price_per_month}/mo`
-              }
+              {(() => {
+                if (property.rooms && property.rooms.length > 0) {
+                  const prices = property.rooms.map(r => property.rental_type === 'short_term' ? r.price_per_night : r.price_per_month).filter(p => p !== undefined && p !== null && p > 0);
+                  if (prices.length > 0) {
+                    const minPrice = Math.min(...prices);
+                    return <span className="text-xs">Starts from ₹{minPrice}{property.rental_type === 'short_term' ? '/night' : '/mo'}</span>
+                  }
+                }
+                return property.rental_type === 'short_term'
+                  ? `₹${property.price_per_night}/night`
+                  : `₹${property.price_per_month}/mo`;
+              })()}
             </span>
             <span className={`px-2 py-1 rounded-xl text-xs font-bold uppercase tracking-wide shadow-sm backdrop-blur-sm ${property.rental_type === 'short_term' ? 'bg-brand-purple/90 text-white' : 'bg-brand-blue/90 text-white'
               }`}>

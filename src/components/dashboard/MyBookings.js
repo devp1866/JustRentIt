@@ -168,7 +168,12 @@ export default function MyBookings({ user }) {
                 <div className="flex-1 p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-xl font-bold text-brand-dark">{booking.property_title}</h3>
+                      <div>
+                        <h3 className="text-xl font-bold text-brand-dark">{booking.property_title}</h3>
+                        {booking.room_name && (
+                          <p className="text-sm font-semibold text-brand-blue/80 mt-0.5">Room: {booking.room_name}</p>
+                        )}
+                      </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-brand-blue">₹{booking.total_amount}</p>
                         <p className="text-xs text-brand-dark/50">Total Paid</p>

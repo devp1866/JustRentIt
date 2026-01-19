@@ -15,6 +15,13 @@ export default async function handler(req, res) {
   } else if (req.method === "POST") {
     try {
       console.log("Creating property with body:", JSON.stringify(req.body, null, 2));
+      const { property_type, rooms } = req.body;
+
+      // Validation for Hotels/Resorts
+      if ((property_type === "hotel" || property_type === "resort") && (!rooms || rooms.length === 0)) {
+        return res.status(400).json({ message: "Hotels and Resorts must have at least one room type." });
+      }
+
       const newProp = new Property(req.body);
       await newProp.save();
       return res.status(201).json(newProp);

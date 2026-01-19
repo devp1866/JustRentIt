@@ -13,7 +13,8 @@ import {
   Info,
   Home,
   Shield,
-  Star
+  Star,
+  Users
 } from "lucide-react";
 import BookingModal from "../../components/property/BookingModal";
 import { DayPicker } from 'react-day-picker';
@@ -37,8 +38,15 @@ export default function PropertyDetails() {
   // Gallery State
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [galleryImages, setGalleryImages] = useState([]);
 
-  const openGallery = (index) => {
+  // Multi-Room State
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [priceFilter, setPriceFilter] = useState('all'); // 'all', 'under_5k', '5k_10k', 'above_10k'
+
+  const openGallery = (index, images = null) => {
+    // If specific images provided (e.g., room images), use them. Otherwise use property images.
+    setGalleryImages(images || property.images || []);
     setCurrentImageIndex(index);
     setIsGalleryOpen(true);
   };
@@ -47,12 +55,14 @@ export default function PropertyDetails() {
 
   const nextImage = (e) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % property.images.length);
+    if (!galleryImages.length) return;
+    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
   };
 
   const prevImage = (e) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
+    if (!galleryImages.length) return;
+    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
   };
 
   useEffect(() => {
@@ -73,23 +83,6 @@ export default function PropertyDetails() {
           setLoading(false);
         });
 
-      // Fetch availability
-      fetch(`/api/properties/${id}/availability`)
-        .then(res => res.json())
-        .then(data => {
-          const dates = [];
-          data.forEach(booking => {
-            let currentDate = parseISO(booking.start_date);
-            const endDate = booking.end_date ? parseISO(booking.end_date) : parseISO(booking.start_date);
-            while (currentDate < endDate) {
-              dates.push(new Date(currentDate));
-              currentDate.setDate(currentDate.getDate() + 1);
-            }
-          });
-          setBookedDates(dates);
-        })
-        .catch(console.error);
-
       // Fetch Reviews
       fetch(`/api/properties/${id}/reviews`)
         .then(res => res.json())
@@ -97,6 +90,57 @@ export default function PropertyDetails() {
         .catch(console.error);
     }
   }, [id]);
+
+  // Separate Effect for Availability (Re-run when room selection changes)
+  useEffect(() => {
+    if (!property) return;
+
+    const fetchAvailability = async () => {
+      try {
+        // If multi-room (hotel/resort) and no room selected, DO NOT show any booked dates
+        // because the user hasn't chosen what to check availability for yet.
+        const isMultiRoom = ['hotel', 'resort', 'villa'].includes(property.property_type?.toLowerCase());
+        if (isMultiRoom && !selectedRoom) {
+          setBookedDates([]);
+          return;
+        }
+
+        const queryParams = new URLSearchParams();
+        if (selectedRoom?._id) {
+          queryParams.append('room_id', selectedRoom._id);
+        }
+
+        // Use booked-dates endpoint for consistent logic
+        const res = await fetch(`/api/properties/${id}/booked-dates?${queryParams.toString()}`);
+        if (res.ok) {
+          const { bookings } = await res.json();
+          const dates = [];
+          // Handle both array of dates directly or array of booking objects ranges
+          // The booked-dates API returns { start_date, end_date } objects inside a 'bookings' key
+          (bookings || []).forEach(booking => {
+            let currentDate = parseISO(booking.start_date);
+            const endDate = booking.end_date ? parseISO(booking.end_date) : parseISO(booking.start_date);
+            // Add one day to end date logic if needed, but assuming [start, end) or inclusive?
+            // Usually booking is checkout on end_date, so occupied until end_date - 1. 
+            // Let's stick to standard logic: range is inclusive of start, exclusive of end for "nights" 
+            // BUT for display "booked", we usually want to block the night.
+            // Let's assume data is correct ranges.
+
+            // Simple loop:
+            while (currentDate < endDate) {
+              dates.push(new Date(currentDate));
+              currentDate.setDate(currentDate.getDate() + 1);
+            }
+          });
+          setBookedDates(dates);
+        }
+      } catch (err) {
+        console.error("Failed to fetch availability", err);
+      }
+    };
+
+    fetchAvailability();
+  }, [property, selectedRoom, id]);
 
   if (loading) {
     return (
@@ -171,15 +215,33 @@ export default function PropertyDetails() {
                   </div>
                   {/* Price is shown in booking card, hiding here for cleaner layout on desktop */}
                   <div className="text-left md:text-right lg:hidden">
-                    <p className="text-3xl font-bold text-brand-blue">
-                      {property.rental_type === 'short_term'
-                        ? `₹${property.price_per_night}`
-                        : `₹${property.price_per_month}`
-                      }
-                    </p>
-                    <p className="text-brand-dark/50">
-                      {property.rental_type === 'short_term' ? 'per night' : 'per month'}
-                    </p>
+                    {property.rooms && property.rooms.length > 0 ? (
+                      (() => {
+                        const prices = property.rooms.map(r => property.rental_type === 'short_term' ? r.price_per_night : r.price_per_month).filter(p => p !== undefined && p !== null && p > 0);
+                        if (prices.length > 0) {
+                          const minPrice = Math.min(...prices);
+                          return (
+                            <>
+                              <p className="text-3xl font-bold text-brand-blue">₹{minPrice}</p>
+                              <p className="text-brand-dark/50">Starts from</p>
+                            </>
+                          )
+                        }
+                        return <span className="text-3xl font-bold text-brand-blue">N/A</span>
+                      })()
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-brand-blue">
+                          {property.rental_type === 'short_term'
+                            ? `₹${property.price_per_night}`
+                            : `₹${property.price_per_month}`
+                          }
+                        </p>
+                        <p className="text-brand-dark/50">
+                          {property.rental_type === 'short_term' ? 'per night' : 'per month'}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -277,6 +339,168 @@ export default function PropertyDetails() {
               </div>
             )}
 
+            {/* Room Selection for Multi-Room Properties */}
+            {property.rooms && property.rooms.length > 0 && (
+              <div id="room-selection" className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-brand-blue/10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                  <h2 className="text-xl font-bold text-brand-dark">Choose Your Room</h2>
+
+                  {/* Price Filter */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-brand-dark/70">Filter by Price:</span>
+                    <select
+                      value={priceFilter}
+                      onChange={(e) => setPriceFilter(e.target.value)}
+                      className="px-3 py-2 rounded-lg border border-brand-blue/20 text-sm focus:ring-2 focus:ring-brand-blue/50 outline-none"
+                    >
+                      <option value="all">All Prices</option>
+                      <option value="under_5k">Under ₹5,000</option>
+                      <option value="5k_10k">₹5,000 - ₹10,000</option>
+                      <option value="above_10k">Above ₹10,000</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  {property.rooms
+                    .filter(room => {
+                      const price = property.rental_type === 'short_term' ? room.price_per_night : room.price_per_month;
+                      if (!price) return true;
+                      if (priceFilter === 'under_5k') return price < 5000;
+                      if (priceFilter === '5k_10k') return price >= 5000 && price <= 10000;
+                      if (priceFilter === 'above_10k') return price > 10000;
+                      return true;
+                    })
+                    .map((room) => (
+                      <div
+                        key={room._id}
+                        className={`border rounded-xl p-4 transition-all cursor-pointer ${selectedRoom?._id === room._id
+                          ? 'border-brand-blue bg-brand-blue/5 shadow-md ring-1 ring-brand-blue'
+                          : 'border-gray-200 hover:border-brand-blue/50'
+                          }`}
+                        onClick={() => setSelectedRoom(room)}
+                      >
+                        <div className="flex flex-col md:flex-row gap-4">
+                          {/* Room Image Section */}
+                          <div className="flex-shrink-0 w-full md:w-72">
+                            <div
+                              className="relative h-48 rounded-xl overflow-hidden bg-gray-100 cursor-pointer group"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent selecting room when viewing photos
+                                openGallery(0, room.images);
+                              }}
+                            >
+                              {room.images && room.images.length > 0 ? (
+                                <>
+                                  <Image
+                                    src={room.images[0]}
+                                    alt={room.name}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                  />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center">
+                                    <span className="opacity-0 group-hover:opacity-100 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-opacity">View Photos</span>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex items-center justify-center h-full text-gray-400">
+                                  <Home className="w-10 h-10" />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Room Image Thumbnails */}
+                            {room.images && room.images.length > 1 && (
+                              <div className="grid grid-cols-4 gap-2 mt-2">
+                                {room.images.slice(1, 5).map((img, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="relative h-14 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 border border-gray-200"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openGallery(idx + 1, room.images);
+                                    }}
+                                  >
+                                    <Image src={img} alt={`Room view ${idx + 2}`} fill className="object-cover" />
+                                    {idx === 3 && room.images.length > 5 && (
+                                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs font-bold">
+                                        +{room.images.length - 5}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Room Details */}
+                          <div className="flex-grow">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="text-lg font-bold text-brand-dark">{room.name}</h3>
+                                <div className="flex flex-wrap gap-3 text-sm text-brand-dark/70 mt-2 mb-3">
+                                  <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
+                                    <Users className="w-4 h-4 mr-2 text-brand-blue" />
+                                    <span>Max {room.capacity} Guests</span>
+                                  </div>
+                                  {room.bedrooms > 0 && (
+                                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
+                                      <Bed className="w-4 h-4 mr-2 text-brand-blue" />
+                                      <span>{room.bedrooms} Bed{room.bedrooms > 1 ? 's' : ''}</span>
+                                    </div>
+                                  )}
+                                  {room.bathrooms > 0 && (
+                                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
+                                      <Bath className="w-4 h-4 mr-2 text-brand-blue" />
+                                      <span>{room.bathrooms} Bath{room.bathrooms > 1 ? 's' : ''}</span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
+                                    <Home className="w-4 h-4 mr-2 text-brand-blue" />
+                                    <span>{room.count} Units</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xl font-bold text-brand-blue">
+                                  {property.rental_type === 'short_term'
+                                    ? `₹${room.price_per_night}`
+                                    : `₹${room.price_per_month}`
+                                  }
+                                </p>
+                                <p className="text-xs text-brand-dark/50">
+                                  {property.rental_type === 'short_term' ? '/night' : '/mo'}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Amenities */}
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {room.amenities && room.amenities.slice(0, 3).map((am, idx) => (
+                                <span key={idx} className="text-xs bg-white border border-gray-200 px-2 py-1 rounded-full text-gray-600">
+                                  {am}
+                                </span>
+                              ))}
+                              {room.amenities && room.amenities.length > 3 && (
+                                <span className="text-xs text-brand-blue font-medium pt-1">+{room.amenities.length - 3} more</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Selection Indicator */}
+                          <div className="flex items-center justify-center md:justify-end">
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedRoom?._id === room._id ? 'border-brand-blue bg-brand-blue' : 'border-gray-300'
+                              }`}>
+                              {selectedRoom?._id === room._id && <CheckCircle className="w-4 h-4 text-white" />}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {/* Availability Calendar */}
             <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-brand-blue/10">
               <h2 className="text-xl font-bold text-brand-dark mb-6">Availability</h2>
@@ -333,7 +557,9 @@ export default function PropertyDetails() {
                       {/* Detailed Categories */}
                       <div className="flex flex-wrap gap-4 mt-2">
                         {(() => {
-                          const isGroupA = ["hotel", "resort", "pg", "villa"].includes(property.property_type?.toLowerCase());
+                          // 1. Determine Property Group
+                          // Group A (Serviced): Hotel, Resort, Villa
+                          const isGroupA = ["hotel", "resort", "villa"].includes(property.property_type?.toLowerCase());
                           const allowedCategories = isGroupA
                             ? ['cleanliness', 'safety', 'service_staff', 'amenities', 'accuracy', 'value', 'communication', 'location', 'maintenance']
                             : ['cleanliness', 'safety', 'check_in', 'amenities', 'accuracy', 'value', 'communication', 'location', 'maintenance'];
@@ -384,15 +610,36 @@ export default function PropertyDetails() {
                   {property.rental_type === 'short_term' ? 'Nightly Price' : 'Monthly Rent'}
                 </p>
                 <div className="flex items-baseline">
-                  <span className="text-3xl font-bold text-brand-blue">
-                    {property.rental_type === 'short_term'
-                      ? `₹${property.price_per_night}`
-                      : `₹${property.price_per_month}`
-                    }
-                  </span>
-                  <span className="text-brand-dark/50 ml-1">
-                    {property.rental_type === 'short_term' ? '/night' : '/mo'}
-                  </span>
+                  {property.rooms && property.rooms.length > 0 ? (
+                    (() => {
+                      const prices = property.rooms.map(r => property.rental_type === 'short_term' ? r.price_per_night : r.price_per_month).filter(p => p !== undefined && p !== null && p > 0);
+                      if (prices.length > 0) {
+                        const minPrice = Math.min(...prices);
+                        return (
+                          <div className="flex flex-col">
+                            <span className="text-3xl font-bold text-brand-blue">
+                              ₹{minPrice}
+                            </span>
+                            <span className="text-xs text-brand-dark/50">Starts from / {property.rental_type === 'short_term' ? 'night' : 'month'}</span>
+                          </div>
+                        )
+                      }
+                      // Fallback if no valid room prices
+                      return <span className="text-3xl font-bold text-brand-blue">N/A</span>
+                    })()
+                  ) : (
+                    <>
+                      <span className="text-3xl font-bold text-brand-blue">
+                        {property.rental_type === 'short_term'
+                          ? `₹${property.price_per_night}`
+                          : `₹${property.price_per_month}`
+                        }
+                      </span>
+                      <span className="text-brand-dark/50 ml-1">
+                        {property.rental_type === 'short_term' ? '/night' : '/mo'}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -409,6 +656,12 @@ export default function PropertyDetails() {
 
               <button
                 onClick={() => {
+                  if (property.rooms && property.rooms.length > 0 && !selectedRoom) {
+                    // Scroll to room selection
+                    document.getElementById('room-selection')?.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                  }
+
                   if (!session) {
                     router.push(`/login?callbackUrl=${encodeURIComponent(router.asPath)}`);
                   } else {
@@ -421,7 +674,9 @@ export default function PropertyDetails() {
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
               >
-                {property.status === 'available' ? 'Book Now' : 'Not Available'}
+                {property.status === 'available'
+                  ? (property.rooms && property.rooms.length > 0 && !selectedRoom ? 'Select a Room' : 'Book Now')
+                  : 'Not Available'}
               </button>
 
               <p className="text-xs text-center text-brand-dark/40 mt-4">
@@ -439,6 +694,8 @@ export default function PropertyDetails() {
           user={session?.user || { email: 'guest@example.com', full_name: 'Guest User' }}
           onClose={() => setShowBookingModal(false)}
           bookedDates={bookedDates}
+          selectedRoom={selectedRoom}
+          rentalType={property.rental_type}
         />
       )}
 
@@ -460,14 +717,16 @@ export default function PropertyDetails() {
           </button>
 
           <div className="relative w-full h-full max-w-5xl max-h-[80vh] mx-4" onClick={e => e.stopPropagation()}>
-            <Image
-              src={property.images[currentImageIndex]}
-              alt={`Gallery Image ${currentImageIndex + 1}`}
-              fill
-              className="object-contain"
-            />
+            {galleryImages[currentImageIndex] && (
+                <Image
+                src={galleryImages[currentImageIndex]}
+                alt={`Gallery Image ${currentImageIndex + 1}`}
+                fill
+                className="object-contain"
+                />
+            )}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full">
-              {currentImageIndex + 1} / {property.images.length}
+              {currentImageIndex + 1} / {galleryImages.length}
             </div>
           </div>
 

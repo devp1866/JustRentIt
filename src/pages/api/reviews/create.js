@@ -60,9 +60,9 @@ export default async function handler(req, res) {
         }
 
         // 5. Calculate Weighted Rating
-        // Group A (Serviced): Hotel, Resort, PG, Villa
+        // Group A (Serviced): Hotel, Resort, Villa
         // Group B (Private): Apartment, House, Condo, Studio
-        const isGroupA = ["hotel", "resort", "pg", "villa"].includes(property.property_type?.toLowerCase());
+        const isGroupA = ["hotel", "resort", "villa"].includes(property.property_type?.toLowerCase());
 
         const weights = isGroupA ? {
             cleanliness: 0.20,
