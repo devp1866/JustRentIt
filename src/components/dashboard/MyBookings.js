@@ -185,7 +185,7 @@ export default function MyBookings({ user }) {
                         <CalendarIcon className="w-5 h-5 text-brand-blue mt-0.5" />
                         <div>
                           <p className="text-sm font-bold text-brand-dark">Move-in</p>
-                          <p className="text-sm text-brand-dark/70">{format(new Date(booking.start_date), "MMM d, yyyy")}</p>
+                          <p className="text-sm text-brand-dark/70">{format(new Date(booking.start_date), "MMM d, yyyy")}, 10:00 AM</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
@@ -193,7 +193,7 @@ export default function MyBookings({ user }) {
                         <div>
                           <p className="text-sm font-bold text-brand-dark">Move-out</p>
                           <p className="text-sm text-brand-dark/70">
-                            {booking.end_date ? format(new Date(booking.end_date), "MMM d, yyyy") : "N/A"}
+                            {booking.end_date ? `${format(new Date(booking.end_date), "MMM d, yyyy")}, 10:00 AM` : "N/A"}
                           </p>
                         </div>
                       </div>

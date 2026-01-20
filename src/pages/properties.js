@@ -1,71 +1,112 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, IndianRupee } from "lucide-react";
+import { Search, SlidersHorizontal, IndianRupee, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import PropertyCard from "../components/property/PropertyCard";
-import Head from "next/head";
 import SEO from "../components/SEO";
 
 export default function Properties() {
     const router = useRouter();
 
-    const propertyTypeDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('type') || "all" : "all";
-    const rentalTypeDefault = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get('rental_type') || "all" : "all";
+    // Parse initial URL params
+    const getInitialParam = (key, defaultVal) => {
+        if (typeof window === "undefined") return defaultVal;
+        return new URLSearchParams(window.location.search).get(key) || defaultVal;
+    };
 
     const [searchCity, setSearchCity] = useState("");
-    const [propertyType, setPropertyType] = useState(propertyTypeDefault);
-    const [rentalType, setRentalType] = useState(rentalTypeDefault);
-    const [priceRange, setPriceRange] = useState("all");
+    const [propertyType, setPropertyType] = useState("all");
+    const [rentalType, setRentalType] = useState("all");
+    const [priceRange, setPriceRange] = useState("all"); // mapped to min/max
+    const [page, setPage] = useState(1);
 
     const [showOffers, setShowOffers] = useState(false);
 
-    // Initialize searchCity from URL param
+    // Sync state with URL on mount
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const city = new URLSearchParams(window.location.search).get('city');
+        if (router.isReady) {
+            const { city, type, rental_type, price_range, page: pageParam } = router.query;
             if (city) setSearchCity(city);
+            if (type) setPropertyType(type);
+            if (rental_type) setRentalType(rental_type);
+            if (price_range) setPriceRange(price_range);
+            if (pageParam) setPage(parseInt(pageParam));
         }
-    }, []);
+    }, [router.isReady, router.query]);
 
-    const { data: properties = [], isLoading } = useQuery({
-        queryKey: ['properties'],
-        queryFn: async () => fetch('/api/properties').then(res => res.json()),
+    // Construct query string for API
+    const fetchProperties = async () => {
+        const params = new URLSearchParams();
+        if (searchCity) params.append("search", searchCity);
+        if (propertyType !== "all") params.append("property_type", propertyType);
+        if (rentalType !== "all") params.append("rental_type", rentalType);
+        params.append("page", page);
+        params.append("limit", 9);
+
+        // Price Logic
+        if (priceRange !== "all") {
+            if (priceRange === "under_2k") { params.append("price_max", 2000); }
+            else if (priceRange === "2k_5k") { params.append("price_min", 2000); params.append("price_max", 5000); }
+            else if (priceRange === "5k_20k") { params.append("price_min", 5000); params.append("price_max", 20000); }
+            else if (priceRange === "20k_50k") { params.append("price_min", 20000); params.append("price_max", 50000); }
+            else if (priceRange === "above_50k") { params.append("price_min", 50000); }
+        }
+
+        const res = await fetch(`/api/properties?${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch properties');
+        return res.json();
+    };
+
+    const { data, isLoading, isPreviousData } = useQuery({
+        queryKey: ['properties', searchCity, propertyType, rentalType, priceRange, page],
+        queryFn: fetchProperties,
+        keepPreviousData: true,
+        staleTime: 60000,
     });
 
-    const filteredProperties = properties.filter(property => {
-        const searchTerm = searchCity.toLowerCase();
-        const cityMatch = !searchCity ||
-            property.city?.toLowerCase().includes(searchTerm) ||
-            property.location?.toLowerCase().includes(searchTerm);
+    const properties = data?.properties || [];
+    const pagination = data?.pagination || { total: 0, page: 1, pages: 1 };
 
-        const typeMatch = propertyType === "all" || property.property_type === propertyType;
-        const rentalMatch = rentalType === "all" || property.rental_type === rentalType;
+    // Update URL on filter change (Debounce search could be added)
+    const updateFilters = (key, value) => {
+        setPage(1); // Reset to page 1 on filter change
+        const query = { ...router.query, page: 1 };
+        if (value && value !== 'all') query[key] = value;
+        else delete query[key];
 
-        let priceMatch = true;
-        // Calculate price for filtering. If rooms exist, use the lowest price room.
-        let price = 0;
+        // Special mapping for state updates
+        if (key === 'city') setSearchCity(value);
+        if (key === 'type') setPropertyType(value);
+        if (key === 'rental_type') setRentalType(value);
+        if (key === 'price_range') setPriceRange(value);
 
-        if (property.rooms && property.rooms.length > 0) {
-            // Get min price from rooms
-            const roomPrices = property.rooms.map(r => property.rental_type === 'short_term' ? (r.price_per_night * 30) : r.price_per_month).filter(p => p);
-            if (roomPrices.length > 0) {
-                price = Math.min(...roomPrices);
+        router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+    };
+
+    const handleSearch = (e) => {
+        setSearchCity(e.target.value);
+    };
+
+    // Debounce Search update to URL to avoid lagging
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchCity !== (router.query.city || "")) {
+                const query = { ...router.query, city: searchCity, page: 1 };
+                if (!searchCity) delete query.city;
+                router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+                setPage(1);
             }
-        } else {
-            price = property.rental_type === 'short_term' ? property.price_per_night * 30 : property.price_per_month;
-        }
+        }, 500);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchCity]);
 
-        if (priceRange === "under_2k") priceMatch = price < 2000;
-        else if (priceRange === "2k_5k") priceMatch = price >= 2000 && price <= 5000;
-        else if (priceRange === "5k_20k") priceMatch = price > 5000 && price <= 20000;
-        else if (priceRange === "20k_50k") priceMatch = price > 20000 && price <= 50000;
-        else if (priceRange === "above_50k") priceMatch = price > 50000;
-
-        // Amenities Filter (Room Level for Hotels/Resorts)
-        let amenityMatch = true;
-
-        return cityMatch && typeMatch && rentalMatch && priceMatch && amenityMatch;
-    });
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+        const query = { ...router.query, page: newPage };
+        router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const offerProperties = properties.filter(p => p.offer && p.offer.enabled);
 
@@ -73,7 +114,7 @@ export default function Properties() {
         <div className="min-h-screen bg-brand-cream py-8 font-sans">
             <SEO
                 title="Browse Properties"
-                description="Search and filter through our extensive collection of rental properties. Find apartments, houses, and studios in your preferred location."
+                description="Search and filter through our extensive collection of rental properties. Find apartments, condos, studios and more."
             />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
@@ -106,21 +147,23 @@ export default function Properties() {
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <input
-                            type="text"
-                            placeholder="Search by city or location"
-                            value={searchCity}
-                            onChange={e => setSearchCity(e.target.value)}
-                            className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search by city or location"
+                                value={searchCity}
+                                onChange={handleSearch}
+                                className="w-full h-11 rounded-xl border border-brand-blue/20 pl-10 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm"
+                            />
+                            <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        </div>
                         <select
                             value={propertyType}
-                            onChange={e => setPropertyType(e.target.value)}
+                            onChange={e => updateFilters('type', e.target.value)}
                             className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm bg-white"
                         >
                             <option value="all">All Property Types</option>
                             <option value="apartment">Apartment</option>
-                            <option value="house">House</option>
                             <option value="condo">Condo</option>
                             <option value="studio">Studio</option>
                             <option value="villa">Villa</option>
@@ -129,7 +172,7 @@ export default function Properties() {
                         </select>
                         <select
                             value={rentalType}
-                            onChange={e => setRentalType(e.target.value)}
+                            onChange={e => updateFilters('rental_type', e.target.value)}
                             className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm bg-white"
                         >
                             <option value="all">All Rental Types</option>
@@ -138,7 +181,7 @@ export default function Properties() {
                         </select>
                         <select
                             value={priceRange}
-                            onChange={e => setPriceRange(e.target.value)}
+                            onChange={e => updateFilters('price_range', e.target.value)}
                             className="h-11 rounded-xl border border-brand-blue/20 px-4 focus:ring-2 focus:ring-brand-blue/50 outline-none text-sm bg-white"
                         >
                             <option value="all">All Prices</option>
@@ -155,6 +198,8 @@ export default function Properties() {
                                 setRentalType('all');
                                 setPriceRange('all');
                                 setShowOffers(false);
+                                setPage(1);
+                                router.push({ pathname: router.pathname }, undefined, { shallow: true });
                             }}
                             className="h-11 border border-brand-blue/20 rounded-xl px-4 bg-brand-cream text-brand-dark font-semibold hover:bg-brand-blue/5 transition-colors text-sm"
                         >
@@ -177,7 +222,7 @@ export default function Properties() {
                     )}
                 </div>
 
-                {/* Special Offers Section */}
+                {/* Special Offers (Filtered client side because logic is simple, or could be moved to API) */}
                 {showOffers && offerProperties.length > 0 && (
                     <div className="mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
                         <div className="flex items-center gap-2 mb-6">
@@ -197,11 +242,14 @@ export default function Properties() {
                     </div>
                 )}
 
-                {/* Results */}
-                <div className="mb-6">
+                {/* Results Count */}
+                <div className="mb-6 flex justify-between items-end">
                     <p className="text-gray-600">
-                        Showing <span className="font-semibold text-gray-900">{filteredProperties.length}</span> properties
+                        Showing <span className="font-semibold text-gray-900">
+                            {properties.length}
+                        </span> of <span className="font-semibold text-gray-900">{pagination.total}</span> properties
                     </p>
+                    {isLoading && <Loader2 className="w-5 h-5 animate-spin text-brand-blue" />}
                 </div>
 
                 {/* Properties Grid */}
@@ -218,12 +266,37 @@ export default function Properties() {
                             </div>
                         ))}
                     </div>
-                ) : filteredProperties.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredProperties.map((property) => (
-                            <PropertyCard key={property.id} property={property} />
-                        ))}
-                    </div>
+                ) : properties.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                            {properties.map((property) => (
+                                <PropertyCard key={property.id} property={property} />
+                            ))}
+                        </div>
+
+                        {/* Pagination Controls */}
+                        {pagination.pages > 1 && (
+                            <div className="flex justify-center items-center gap-4">
+                                <button
+                                    onClick={() => handlePageChange(Math.max(1, page - 1))}
+                                    disabled={page === 1}
+                                    className="p-2 rounded-full border border-brand-blue/20 hover:bg-brand-blue/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                    <ChevronLeft className="w-6 h-6 text-brand-dark" />
+                                </button>
+                                <span className="font-medium text-brand-dark">
+                                    Page {page} of {pagination.pages}
+                                </span>
+                                <button
+                                    onClick={() => handlePageChange(Math.min(pagination.pages, page + 1))}
+                                    disabled={page === pagination.pages}
+                                    className="p-2 rounded-full border border-brand-blue/20 hover:bg-brand-blue/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                    <ChevronRight className="w-6 h-6 text-brand-dark" />
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="bg-white rounded-2xl shadow-md p-12 text-center">
                         <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />

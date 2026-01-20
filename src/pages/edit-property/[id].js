@@ -216,6 +216,7 @@ export default function EditProperty() {
                 images: [],
                 bedrooms: 1,
                 bathrooms: 1,
+                area_sqft: 0,
                 available: true
             }]
         }));
@@ -371,7 +372,7 @@ export default function EditProperty() {
                                         className="mt-1 w-full border px-3 py-2 rounded"
                                     >
                                         <option value="apartment">Apartment</option>
-                                        <option value="house">House</option>
+
                                         <option value="condo">Condo</option>
                                         <option value="studio">Studio</option>
                                         <option value="villa">Villa</option>
@@ -391,6 +392,18 @@ export default function EditProperty() {
                                                 className="mt-1 w-full border px-3 py-2 rounded"
                                                 required
                                             />
+                                            {formData.price_per_night > 0 && (
+                                                <div className="mt-2 text-sm bg-green-50 text-green-800 p-3 rounded-lg border border-green-200">
+                                                    <div className="flex justify-between">
+                                                        <span>Platform Fee (10%):</span>
+                                                        <span>-₹{(formData.price_per_night * 0.10).toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between font-bold mt-1 pt-1 border-t border-green-200">
+                                                        <span>You will receive:</span>
+                                                        <span>₹{(formData.price_per_night * 0.90).toFixed(2)}</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <>
@@ -404,6 +417,18 @@ export default function EditProperty() {
                                                 className="mt-1 w-full border px-3 py-2 rounded"
                                                 required
                                             />
+                                            {formData.price_per_month > 0 && (
+                                                <div className="mt-2 text-sm bg-green-50 text-green-800 p-3 rounded-lg border border-green-200">
+                                                    <div className="flex justify-between">
+                                                        <span>Platform Fee (10%):</span>
+                                                        <span>-₹{(formData.price_per_month * 0.10).toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between font-bold mt-1 pt-1 border-t border-green-200">
+                                                        <span>You will receive:</span>
+                                                        <span>₹{(formData.price_per_month * 0.90).toFixed(2)}</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </>
                                     )}
                                 </div>
@@ -582,7 +607,6 @@ export default function EditProperty() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Max Guests *</label>
                                                 <input
                                                     type="number"
                                                     min="1"
@@ -590,6 +614,16 @@ export default function EditProperty() {
                                                     onChange={e => updateRoom(index, 'capacity', parseInt(e.target.value))}
                                                     className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
                                                     required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Area (sq ft)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={room.area_sqft || 0}
+                                                    onChange={e => updateRoom(index, 'area_sqft', parseInt(e.target.value))}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
                                                 />
                                             </div>
                                             <div>
@@ -604,6 +638,18 @@ export default function EditProperty() {
                                                     className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
                                                     required
                                                 />
+                                                {(formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) > 0 && (
+                                                    <div className="mt-2 text-xs bg-green-50 text-green-800 p-2 rounded border border-green-200">
+                                                        <div className="flex justify-between">
+                                                            <span>Fee (10%):</span>
+                                                            <span>-₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.10).toFixed(0)}</span>
+                                                        </div>
+                                                        <div className="flex justify-between font-bold border-t border-green-200 mt-1 pt-1">
+                                                            <span>Payout:</span>
+                                                            <span>₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.90).toFixed(0)}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 

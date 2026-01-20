@@ -17,7 +17,7 @@ export default function Home() {
     const { data: featuredProperties = [], isLoading } = useQuery({
         queryKey: ['featured-properties'],
         queryFn: async () =>
-            fetch('/api/properties').then(res => res.json()),
+            fetch('/api/properties').then(res => res.json()).then(data => data.properties || []),
     });
 
     const handleSearch = () => {

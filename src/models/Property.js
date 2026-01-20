@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const PropertySchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true },
   description: { type: String },
-  property_type: { type: String, enum: ["apartment", "house", "condo", "studio", "villa", "hotel", "resort"], required: true },
+  property_type: { type: String, enum: ["apartment", "condo", "studio", "villa", "hotel", "resort"], required: true },
   location: { type: String, required: true },
   city: { type: String, required: true },
 
@@ -26,6 +26,7 @@ const PropertySchema = new mongoose.Schema({
     count: { type: Number, required: true, default: 1 }, // Total inventory
     bedrooms: { type: Number, default: 1 },
     bathrooms: { type: Number, default: 1 },
+    area_sqft: { type: Number, default: 0 },
     amenities: [String],
     images: [String],
     available: { type: Boolean, default: true }

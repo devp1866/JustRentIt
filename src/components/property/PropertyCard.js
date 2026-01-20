@@ -34,15 +34,17 @@ export default function PropertyCard({ property }) {
                   : `₹${property.price_per_month}/mo`;
               })()}
             </span>
-            <span className={`px-2 py-1 rounded-xl text-xs font-bold uppercase tracking-wide shadow-sm backdrop-blur-sm ${property.rental_type === 'short_term' ? 'bg-brand-purple/90 text-white' : 'bg-brand-blue/90 text-white'
-              }`}>
-              {property.rental_type === 'short_term' ? 'Short Term' : 'Long Term'}
-            </span>
+
             {property.offer && property.offer.enabled && (
               <span className="bg-brand-green/90 backdrop-blur-sm text-white px-2 py-1 rounded-xl text-xs font-bold uppercase tracking-wide shadow-sm">
                 {property.offer.discount_percentage}% OFF
               </span>
             )}
+          </div>
+          <div className="absolute top-4 left-4">
+            <span className="bg-white/90 backdrop-blur-sm text-brand-dark px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wide shadow-sm border border-brand-blue/10">
+              {property.property_type}
+            </span>
           </div>
         </div>
         <div className="p-6">
@@ -73,12 +75,27 @@ export default function PropertyCard({ property }) {
                 <span>{property.bathrooms} Bath</span>
               </div>
             )}
-            {property.area_sqft && (
-              <div className="flex items-center gap-1">
-                <Square className="w-4 h-4 text-brand-blue" />
-                <span>{property.area_sqft} sqft</span>
-              </div>
-            )}
+            {/* Area Logic: Check rooms or top-level area */}
+            {(() => {
+              let displayArea = property.area_sqft;
+              if (property.rooms && property.rooms.length > 0) {
+                const areas = property.rooms.map(r => r.area_sqft).filter(a => a > 0);
+                if (areas.length > 0) {
+                  const minArea = Math.min(...areas);
+                  const maxArea = Math.max(...areas);
+                  displayArea = minArea === maxArea ? `${minArea}` : `${minArea} - ${maxArea}`;
+                }
+              }
+
+              if (displayArea) {
+                return (
+                  <div className="flex items-center gap-1">
+                    <Square className="w-4 h-4 text-brand-blue" />
+                    <span>{displayArea} sqft</span>
+                  </div>
+                );
+              }
+            })()}
           </div>
         </div>
       </div>

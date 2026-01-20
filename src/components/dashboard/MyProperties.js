@@ -142,8 +142,9 @@ export default function MyProperties({ user }) {
                   </span>
                 </div>
                 <div className="absolute bottom-4 left-4">
-                  <span className="px-3 py-1 rounded-full bg-white/90 text-brand-blue text-xs font-bold uppercase tracking-wide shadow-sm backdrop-blur-sm">
-                    {property.rental_type === 'short_term' ? 'Short Term' : 'Long Term'}
+
+                  <span className="px-3 py-1 rounded-full bg-brand-dark/90 text-white text-xs font-bold uppercase tracking-wide shadow-sm backdrop-blur-sm">
+                    {property.property_type}
                   </span>
                 </div>
               </div>
@@ -152,6 +153,11 @@ export default function MyProperties({ user }) {
                 <div className="flex items-center text-brand-dark/70 mb-4">
                   <MapPin className="w-4 h-4 mr-1 text-brand-blue" />
                   <span className="text-sm truncate">{property.location}</span>
+                </div>
+
+                <div className="mb-4 text-xs text-brand-dark/50 space-y-1">
+                  <p>Posted: {new Date(property.createdAt).toLocaleDateString()}</p>
+                  <p>Updated: {new Date(property.updatedAt).toLocaleDateString()}</p>
                 </div>
 
                 <div className="flex items-center justify-between mb-6 p-3 bg-brand-cream/30 rounded-xl border border-brand-blue/5">

@@ -23,7 +23,12 @@ const BookingSchema = new mongoose.Schema({
   cancellation_reason: { type: String },
   cancelled_by: { type: String, enum: ["renter", "landlord"] },
   refund_amount: { type: Number },
-  refund_status: { type: String, enum: ["pending", "processed", "none"] }
+  refund_amount: { type: Number },
+  refund_status: { type: String, enum: ["pending", "processed", "none"] },
+  // Commission & Payouts
+  platform_fee: { type: Number, default: 0 }, // 10% commission
+  landlord_payout_amount: { type: Number, default: 0 }, // Total - Fee
+  payout_status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" }
 }, { timestamps: true });
 
 // Prevent Mongoose OverwriteModelError

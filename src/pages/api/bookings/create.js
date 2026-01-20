@@ -148,10 +148,14 @@ export default async function handler(req, res) {
                 return res.status(409).json({ message: "Selected accommodation is fully booked for specific dates in your range." }); // 409 Conflict
             }
 
+            // Commission Calculation (10%)
+            const platform_fee = Math.round(total_amount * 0.10);
+            const landlord_payout_amount = total_amount - platform_fee;
+
             const newBooking = new Booking({
                 property_id,
                 property_title,
-                renter_email: session.user?.email || req.body.renter_email, // Fallback need context or fix session usage (it's from getServerSession)
+                renter_email: session.user?.email || req.body.renter_email,
                 renter_name: session.user?.name || session.user?.email,
                 landlord_email,
                 start_date,
@@ -166,7 +170,11 @@ export default async function handler(req, res) {
                 room_name: selectedRoomName,
                 razorpay_order_id,
                 razorpay_payment_id,
-                razorpay_signature
+                razorpay_signature,
+                // Commission Data
+                platform_fee,
+                landlord_payout_amount,
+                payout_status: "pending"
             });
 
             await newBooking.save({ session }); // Pass session
