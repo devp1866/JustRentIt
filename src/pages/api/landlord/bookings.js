@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../utils/authOptions";
 import dbConnect from "../../../utils/db";
 import Booking from "../../../models/Booking";
-import Property from "../../../models/Property"; // Ensure model is registered
+import Property from "../../../models/Property";
 
 export default async function handler(req, res) {
     await dbConnect();
@@ -14,12 +14,10 @@ export default async function handler(req, res) {
 
     if (req.method === "GET") {
         try {
-            // Find all bookings for properties owned by this landlord
             const bookings = await Booking.find({ landlord_email: session.user.email })
                 .sort({ createdAt: -1 })
                 .lean();
 
-            // Populate property details (title, image)
             const bookingsWithDetails = await Promise.all(bookings.map(async (booking) => {
                 const property = await Property.findById(booking.property_id).select('title images');
                 return {

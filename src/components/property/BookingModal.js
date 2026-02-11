@@ -7,7 +7,6 @@ import { isSameDay, parseISO } from 'date-fns';
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
-// Simple Dialog/modal fallback. You can enhance this with a headless modal or popular UI kit.
 function SimpleModal({ open, onClose, children }) {
   if (!open) return null;
   return (
@@ -89,7 +88,6 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
     },
     onSuccess: async (data) => {
       setIsProcessing(true);
-      // Simulate email sending / extra booking steps if needed
       setTimeout(() => {
         setIsProcessing(false);
         setStep("success");
@@ -175,7 +173,7 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
         },
         body: JSON.stringify({
           amount: totalAmount,
-          currency: "INR", // Assuming INR for Razorpay
+          currency: "INR", 
         }),
       });
 
@@ -186,12 +184,10 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
       const orderData = await orderRes.json();
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // You'll need to expose this env var
-        amount: orderData.amount,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
         currency: orderData.currency,
         name: "Just Rent It",
         description: `Booking for ${property.title}`,
-        // image: "/logo.png", // Removed to prevent CORS error on localhost
         order_id: orderData.id,
         handler: async function (response) {
           // Payment Success
@@ -209,7 +205,7 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
-            room_id: selectedRoom?._id // Include room_id if selected
+            room_id: selectedRoom?._id 
           });
         },
         prefill: {
@@ -221,7 +217,7 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
           address: "Razorpay Corporate Office",
         },
         theme: {
-          color: "#82C8E5", // brand-blue
+          color: "#82C8E5", 
         },
         modal: {
           ondismiss: function () {

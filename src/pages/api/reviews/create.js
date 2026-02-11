@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
         const { booking_id, rating, categories, comment } = req.body;
 
-        // 1. Validate Input
+        //  Validate Input
         if (!booking_id || !comment) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
@@ -31,22 +31,19 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: 'Review comment must be at least 10 characters long.' });
         }
 
-        // 2. Fetch Booking
+        //  Fetch Booking
         const booking = await Booking.findById(booking_id);
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        // 3. Verify User Ownership
         if (booking.renter_email !== session.user.email) {
             return res.status(403).json({ message: 'You can only review your own bookings.' });
         }
 
-        // 4. Fetch Property for Type & Verify Timing
         const property = await Property.findById(booking.property_id);
         if (!property) return res.status(404).json({ message: 'Property not found' });
 
-        // Assuming dates are stored as ISO strings
         const now = new Date();
         const startDate = parseISO(booking.start_date);
         const endDate = booking.end_date ? parseISO(booking.end_date) : startDate;
@@ -59,7 +56,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: 'Review period has expired (3 days after move-out).' });
         }
 
-        // 5. Calculate Weighted Rating
+        //  Calculate Weighted Rating
         // Group A (Serviced): Hotel, Resort, Villa
         // Group B (Private): Apartment, House, Condo, Studio
         const isGroupA = ["hotel", "resort", "villa"].includes(property.property_type?.toLowerCase());
@@ -74,7 +71,7 @@ export default async function handler(req, res) {
             communication: 0.10,
             location: 0.05,
             maintenance: 0.05
-            // check_in: 0
+            
         } : {
             cleanliness: 0.20,
             safety: 0.15,
@@ -85,7 +82,6 @@ export default async function handler(req, res) {
             communication: 0.10,
             location: 0.05,
             check_in: 0.05
-            // service_staff: 0
         };
 
         let totalScore = 0;
@@ -98,16 +94,15 @@ export default async function handler(req, res) {
             }
         }
 
-        // Normalize if missing optional categories (though frontend should enforce)
+        
         const weightedRating = totalWeight > 0 ? parseFloat((totalScore / totalWeight).toFixed(1)) : 0;
 
-        // 6. Check Duplicate
         const existingReview = await Review.findOne({ booking_id });
         if (existingReview) {
             return res.status(400).json({ message: 'You have already reviewed this booking.' });
         }
 
-        // 7. Create Review
+        // Create Review
         const review = await Review.create({
             booking_id,
             property_id: booking.property_id,
@@ -115,13 +110,13 @@ export default async function handler(req, res) {
             renter_name: session.user.name || booking.renter_name || "JustRentIt User",
             renter_image: session.user.image,
             landlord_email: booking.landlord_email,
-            rating: weightedRating, // Calculated
+            rating: weightedRating, 
             categories,
             comment,
             is_verified: true
         });
 
-        // 7. Update Property stats
+        // Update Property stats
         const propertyReviews = await Review.find({ property_id: booking.property_id });
         const propertyAvg = propertyReviews.reduce((acc, r) => acc + r.rating, 0) / propertyReviews.length;
 
@@ -130,7 +125,6 @@ export default async function handler(req, res) {
             review_count: propertyReviews.length
         });
 
-        // 8. Update Landlord stats
         const landlordReviews = await Review.find({ landlord_email: booking.landlord_email });
         const landlordAvg = landlordReviews.reduce((acc, r) => acc + r.rating, 0) / landlordReviews.length;
 

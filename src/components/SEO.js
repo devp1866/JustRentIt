@@ -8,7 +8,7 @@ export default function SEO({
     type = "website"
 }) {
     const router = useRouter();
-    const siteUrl = "https://justrentit.vercel.app"; // Replace with actual domain if available
+    const siteUrl = "https://justrent-it.vercel.app";
     const canonicalUrl = `${siteUrl}${router.asPath === '/' ? '' : router.asPath}`;
     const fullTitle = `${title} | JustRentIt`;
 

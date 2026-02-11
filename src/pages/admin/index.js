@@ -14,19 +14,17 @@ import {
 import { LayoutDashboard, Users, Building, DollarSign, TrendingUp, ShieldCheck } from 'lucide-react';
 
 export default function AdminDashboard() {
-    // const { data: session, status } = useSession(); // Removed NextAuth session
     const router = useRouter();
     const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false);
     const [passwordForm, setPasswordForm] = React.useState({ current: '', new: '', confirm: '' });
     const [passwordMessage, setPasswordMessage] = React.useState({ type: '', text: '' });
 
-    // View All Transactions State
     const [viewAll, setViewAll] = React.useState(false);
     const [allTransactions, setAllTransactions] = React.useState([]);
 
     const handleViewAll = async () => {
         if (!viewAll) {
-            // Load all transactions if not already loaded (or reload to be fresh)
+            // reload to be fresh
             try {
                 const res = await fetch('/api/admin/transactions');
                 const data = await res.json();
@@ -57,7 +55,6 @@ export default function AdminDashboard() {
     // Handle Access Denied by redirecting to login
     useEffect(() => {
         if (isError && error.message === 'Access Denied') {
-            // Add a small delay/check to avoid hydration mismatch or rapid loops
             router.replace('/admin/login');
         }
     }, [isError, error, router]);
@@ -106,7 +103,6 @@ export default function AdminDashboard() {
 
             if (!res.ok) throw new Error('Failed to update');
 
-            // Reload to refresh data
             window.location.reload();
         } catch (err) {
             alert(err.message);

@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 export const generateOTP = () => {
-    // Generate a cryptographically strong 6-digit OTP
     return crypto.randomInt(100000, 999999).toString();
 };
 

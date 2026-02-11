@@ -4,7 +4,7 @@ import fs from "fs";
 
 export const config = {
     api: {
-        bodyParser: false, // Disable built-in body parser for formidable
+        bodyParser: false, 
     },
 };
 
@@ -18,7 +18,6 @@ export default async function handler(req, res) {
 
         const [fields, files] = await form.parse(req);
 
-        // fields and files values are arrays in formidable v3
         const type = fields.type?.[0];
         const propertyName = fields.propertyName?.[0];
         const file = files.file?.[0];
@@ -38,7 +37,6 @@ export default async function handler(req, res) {
             if (!propertyName) {
                 return res.status(400).json({ message: "Property name is required for property/room images" });
             }
-            // Sanitize property name to be safe for URL/Folder
             const safePropertyName = propertyName.replace(/[^a-zA-Z0-9-_]/g, "_");
             folderPath = `property-images/${safePropertyName}`;
         } else if (type === "landlord") {

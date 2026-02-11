@@ -12,7 +12,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Construct email body
         const html = `
             <div style="font-family: Arial, sans-serif; padding: 20px;">
                 <h2>New Contact Message</h2>
@@ -25,8 +24,6 @@ export default async function handler(req, res) {
             </div>
         `;
 
-        // Send email to the admin/support (using the same email user for now as destination)
-        // In a real app, this might be a specific support email address.
         await sendEmail({
             to: process.env.EMAIL_USER,
             subject: `Contact Form: ${subject}`,

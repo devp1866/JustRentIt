@@ -7,7 +7,7 @@ const PropertySchema = new mongoose.Schema({
   location: { type: String, required: true },
   city: { type: String, required: true },
 
-  // Deprecated flat fields (kept for backward compatibility or single-unit types)
+  // Deprecated flat fields 
   bedrooms: { type: Number },
   bathrooms: { type: Number },
   area_sqft: { type: Number },
@@ -17,13 +17,13 @@ const PropertySchema = new mongoose.Schema({
   amenities: [String],
   images: [String],
 
-  // New Multi-Room Support
+  // Multi-Room Support
   rooms: [{
-    name: { type: String, required: true }, // e.g. "Deluxe Room"
+    name: { type: String, required: true }, 
     price_per_night: { type: Number },
     price_per_month: { type: Number },
-    capacity: { type: Number, required: true }, // Max guests
-    count: { type: Number, required: true, default: 1 }, // Total inventory
+    capacity: { type: Number, required: true }, 
+    count: { type: Number, required: true, default: 1 }, 
     bedrooms: { type: Number, default: 1 },
     bathrooms: { type: Number, default: 1 },
     area_sqft: { type: Number, default: 0 },
@@ -38,7 +38,7 @@ const PropertySchema = new mongoose.Schema({
   landlord_email: { type: String, required: true },
   offer: {
     enabled: { type: Boolean, default: false },
-    required_duration: { type: Number }, // days for short_term, months for long_term
+    required_duration: { type: Number }, 
     discount_percentage: { type: Number }
   },
   rating: { type: Number, default: 0 },

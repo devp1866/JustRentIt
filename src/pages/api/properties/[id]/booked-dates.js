@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     try {
         await dbConnect();
 
-        // 1. Get the Property and determine capacity
+        // Get the Property and determine capacity
         let totalInventory = 1;
 
         if (room_id) {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
             }
         }
 
-        // 2. Fetch all active bookings for this scope
+        // Fetch all active bookings for this scope
         const filter = {
             property_id: id,
             status: { $in: ["confirmed", "active", "paid"] },
@@ -36,8 +36,6 @@ export default async function handler(req, res) {
 
         const bookings = await Booking.find(filter).select("start_date end_date");
 
-        // 3. Calculate Daily Occupancy
-        // We will map "YYYY-MM-DD" -> count
         const occupancyMap = {};
 
         bookings.forEach(booking => {
@@ -45,11 +43,6 @@ export default async function handler(req, res) {
             const end = new Date(booking.end_date);
 
             // Loop through nights (inclusive of start, exclusive of end)
-            // Example: Jan 1 to Jan 3 (2 nights: Jan 1, Jan 2)
-            // If it's a short term rental. 
-            // If long term, end_date might be months away. 
-            // We need to be careful with infinite loops if dates are bad, but assuming valid dates.
-
             let current = new Date(start);
             while (current < end) {
                 const dateStr = current.toISOString().split('T')[0];
@@ -58,7 +51,7 @@ export default async function handler(req, res) {
             }
         });
 
-        // 4. Identify Fully Booked Dates
+        // Identify Fully Booked Dates
         const fullyBookedDates = [];
         Object.entries(occupancyMap).forEach(([date, count]) => {
             if (count >= totalInventory) {
@@ -68,9 +61,7 @@ export default async function handler(req, res) {
 
         fullyBookedDates.sort();
 
-        // 5. Convert back to ranges (optional, but cleaner for frontend consistency)
-        // Or simpler: just return 1-day ranges for every blocked date.
-        // { start_date: "2023-01-01", end_date: "2023-01-02" }
+        //  Convert back to ranges
         const blockedRanges = fullyBookedDates.map(date => {
             const start = new Date(date);
             const end = new Date(date);

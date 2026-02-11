@@ -1,22 +1,22 @@
 import mongoose from 'mongoose';
 
 const ReviewSchema = new mongoose.Schema({
-    booking_id: { type: String, required: true, unique: true }, // One review per booking
+    booking_id: { type: String, required: true, unique: true }, 
     property_id: { type: String, required: true },
     renter_email: { type: String, required: true },
     renter_name: { type: String },
     renter_image: { type: String },
     landlord_email: { type: String, required: true },
-    rating: { type: Number, required: true, min: 1, max: 5 }, // Overall Rating
+    rating: { type: Number, required: true, min: 1, max: 5 }, 
     categories: {
         cleanliness: { type: Number, required: true, min: 1, max: 5 },
         accuracy: { type: Number, required: true, min: 1, max: 5 },
-        check_in: { type: Number, max: 5 }, // Optional based on type
+        check_in: { type: Number, max: 5 }, 
         communication: { type: Number, required: true, min: 1, max: 5 },
         location: { type: Number, required: true, min: 1, max: 5 },
         value: { type: Number, required: true, min: 1, max: 5 },
         safety: { type: Number, required: true, min: 1, max: 5 },
-        service_staff: { type: Number, max: 5 }, // Optional based on type
+        service_staff: { type: Number, max: 5 }, 
         maintenance: { type: Number, required: true, min: 1, max: 5 },
         amenities: { type: Number, required: true, min: 1, max: 5 }
     },

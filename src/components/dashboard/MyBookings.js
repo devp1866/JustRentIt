@@ -50,7 +50,7 @@ export default function MyBookings({ user }) {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
-        return 'bg-brand-green animate-pulse'; // Distinction for active living
+        return 'bg-brand-green animate-pulse'; 
       case 'confirmed':
         return 'bg-brand-blue';
       case 'pending':
@@ -67,7 +67,6 @@ export default function MyBookings({ user }) {
   const handleCancelClick = (booking) => {
     setSelectedBooking(booking);
 
-    // Calculate estimated refund
     const checkInDate = parseISO(booking.start_date);
     const today = new Date();
     const daysUntilCheckIn = differenceInDays(checkInDate, today);

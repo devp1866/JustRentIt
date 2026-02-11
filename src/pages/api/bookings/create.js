@@ -32,16 +32,15 @@ export default async function handler(req, res) {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                room_id // Added room_id
+                room_id 
             } = req.body;
 
-            // Basic validation
             if (!property_id || !start_date || !total_amount) {
                 await session.abortTransaction();
                 return res.status(400).json({ message: "Missing required fields" });
             }
 
-            // ... (keep validation logic, but ensure returns abort transaction) ...
+            //keep validation logic, but ensure returns abort transaction
             if (!duration_months && !duration_days) {
                 await session.abortTransaction();
                 return res.status(400).json({ message: "Missing duration" });
@@ -108,7 +107,7 @@ export default async function handler(req, res) {
 
             const overlappingBookings = await Booking.find({
                 property_id,
-                ...(req.body.room_id && { room_id: req.body.room_id }), // Filter by room if applicable
+                ...(req.body.room_id && { room_id: req.body.room_id }), 
                 status: { $in: ["confirmed", "active", "paid"] },
                 $or: [
                     {
@@ -116,9 +115,9 @@ export default async function handler(req, res) {
                         end_date: { $gt: start_date }
                     }
                 ]
-            }).session(session); // Pass session
+            }).session(session); 
 
-            // Precise Daily Occupancy Check
+           
             const isFullyBooked = () => {
                 const requestedStart = new Date(start_date);
                 const requestedEnd = new Date(endDate);
@@ -134,8 +133,7 @@ export default async function handler(req, res) {
                     while (current < rangeEnd) {
                         const dateStr = current.toISOString().split('T')[0];
                         occupancyMap[dateStr] = (occupancyMap[dateStr] || 0) + 1;
-                        // NO return here, map appropriately
-                        // If optimization needed, check after mapping
+                    
                         current.setDate(current.getDate() + 1);
                     }
                 });
@@ -148,7 +146,7 @@ export default async function handler(req, res) {
                 return res.status(409).json({ message: "Selected accommodation is fully booked for specific dates in your range." }); // 409 Conflict
             }
 
-            // Commission Calculation (10%)
+            // Commission  (10%)
             const platform_fee = Math.round(total_amount * 0.10);
             const landlord_payout_amount = total_amount - platform_fee;
 
@@ -171,22 +169,20 @@ export default async function handler(req, res) {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                // Commission Data
                 platform_fee,
                 landlord_payout_amount,
                 payout_status: "pending"
             });
 
-            await newBooking.save({ session }); // Pass session
+            await newBooking.save({ session }); 
 
-            await session.commitTransaction(); // Commit changes
+            await session.commitTransaction(); 
 
             return res.status(201).json({ message: "Booking created successfully", booking: newBooking });
 
         } catch (error) {
             await session.abortTransaction();
             console.error("Booking creation error:", error);
-            // Handle transient transaction errors specifically if needed, but 500 is generally ok for now
             return res.status(500).json({ message: "Internal Server Error", error: error.message });
         } finally {
             session.endSession();

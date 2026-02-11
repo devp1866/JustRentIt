@@ -26,18 +26,18 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        // 1. Fetch Existing Review
+        //  Fetch Existing Review
         const review = await Review.findById(review_id);
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
 
-        // 2. Verify Ownership
+        //  Verify Ownership
         if (review.renter_email !== session.user.email) {
             return res.status(403).json({ message: 'You can only edit your own reviews.' });
         }
 
-        // 3. Verify Timing (12 hours)
+        // Verify Timing
         const now = new Date();
         const hoursDiff = differenceInHours(now, new Date(review.createdAt));
 
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: 'Reviews can only be edited within 12 hours of submission.' });
         }
 
-        // 4. Recalculate Rating
+        // Recalculate Rating
         const property = await Property.findById(review.property_id);
         const isGroupA = ["hotel", "resort", "villa"].includes(property.property_type?.toLowerCase());
 
@@ -88,7 +88,6 @@ export default async function handler(req, res) {
         review.comment = comment;
         await review.save();
 
-        // 5. Recalculate Property stats (since rating might have changed)
         const propertyReviews = await Review.find({ property_id: review.property_id });
         const propertyAvg = propertyReviews.reduce((acc, r) => acc + r.rating, 0) / propertyReviews.length;
 
@@ -97,7 +96,7 @@ export default async function handler(req, res) {
             review_count: propertyReviews.length
         });
 
-        // 6. Recalculate Landlord stats
+        // Recalculate Landlord stats
         const landlordReviews = await Review.find({ landlord_email: review.landlord_email });
         const landlordAvg = landlordReviews.reduce((acc, r) => acc + r.rating, 0) / landlordReviews.length;
 

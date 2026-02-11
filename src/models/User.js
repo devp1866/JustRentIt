@@ -9,14 +9,14 @@ const UserSchema = new mongoose.Schema({
   is_verified: { type: Boolean, default: false },
   is_active: { type: Boolean, default: true },
   deleted_at: { type: Date },
-  // Landlord specific
+  // Landlord
   city: { type: String },
   state: { type: String },
   country: { type: String },
   govt_id: { type: String },
   govt_id_image: { type: String },
   property_ownership_proof: { type: String },
-  // Renter specific
+  // Renter
   preferred_city: { type: String },
   budget_range: { type: String },
   // OTP Verification

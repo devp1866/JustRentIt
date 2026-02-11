@@ -19,7 +19,7 @@ export default async function handler(req, res) {
                 return res.status(400).json({ message: "User email not found in session" });
             }
 
-            // Case-insensitive search for landlord_email, ignoring surrounding whitespace
+           
             const escapedEmail = email.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const properties = await Property.find({
                 landlord_email: { $regex: new RegExp(`^\\s*${escapedEmail}\\s*$`, 'i') }

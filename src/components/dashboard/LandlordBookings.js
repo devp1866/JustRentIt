@@ -9,8 +9,7 @@ export default function LandlordBookings() {
         queryFn: async () => fetch('/api/user/landlord-bookings').then(res => res.json()),
     });
 
-    // Filter Logic
-    const [filterDate, setFilterDate] = React.useState(""); // YYYY-MM
+    const [filterDate, setFilterDate] = React.useState(""); 
 
     const filteredBookings = bookings.filter(booking => {
         if (!filterDate) return true;

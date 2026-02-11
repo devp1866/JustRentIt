@@ -2,7 +2,7 @@ import dbConnect from "../../../../utils/db";
 import Review from "../../../../models/Review";
 
 export default async function handler(req, res) {
-    const { id } = req.query; // Property ID
+    const { id } = req.query;
 
     if (req.method !== 'GET') {
         return res.status(405).json({ message: 'Method not allowed' });

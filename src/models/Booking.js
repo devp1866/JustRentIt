@@ -2,12 +2,12 @@ import mongoose from 'mongoose';
 
 const BookingSchema = new mongoose.Schema({
   property_id: { type: String, required: true },
-  room_id: { type: String }, // Required for multi-room properties
-  room_name: { type: String }, // Snapshot for history
+  room_id: { type: String },
+  room_name: { type: String },
   renter_email: { type: String, required: true },
   renter_name: { type: String },
   start_date: { type: String, required: true },
-  end_date: { type: String }, // Calculated from start_date + duration_months
+  end_date: { type: String },
   duration_months: { type: Number },
   duration_days: { type: Number },
   total_amount: { type: Number, required: true },
@@ -27,7 +27,7 @@ const BookingSchema = new mongoose.Schema({
   refund_status: { type: String, enum: ["pending", "processed", "none"] },
   // Commission & Payouts
   platform_fee: { type: Number, default: 0 }, // 10% commission
-  landlord_payout_amount: { type: Number, default: 0 }, // Total - Fee
+  landlord_payout_amount: { type: Number, default: 0 }, 
   payout_status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" }
 }, { timestamps: true });
 

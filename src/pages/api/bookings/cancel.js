@@ -59,13 +59,12 @@ export default async function handler(req, res) {
             const daysUntilCheckIn = differenceInDays(checkInDate, today);
 
             if (daysUntilCheckIn > 30) {
-                refundAmount = booking.total_amount; // 100%
+                refundAmount = booking.total_amount; 
             } else if (daysUntilCheckIn >= 7) {
-                refundAmount = booking.total_amount * 0.5; // 50%
+                refundAmount = booking.total_amount * 0.5; 
             } else if (daysUntilCheckIn >= 3) {
-                refundAmount = booking.total_amount * 0.7; // 70% (As per user requirement)
-            } else {
-                refundAmount = 0; // No refund
+                refundAmount = booking.total_amount * 0.7; 
+                refundAmount = 0; 
             }
 
             if (refundAmount > 0) {
