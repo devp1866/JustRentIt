@@ -3,6 +3,12 @@ import User from "../../../models/User";
 import { generateOTP, hashOTP, verifyOTP } from "../../../lib/otp";
 import { sendEmail, getEmailTemplate } from "../../../lib/email";
 import bcrypt from "bcryptjs";
+import rateLimit from "../../../utils/rateLimit";
+
+const limiter = rateLimit({
+    interval: 60 * 1000, // 60 seconds
+    uniqueTokenPerInterval: 500, // Max 500 users per second
+});
 
 export default async function handler(req, res) {
     if (req.method !== "POST") {
@@ -10,6 +16,15 @@ export default async function handler(req, res) {
     }
 
     await dbConnect();
+
+    try {
+        // IP Rate Limit: Max 5 requests per minute per IP
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        await limiter.check(5, ip);
+    } catch {
+        return res.status(429).json({ error: "Too many requests. Please try again later." });
+    }
+
     const { action, email, otp, newPassword } = req.body;
 
     try {

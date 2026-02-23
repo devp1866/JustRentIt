@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { ShieldCheck, Lock, Mail } from 'lucide-react';
 
 export default function AdminLogin() {
@@ -74,6 +75,11 @@ export default function AdminLogin() {
                                 placeholder="••••••••"
                                 required
                             />
+                        </div>
+                        <div className="flex justify-end mt-2">
+                            <Link href="/admin/forgot-password" className="text-sm font-medium text-brand-blue hover:text-brand-blue/80">
+                                Forgot your password?
+                            </Link>
                         </div>
                     </div>
                     <button

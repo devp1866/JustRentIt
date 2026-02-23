@@ -4,6 +4,7 @@ import dbConnect from "../../../utils/db";
 import Admin from "../../../models/Admin";
 import Booking from "../../../models/Booking";
 import User from "../../../models/User";
+import EscrowContract from "../../../models/EscrowContract";
 import mongoose from "mongoose";
 
 export default async function handler(req, res) {
@@ -29,11 +30,19 @@ export default async function handler(req, res) {
         // Fetch all bookings sorted by newest first
         const bookings = await Booking.find({})
             .sort({ createdAt: -1 })
-            .select('property_title renter_name renter_email total_amount platform_fee landlord_payout_amount payout_status createdAt');
+            .select('property_title renter_name landlord_email renter_email total_amount platform_fee landlord_payout_amount payout_status createdAt duration_months');
+
+        const bookingIds = bookings.map(b => b._id);
+        const escrows = await EscrowContract.find({ booking_id: { $in: bookingIds } });
 
         // Populate renter names manually if missing
         const enrichedBookings = await Promise.all(bookings.map(async (booking) => {
             const b = booking.toObject ? booking.toObject() : booking;
+            const escrow = escrows.find(e => e.booking_id.toString() === b._id.toString());
+            if (escrow) {
+                b.escrow_data = escrow;
+            }
+
             if (!b.renter_name && b.renter_email) {
                 const User = mongoose.models.User || mongoose.model("User");
                 const renter = await User.findOne({ email: b.renter_email }).select('full_name');

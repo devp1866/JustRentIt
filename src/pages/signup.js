@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import { User, Mail, Lock, Phone, MapPin, Building, FileText, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function Signup() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function Signup() {
     govt_id_image: ""
   });
   const [otp, setOtp] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [uploadingId, setUploadingId] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -75,6 +77,11 @@ export default function Signup() {
       setLoading(false);
       return;
     }
+    if (!agreedToTerms) {
+      setError("You must agree to the Platform Liability & Dispute Terms of Service to create an account.");
+      setLoading(false);
+      return;
+    }
 
     // Landlord Validation
     if (formData.user_type === "landlord" || formData.user_type === "both") {
@@ -107,8 +114,8 @@ export default function Signup() {
         throw new Error(data.error || "Signup failed");
       }
 
-      setSuccess(true);
-      setStep(2); // Move to OTP step
+      setStep(2); // Proceed to OTP verification step
+      setSuccess(false); // Reset success so we don't prematurely show "Email verified!"
     } catch (err) {
       setError(err.message);
     } finally {
@@ -144,6 +151,7 @@ export default function Signup() {
 
   return (
     <div className="h-screen overflow-hidden flex bg-brand-cream">
+      <SEO title="Sign Up" description="Create a new account on JustRentIt as a renter or landlord." />
       {/* Left Side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-brand-dark">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -378,6 +386,25 @@ export default function Signup() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="flex items-start">
+                <input
+                  id="agreedToTerms"
+                  name="agreedToTerms"
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  required
+                  className="mt-1 h-4 w-4 text-brand-blue border-brand-blue/30 rounded focus:ring-brand-blue"
+                />
+                <label htmlFor="agreedToTerms" className="ml-2 block text-sm text-brand-dark/70">
+                  I agree to the{" "}
+                  <Link href="/terms" className="font-bold text-brand-blue hover:underline" target="_blank">
+                    Platform Liability & Dispute Terms of Service
+                  </Link>
+                  . I understand the platform's policies on property damage, liability, and the resolution center process.
+                </label>
               </div>
 
               <button

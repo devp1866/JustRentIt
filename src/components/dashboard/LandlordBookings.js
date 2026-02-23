@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { Calendar as CalendarIcon, User, DollarSign, Clock } from 'lucide-react';
+import DisputeModal from '../disputes/DisputeModal';
 
 export default function LandlordBookings() {
     const { data: bookings = [], isLoading } = useQuery({
@@ -9,14 +10,15 @@ export default function LandlordBookings() {
         queryFn: async () => fetch('/api/user/landlord-bookings').then(res => res.json()),
     });
 
-    const [filterDate, setFilterDate] = React.useState(""); 
+    const [filterDate, setFilterDate] = React.useState("");
+    const [showDisputeModal, setShowDisputeModal] = useState(false);
+    const [disputeBooking, setDisputeBooking] = useState(null);
 
     const filteredBookings = bookings.filter(booking => {
         if (!filterDate) return true;
         const bookingDate = new Date(booking.start_date);
-        const filter = new Date(filterDate);
-        return bookingDate.getMonth() === filter.getMonth() &&
-            bookingDate.getFullYear() === filter.getFullYear();
+        const [year, month] = filterDate.split('-');
+        return bookingDate.getFullYear() === parseInt(year) && bookingDate.getMonth() + 1 === parseInt(month);
     });
 
     const getStatusBadge = (status) => {
@@ -83,27 +85,60 @@ export default function LandlordBookings() {
                                         <p className="text-sm font-medium text-blue-600 mt-1">Room: {booking.room_name}</p>
                                     )}
                                 </div>
+                                {(booking.status === "active" || booking.status === "completed") && (
+                                    <div className="mt-4 md:mt-0 flex shrink-0">
+                                        <button
+                                            onClick={() => {
+                                                setDisputeBooking(booking);
+                                                setShowDisputeModal(true);
+                                            }}
+                                            className="text-red-600 text-sm font-bold border border-red-200 px-4 py-2 rounded-xl hover:bg-red-50 hover:text-red-800 transition-colors shadow-sm"
+                                        >
+                                            Report Issue
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Financial Breakdown */}
                             <div className="mt-6 mb-6 border-t border-b border-gray-100 py-4">
                                 <div className="grid grid-cols-3 gap-4 text-center">
                                     <div className="border-r border-gray-100">
-                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Received</p>
-                                        <p className="text-lg font-bold text-gray-900 mt-1">₹{booking.total_amount?.toLocaleString()}</p>
-                                    </div>
-                                    <div className="border-r border-gray-100">
-                                        <p className="text-xs text-red-500 uppercase font-bold tracking-wider">Platform Fee (10%)</p>
-                                        <p className="text-lg font-bold text-red-500 mt-1">-₹{(booking.platform_fee || booking.total_amount * 0.10)?.toLocaleString()}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-green-600 uppercase font-bold tracking-wider">Your Payout</p>
-                                        <p className="text-lg font-bold text-green-600 mt-1">
-                                            ₹{(booking.landlord_payout_amount || booking.total_amount * 0.90)?.toLocaleString()}
+                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">
+                                            {booking.escrow_data ? "Escrow (1st Month)" : "Base Rent"}
                                         </p>
-                                        <span className="inline-block bg-green-50 text-green-700 text-[10px] px-2 py-0.5 rounded-full mt-1 border border-green-100 uppercase font-bold">
-                                            {booking.payout_status || 'Pending'}
-                                        </span>
+                                        <p className="text-lg font-bold text-gray-900 mt-1">
+                                            ₹{booking.escrow_data ? booking.escrow_data.first_month_rent.toLocaleString() : Math.round(booking.total_amount / 1.08).toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="border-r border-gray-100 whitespace-nowrap overflow-hidden text-ellipsis px-1">
+                                        <p className="text-xs text-red-500 uppercase font-bold tracking-wider" title="Processing Fee (3%)">Fee (3%)</p>
+                                        <p className="text-lg font-bold text-red-500 mt-1">-₹{(booking.host_processing_fee || Math.round((booking.total_amount / 1.08) * 0.03)).toLocaleString()}</p>
+                                    </div>
+                                    <div className="whitespace-nowrap overflow-hidden text-ellipsis px-1">
+                                        <p className="text-xs text-green-600 uppercase font-bold tracking-wider">Your Payout</p>
+                                        {booking.escrow_data ? (
+                                            <>
+                                                <p className="text-lg font-bold text-green-600 mt-1">
+                                                    ₹{(booking.escrow_data.first_month_rent - (booking.host_processing_fee || Math.round(booking.escrow_data.first_month_rent * 0.03))).toLocaleString()}
+                                                </p>
+                                                <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full mt-1 border uppercase font-bold ${booking.escrow_data.first_month_rent_status === 'released_to_landlord'
+                                                    ? 'bg-green-50 text-green-700 border-green-100'
+                                                    : 'bg-yellow-50 text-yellow-700 border-yellow-100'
+                                                    }`}>
+                                                    {booking.escrow_data.first_month_rent_status === 'held' ? 'Escrow Held' : 'Released'}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-lg font-bold text-green-600 mt-1">
+                                                    ₹{(booking.landlord_payout_amount || Math.round((booking.total_amount / 1.08) * 0.97)).toLocaleString()}
+                                                </p>
+                                                <span className="inline-block bg-green-50 text-green-700 text-[10px] px-2 py-0.5 rounded-full mt-1 border border-green-100 uppercase font-bold">
+                                                    {booking.payout_status || 'Pending'}
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -142,6 +177,17 @@ export default function LandlordBookings() {
                     </div>
                 ))}
             </div>
+
+            {showDisputeModal && disputeBooking && (
+                <DisputeModal
+                    booking={disputeBooking}
+                    userRole="landlord"
+                    onClose={(success) => {
+                        setShowDisputeModal(false);
+                        if (success) setDisputeBooking(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

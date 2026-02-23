@@ -20,10 +20,14 @@ export default async function handler(req, res) {
 
             const bookingsWithDetails = await Promise.all(bookings.map(async (booking) => {
                 const property = await Property.findById(booking.property_id).select('title images');
+                const escrow = booking.is_escrow
+                    ? await import("../../../models/EscrowContract").then(mod => mod.default.findOne({ booking_id: booking._id }))
+                    : null;
                 return {
                     ...booking,
                     property_title: property?.title || 'Unknown Property',
-                    property_image: property?.images?.[0] || null
+                    property_image: property?.images?.[0] || null,
+                    escrow_data: escrow
                 };
             }));
 

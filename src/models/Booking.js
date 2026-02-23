@@ -26,9 +26,12 @@ const BookingSchema = new mongoose.Schema({
   refund_amount: { type: Number },
   refund_status: { type: String, enum: ["pending", "processed", "none"] },
   // Commission & Payouts
-  platform_fee: { type: Number, default: 0 }, // 10% commission
-  landlord_payout_amount: { type: Number, default: 0 }, 
-  payout_status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" }
+  guest_service_fee: { type: Number, default: 0 },
+  host_processing_fee: { type: Number, default: 0 },
+  platform_fee: { type: Number, default: 0 }, // Combined fees
+  landlord_payout_amount: { type: Number, default: 0 },
+  payout_status: { type: String, enum: ["pending", "paid", "failed", "held"], default: "pending" },
+  check_in_confirmed: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Prevent Mongoose OverwriteModelError

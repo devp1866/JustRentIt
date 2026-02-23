@@ -3,10 +3,24 @@ import User from "../../../models/User";
 import { generateOTP, hashOTP } from "../../../lib/otp";
 import { sendEmail, getEmailTemplate } from "../../../lib/email";
 import bcrypt from "bcryptjs";
+import rateLimit from "../../../utils/rateLimit";
+
+const limiter = rateLimit({
+  interval: 60 * 1000, // 60 seconds
+  uniqueTokenPerInterval: 500, // Max 500 IP addresses
+});
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  try {
+    // IP Rate Limit: Max 5 signs-ups/attempts per minute per IP
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    await limiter.check(5, ip);
+  } catch {
+    return res.status(429).json({ error: "Too many requests. Please try again later." });
   }
 
   try {

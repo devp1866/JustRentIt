@@ -4,7 +4,7 @@ import fs from "fs";
 
 export const config = {
     api: {
-        bodyParser: false, 
+        bodyParser: false,
     },
 };
 
@@ -20,6 +20,7 @@ export default async function handler(req, res) {
 
         const type = fields.type?.[0];
         const propertyName = fields.propertyName?.[0];
+        const bookingId = fields.bookingId?.[0];
         const file = files.file?.[0];
 
         if (!file) {
@@ -39,6 +40,11 @@ export default async function handler(req, res) {
             }
             const safePropertyName = propertyName.replace(/[^a-zA-Z0-9-_]/g, "_");
             folderPath = `property-images/${safePropertyName}`;
+        } else if (type === "dispute") {
+            if (!bookingId) {
+                return res.status(400).json({ message: "Booking ID is required for dispute evidence" });
+            }
+            folderPath = `disputes/${bookingId}`;
         } else if (type === "landlord") {
             folderPath = "landlord-identity";
         } else {

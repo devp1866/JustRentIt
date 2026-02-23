@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Loader2, CheckCircle, CreditCard } from "lucide-react";
-import { format, addMonths, addDays } from "date-fns";
+import { format, addMonths, addDays, differenceInDays } from "date-fns";
 import { isSameDay, parseISO } from 'date-fns';
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -25,10 +25,19 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
   const router = useRouter();
   const queryClient = useQueryClient();
   const [step, setStep] = useState("details");
-  const [startDate, setStartDate] = useState("");
+  const [startDateStr, setStartDateStr] = useState("");
+  const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
   const isShortTerm = (rentalType || property.rental_type) === 'short_term';
-  const [duration, setDuration] = useState(isShortTerm ? 3 : 6);
+  const [durationInput, setDurationInput] = useState(isShortTerm ? 3 : 6);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const duration = isShortTerm
+    ? (dateRange?.from && dateRange?.to ? differenceInDays(dateRange.to, dateRange.from) : 0)
+    : durationInput;
+
+  const startDate = isShortTerm
+    ? (dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : "")
+    : startDateStr;
 
   // Price Logic: Use selectedRoom price if available, fallback to property base price
   const basePricePerMonth = selectedRoom ? selectedRoom.price_per_month : property.price_per_month;
@@ -67,7 +76,17 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
     }
   }
 
-  const totalAmount = baseTotal - discountAmount;
+  const discountedBaseTotal = baseTotal - discountAmount;
+
+  // Escrow & Monthly Rent Logic
+  const isLongTermEscrow = !isShortTerm && duration >= 3;
+  const monthlyRent = isShortTerm ? 0 : Math.round(discountedBaseTotal / duration);
+  const depositAmount = isLongTermEscrow ? monthlyRent : 0;
+  const firstMonthRent = isLongTermEscrow ? monthlyRent : 0;
+
+  const upfrontBase = isLongTermEscrow ? (depositAmount + firstMonthRent) : discountedBaseTotal;
+  const guestServiceFee = Math.round(upfrontBase * 0.08); // 8% service fee on upfront payment
+  const totalAmount = upfrontBase + guestServiceFee;
 
   const createBookingMutation = useMutation({
     mutationFn: async (bookingData) => {
@@ -115,7 +134,7 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
     });
   };
 
-  const [termsAccepted, setTermsAccepted] = useState(new Array(11).fill(false));
+  const [termsAccepted, setTermsAccepted] = useState(new Array(12).fill(false));
 
   // Check if selected range overlaps with booked dates
   const isDateRangeAvailable = (start, duration) => {
@@ -173,7 +192,7 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
         },
         body: JSON.stringify({
           amount: totalAmount,
-          currency: "INR", 
+          currency: "INR",
         }),
       });
 
@@ -184,7 +203,7 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
       const orderData = await orderRes.json();
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         currency: orderData.currency,
         name: "Just Rent It",
         description: `Booking for ${property.title}`,
@@ -196,7 +215,6 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
             property_title: property.title,
             renter_email: user.email,
             renter_name: user.full_name,
-            landlord_email: property.landlord_email,
             start_date: startDate,
             duration_months: isShortTerm ? 0 : duration,
             duration_days: isShortTerm ? duration : 0,
@@ -205,7 +223,13 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
-            room_id: selectedRoom?._id 
+            room_id: selectedRoom?._id,
+            // Escrow Data
+            is_escrow: isLongTermEscrow,
+            monthly_rent_amount: monthlyRent,
+            deposit_amount: depositAmount,
+            first_month_rent_amount: firstMonthRent,
+            total_contract_amount: discountedBaseTotal
           });
         },
         prefill: {
@@ -217,7 +241,7 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
           address: "Razorpay Corporate Office",
         },
         theme: {
-          color: "#82C8E5", 
+          color: "#82C8E5",
         },
         modal: {
           ondismiss: function () {
@@ -260,12 +284,20 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
             </div>
             <div className="space-y-4">
               <div>
-                <label className="font-bold block mb-1 text-brand-dark">Move-in Date</label>
+                <label className="font-bold block mb-1 text-brand-dark">
+                  {isShortTerm ? "Select Check-in & Check-out Dates" : "Move-in Date"}
+                </label>
                 <div className="border border-brand-blue/20 rounded-xl p-2 flex justify-center bg-white">
                   <DayPicker
-                    mode="single"
-                    selected={startDate ? new Date(startDate) : undefined}
-                    onSelect={(date) => setStartDate(date ? format(date, "yyyy-MM-dd") : "")}
+                    mode={isShortTerm ? "range" : "single"}
+                    selected={isShortTerm ? dateRange : (startDateStr ? new Date(startDateStr) : undefined)}
+                    onSelect={(val) => {
+                      if (isShortTerm) {
+                        setDateRange(val || { from: undefined, to: undefined });
+                      } else {
+                        setStartDateStr(val ? format(val, "yyyy-MM-dd") : "");
+                      }
+                    }}
                     disabled={[
                       { before: new Date() },
                       ...bookedRanges.map(range => ({
@@ -282,20 +314,37 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
                   />
                 </div>
               </div>
-              <div>
-                <label htmlFor="duration" className="font-bold block mb-1 text-brand-dark">
-                  {isShortTerm ? "Duration (Nights)" : "Rental Duration (months)"}
-                </label>
-                <input
-                  id="duration"
-                  type="number"
-                  min={isShortTerm ? "1" : "1"}
-                  max={isShortTerm ? "30" : "24"}
-                  value={duration}
-                  onChange={e => setDuration(parseInt(e.target.value))}
-                  className="w-full border border-brand-blue/20 p-3 rounded-xl focus:ring-2 focus:ring-brand-blue/50 outline-none bg-brand-cream/20"
-                />
-              </div>
+
+              {!isShortTerm && (
+                <div>
+                  <label htmlFor="duration" className="font-bold block mb-1 text-brand-dark">
+                    Rental Duration (months)
+                  </label>
+                  <input
+                    id="duration"
+                    type="number"
+                    min="1"
+                    max="24"
+                    value={durationInput}
+                    onChange={e => setDurationInput(parseInt(e.target.value) || 0)}
+                    className="w-full border border-brand-blue/20 p-3 rounded-xl focus:ring-2 focus:ring-brand-blue/50 outline-none bg-brand-cream/20"
+                  />
+                </div>
+              )}
+
+              {isShortTerm && dateRange?.from && dateRange?.to && (
+                <div className="bg-brand-blue/5 rounded-xl p-3 border border-brand-blue/10">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-brand-dark/70">Check-in:</span>
+                    <span className="font-bold">{format(dateRange.from, "MMM dd, yyyy")}</span>
+                  </div>
+                  <div className="flex justify-between text-sm mt-1">
+                    <span className="text-brand-dark/70">Check-out:</span>
+                    <span className="font-bold">{format(dateRange.to, "MMM dd, yyyy")}</span>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-brand-blue/5 rounded-xl p-4 border border-brand-blue/10">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-brand-dark/70">{isShortTerm ? "Nightly Rate" : "Monthly Rent"}</span>
@@ -305,18 +354,60 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
                   <span className="text-brand-dark/70">Duration</span>
                   <span className="font-bold text-brand-dark">{duration} {isShortTerm ? "nights" : "months"}</span>
                 </div>
-                <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10">
-                  <span className="font-bold text-brand-dark">Subtotal</span>
-                  <span className="font-bold text-brand-dark">₹{baseTotal}</span>
-                </div>
-                {isOfferApplied && (
-                  <div className="flex justify-between items-center text-brand-green">
-                    <span>Discount ({property.offer.discount_percentage}% off)</span>
-                    <span>-₹{discountAmount}</span>
-                  </div>
+
+                {isLongTermEscrow ? (
+                  <>
+                    <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10">
+                      <span className="font-bold text-brand-dark">Total Contract Value</span>
+                      <span className="font-bold text-brand-dark">₹{baseTotal}</span>
+                    </div>
+                    {isOfferApplied && (
+                      <div className="flex justify-between items-center text-brand-green">
+                        <span>Discount ({property.offer.discount_percentage}% off)</span>
+                        <span>-₹{discountAmount}</span>
+                      </div>
+                    )}
+
+                    <div className="mt-4 p-3 bg-white rounded-lg border border-brand-blue/20 shadow-sm relative overflow-hidden">
+                      <div className="absolute top-0 right-0 bg-brand-blue text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                        JustRentIt Protect
+                      </div>
+                      <h4 className="text-sm font-bold text-brand-dark mb-2 flex items-center gap-1">
+                        <svg className="w-4 h-4 text-brand-green" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        Upfront Escrow Payment
+                      </h4>
+                      <div className="flex justify-between items-center text-sm mb-1">
+                        <span className="text-brand-dark/70">1st Month Rent</span>
+                        <span className="font-semibold text-brand-dark">₹{firstMonthRent}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-brand-dark/70">Security Deposit</span>
+                        <span className="font-semibold text-brand-dark">₹{depositAmount}</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10">
+                      <span className="font-bold text-brand-dark">Subtotal</span>
+                      <span className="font-bold text-brand-dark">₹{baseTotal}</span>
+                    </div>
+                    {isOfferApplied && (
+                      <div className="flex justify-between items-center text-brand-green">
+                        <span>Discount ({property.offer.discount_percentage}% off)</span>
+                        <span>-₹{discountAmount}</span>
+                      </div>
+                    )}
+                  </>
                 )}
+
                 <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10 mt-2">
-                  <span className="font-bold text-lg text-brand-dark">Total Amount</span>
+                  <span className="text-brand-dark/70">Service Fee (8%)</span>
+                  <span className="font-bold text-brand-dark">₹{guestServiceFee}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-brand-blue/10 mt-2">
+                  <span className="font-bold text-lg text-brand-dark">Total Due Today</span>
+                  <span className="font-bold text-lg text-brand-blue">₹{totalAmount}</span>
                 </div>
               </div>
 
@@ -366,7 +457,8 @@ export default function BookingModal({ property, user, onClose, selectedRoom, re
                   "I will follow society rules and maintain respectful behavior.",
                   "I will not sublet, misuse, or engage in illegal activities.",
                   "I understand JustRentIt is only a connecting platform.",
-                  "I agree that violations may lead to eviction or legal action."
+                  "I agree that violations may lead to eviction or legal action.",
+                  "I agree to the Platform Liability & Dispute Terms of Service."
                 ].map((term, idx) => (
                   <div key={idx} className="flex items-start">
                     <input

@@ -18,16 +18,10 @@ export const authOptions = {
                 if (user.is_active === false) throw new Error("Account is deactivated");
 
                 let isValid = false;
-                // Try bcrypt
                 try {
                     isValid = await bcrypt.compare(credentials.password, user.password);
                 } catch (e) {
-                    // Ignore
-                }
-
-                // Fallback to plain text
-                if (!isValid && user.password === credentials.password) {
-                    isValid = true;
+                    // Ignore error to prevent timing attacks, let it fail at isValid check
                 }
 
                 if (!isValid) throw new Error("Invalid password");

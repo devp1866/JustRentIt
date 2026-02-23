@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function Login() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export default function Login() {
 
   return (
     <div className="h-screen overflow-hidden flex bg-brand-cream">
+      <SEO title="Sign In" description="Login to your JustRentIt account to manage your rentals and properties." />
       {/* Left Side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-brand-dark">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />

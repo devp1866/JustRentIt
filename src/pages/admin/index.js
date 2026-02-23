@@ -11,7 +11,9 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
-import { LayoutDashboard, Users, Building, DollarSign, TrendingUp, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Building, DollarSign, TrendingUp, ShieldCheck, AlertTriangle, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -19,8 +21,13 @@ export default function AdminDashboard() {
     const [passwordForm, setPasswordForm] = React.useState({ current: '', new: '', confirm: '' });
     const [passwordMessage, setPasswordMessage] = React.useState({ type: '', text: '' });
 
+    const [chartTimeframe, setChartTimeframe] = React.useState('sixMonths');
+
     const [viewAll, setViewAll] = React.useState(false);
     const [allTransactions, setAllTransactions] = React.useState([]);
+
+    const [showScheduleModal, setShowScheduleModal] = React.useState(false);
+    const [selectedEscrow, setSelectedEscrow] = React.useState(null);
 
     const handleViewAll = async () => {
         if (!viewAll) {
@@ -89,7 +96,29 @@ export default function AdminDashboard() {
         );
     }
 
-    const { stats, recentBookings, chartData, adminProfile } = data;
+    const { stats, recentBookings, charts, adminProfile, escalatedTickets } = data;
+    const chartData = charts?.[chartTimeframe] || [];
+
+    const handleEscrowPayout = async (escrowId, type) => {
+        const actionText = type === 'release_rent' ? 'release First Month Rent to Landlord' :
+            type === 'release_deposit_to_renter' ? 'Return Deposit to Renter' :
+                'Give Deposit to Landlord';
+        if (!confirm(`Are you sure you want to ${actionText}? This cannot be undone.`)) return;
+
+        try {
+            const res = await fetch('/api/admin/payout-escrow', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ escrow_id: escrowId, type })
+            });
+
+            if (!res.ok) throw new Error('Failed to update escrow');
+
+            window.location.reload();
+        } catch (err) {
+            alert(err.message);
+        }
+    };
 
     const handlePayout = async (bookingId) => {
         if (!confirm('Are you sure you want to mark this payout as PAID?')) return;
@@ -144,293 +173,207 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans">
-            <div className="max-w-7xl mx-auto space-y-10">
-
-                {/* Header */}
+        <AdminLayout title="System Overview">
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header Area */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-extrabold text-[#1a1a1a] flex items-center gap-3 tracking-tight">
-                            <span className="bg-brand-blue/10 p-2 rounded-xl">
-                                <LayoutDashboard className="w-8 h-8 text-brand-blue" />
-                            </span>
-                            Admin Dashboard
-                        </h1>
-                        <p className="text-gray-500 mt-2 text-lg">Detailed overview of platform performance.</p>
+                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Overview</h1>
+                        <p className="text-gray-500 mt-1">Platform performance and pending actions.</p>
                     </div>
-                    <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-full shadow-sm border border-gray-100">
-                        <div className="w-10 h-10 bg-gradient-to-br from-brand-blue to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                            {adminProfile?.name?.charAt(0) || 'A'}
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-gray-900 leading-none">{adminProfile?.name || 'Administrator'}</p>
-                            <div className="flex gap-3 mt-1">
-                                <button
-                                    onClick={() => setIsPasswordModalOpen(true)}
-                                    className="text-xs text-brand-blue hover:underline font-medium"
-                                >
-                                    Change Password
-                                </button>
-                                <span className="text-gray-300">|</span>
-                                <button
-                                    onClick={async () => {
-                                        await fetch('/api/admin/logout', { method: 'POST' });
-                                        router.push('/admin/login');
-                                    }}
-                                    className="text-xs text-red-500 hover:underline font-medium"
-                                >
-                                    Logout
-                                </button>
-                            </div>
-                        </div>
+                    <div className="text-right bg-white px-5 py-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Logged in as</p>
+                        <p className="text-brand-dark font-extrabold text-sm">{adminProfile?.email}</p>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                     <StatCard
                         title="Total Revenue"
                         value={`₹${stats.totalRevenue.toLocaleString()}`}
-                        icon={<DollarSign className="w-7 h-7 text-white" />}
-                        gradient="from-blue-600 to-blue-400"
-                        subtext="Platform Commission (10%)"
+                        icon={<DollarSign className="w-5 h-5 text-brand-blue" />}
+                        trend="+12%"
+                        trendUp={true}
                     />
                     <StatCard
                         title="Total Bookings"
                         value={stats.totalBookings}
-                        icon={<Users className="w-7 h-7 text-white" />}
-                        gradient="from-purple-600 to-purple-400"
-                        subtext="All time bookings"
+                        icon={<Users className="w-5 h-5 text-purple-600" />}
+                        trend="+4%"
+                        trendUp={true}
                     />
                     <StatCard
                         title="Active Listings"
                         value={stats.activeListings}
-                        icon={<Building className="w-7 h-7 text-white" />}
-                        gradient="from-orange-500 to-orange-400"
-                        subtext="Properties live now"
+                        icon={<Building className="w-5 h-5 text-orange-600" />}
+                        trend="-2%"
+                        trendUp={false}
+                    />
+                    <StatCard
+                        title="Escrow Funds Held"
+                        value={`₹${(stats.totalEscrowHeld || 0).toLocaleString()}`}
+                        icon={<ShieldCheck className="w-5 h-5 text-blue-600" />}
+                        trend="Secured"
+                        trendUp={true}
+                    />
+                    <StatCard
+                        title="Escalated Tickets"
+                        value={stats.escalatedCount || 0}
+                        icon={<AlertTriangle className="w-5 h-5 text-red-600" />}
+                        trend="Urgent"
+                        trendUp={false}
                     />
                 </div>
 
-                {/* Main Content Grid */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Main Content Sections */}
+                <div className="flex flex-col gap-12 mt-8">
 
-                    {/* Revenue Chart */}
-                    <div className="xl:col-span-3 bg-white p-8 rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-green-500" />
-                                Monthly Commission Revenue
-                            </h3>
-                            <select className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1 text-sm text-gray-600 outline-none">
-                                <option>Last 6 Months</option>
-                            </select>
-                        </div>
-                        <div className="h-80 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData} barSize={60}>
-                                    <defs>
-                                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#2563eb" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                                    <XAxis
-                                        dataKey="name"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#9ca3af', fontSize: 12 }}
-                                        dy={10}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#9ca3af', fontSize: 12 }}
-                                        tickFormatter={(value) => `₹${value}`}
-                                    />
-                                    <Tooltip
-                                        cursor={{ fill: '#f9fafb' }}
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Bar dataKey="revenue" fill="url(#colorRevenue)" radius={[8, 8, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Recent Transactions Table */}
-                    <div className="xl:col-span-3 bg-white rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 overflow-hidden">
-                        <div className="p-8 border-b border-gray-50 flex justify-between items-center">
-                            <h3 className="text-xl font-bold text-gray-900">
-                                {viewAll ? 'All Transactions' : 'Recent Transactions'}
-                            </h3>
-                            <button
-                                onClick={handleViewAll}
-                                className="text-sm text-brand-blue font-bold hover:underline"
-                            >
-                                {viewAll ? 'Show Less' : 'View All'}
-                            </button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50/50">
-                                    <tr>
-                                        <th className="px-8 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Property</th>
-                                        <th className="px-8 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Renter</th>
-                                        <th className="px-8 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Total Amount</th>
-                                        <th className="px-8 py-4 text-right text-xs font-bold text-brand-blue uppercase tracking-wider">Commission (10%)</th>
-                                        <th className="px-8 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Landlord Payout</th>
-                                        <th className="px-8 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                        <th className="px-8 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {(viewAll ? allTransactions : recentBookings).length === 0 ? (
-                                        <tr>
-                                            <td colSpan="7" className="px-8 py-12 text-center text-gray-500">
-                                                No transactions found.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        (viewAll ? allTransactions : recentBookings).map((booking, i) => (
-                                            <tr key={i} className="hover:bg-gray-50/50 transition-colors group">
-                                                <td className="px-8 py-5">
-                                                    <p className="font-bold text-gray-900">{booking.property_title}</p>
-                                                    <p className="text-xs text-gray-400 mt-1">ID: #{booking._id?.slice(-6).toUpperCase()}</p>
-                                                </td>
-                                                <td className="px-8 py-5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
-                                                            {booking.renter_name?.charAt(0) || 'U'}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-medium text-gray-900 text-sm">{booking.renter_name || "Unknown Renter"}</p>
-                                                            <p className="text-xs text-gray-400">Renter</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-5 text-right font-medium text-gray-600">
-                                                    ₹{booking.total_amount?.toLocaleString()}
-                                                </td>
-                                                <td className="px-8 py-5 text-right">
-                                                    <span className="bg-blue-50 text-brand-blue px-3 py-1 rounded-full text-sm font-bold border border-blue-100">
-                                                        +₹{booking.platform_fee?.toLocaleString()}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-5 text-right font-medium text-gray-600">
-                                                    ₹{booking.landlord_payout_amount?.toLocaleString()}
-                                                </td>
-                                                <td className="px-8 py-5 text-center">
-                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                                                        ${booking.payout_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                        {booking.payout_status || 'Pending'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-5 text-center">
-                                                    {booking.payout_status !== 'paid' && (
-                                                        <button
-                                                            onClick={() => handlePayout(booking._id)}
-                                                            className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-xs font-bold transition-colors"
-                                                        >
-                                                            Mark Paid
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                    {/* Section 1: Analytics & Revenue */}
+                    <div className="space-y-4">
+                        <h2 className="text-2xl font-extrabold text-[#1a1a1a] flex items-center gap-3">
+                            <TrendingUp className="w-7 h-7 text-brand-blue" /> Analytics Explorer
+                        </h2>
+                        {/* Revenue Chart */}
+                        <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
+                            <div className="mb-6 flex items-center justify-between">
+                                <h3 className="text-base font-bold text-gray-900 tracking-tight">Commission Growth</h3>
+                                <select
+                                    className="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-brand-blue/20"
+                                    value={chartTimeframe}
+                                    onChange={(e) => setChartTimeframe(e.target.value)}
+                                >
+                                    <option value="sevenDays">Last 7 Days</option>
+                                    <option value="sixMonths">Last 6 Months</option>
+                                    <option value="thisYear">This Year</option>
+                                </select>
+                            </div>
+                            <div className="w-full h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData} barSize={40}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                        <XAxis
+                                            dataKey="name"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#6B7280', fontSize: 12, fontWeight: 500 }}
+                                            dy={10}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#6B7280', fontSize: 12, fontWeight: 500 }}
+                                            tickFormatter={(value) => `₹${value}`}
+                                            dx={-10}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: '#F3F4F6' }}
+                                            contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                            formatter={(value) => [`₹${value}`, "Revenue"]}
+                                        />
+                                        <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
-
             {/* Change Password Modal */}
-            {
-                isPasswordModalOpen && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
-                            <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-                                <h3 className="text-xl font-bold text-gray-900">Change Admin Password</h3>
-                                <button
-                                    onClick={() => setIsPasswordModalOpen(false)}
-                                    className="text-gray-400 hover:text-gray-600 outline-none"
-                                >
-                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
+            {isPasswordModalOpen && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
+                        <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+                            <h3 className="text-xl font-bold text-gray-900">Change Admin Password</h3>
+                            <button
+                                onClick={() => setIsPasswordModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 outline-none"
+                            >
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form onSubmit={handleChangePassword} className="p-6 space-y-4">
+                            {passwordMessage.text && (
+                                <div className={`p-3 rounded-lg text-sm ${passwordMessage.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                                    {passwordMessage.text}
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.current}
+                                    onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
+                                    required
+                                />
                             </div>
-                            <form onSubmit={handleChangePassword} className="p-6 space-y-4">
-                                {passwordMessage.text && (
-                                    <div className={`p-3 rounded-lg text-sm ${passwordMessage.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                                        {passwordMessage.text}
-                                    </div>
-                                )}
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                                    <input
-                                        type="password"
-                                        value={passwordForm.current}
-                                        onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
-                                        required
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.new}
+                                    onChange={e => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
+                                    required
+                                />
+                            </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                                    <input
-                                        type="password"
-                                        value={passwordForm.new}
-                                        onChange={e => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
-                                        required
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.confirm}
+                                    onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
+                                    required
+                                />
+                            </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                                    <input
-                                        type="password"
-                                        value={passwordForm.confirm}
-                                        onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
-                                        required
-                                    />
-                                </div>
-
+                            <div className="space-y-3 pt-2">
                                 <button
                                     type="submit"
                                     className="w-full bg-brand-blue text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-brand-blue/30"
                                 >
                                     Update Password
                                 </button>
-                            </form>
-                        </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPasswordModalOpen(false)}
+                                    className="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </AdminLayout>
     );
 }
 
-function StatCard({ title, value, icon, gradient, subtext }) {
+function StatCard({ title, value, icon, trend, trendUp }) {
     return (
-        <div className="bg-white p-8 rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 hover:transform hover:scale-[1.02] transition-all duration-300">
-            <div className="flex items-start justify-between">
-                <div>
-                    <p className="text-sm font-bold text-gray-400 tracking-wide uppercase mb-1">{title}</p>
-                    <h3 className="text-4xl font-extrabold text-[#1a1a1a] tracking-tight">{value}</h3>
-                    {subtext && <p className="text-xs text-gray-400 mt-2 font-medium">{subtext}</p>}
-                </div>
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg bg-gradient-to-br ${gradient}`}>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between group hover:shadow-md hover:border-brand-blue/30 transition-all duration-300">
+            <div className="flex items-start justify-between mb-4">
+                <div className="bg-gray-50 p-2.5 rounded-lg group-hover:bg-brand-blue/5 transition-colors border border-gray-100">
                     {icon}
                 </div>
+                {trend && (
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${trendUp ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                        {trend}
+                    </span>
+                )}
+            </div>
+            <div>
+                <p className="text-sm font-semibold text-gray-500 mb-1">{title}</p>
+                <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">{value}</h3>
             </div>
         </div>
     );

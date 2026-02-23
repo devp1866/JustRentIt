@@ -2,9 +2,22 @@ import dbConnect from "../../../utils/db";
 import Admin from "../../../models/Admin";
 import bcrypt from "bcryptjs";
 import { serialize } from "cookie";
+import rateLimit from "../../../utils/rateLimit";
+
+const limiter = rateLimit({
+    interval: 60 * 1000,
+    uniqueTokenPerInterval: 500,
+});
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+
+    try {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        await limiter.check(5, ip); // 5 login attempts per minute
+    } catch {
+        return res.status(429).json({ message: "Too many login attempts. Please try again later." });
+    }
 
     await dbConnect();
 

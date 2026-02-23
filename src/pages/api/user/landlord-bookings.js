@@ -1,6 +1,7 @@
 import dbConnect from "../../../utils/db";
 import Booking from "../../../models/Booking";
 import Property from "../../../models/Property";
+import EscrowContract from "../../../models/EscrowContract";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../utils/authOptions";
 
@@ -30,16 +31,22 @@ export default async function handler(req, res) {
 
         //  Populate property titles (and check for room names if needed)
 
+        const bookingIds = bookings.map(b => b._id);
+        const escrows = await EscrowContract.find({ booking_id: { $in: bookingIds } }).lean();
 
         const propertyMap = properties.reduce((acc, curr) => {
             acc[curr._id.toString()] = curr.title;
             return acc;
         }, {});
 
-        const bookingsWithDetails = bookings.map(booking => ({
-            ...booking,
-            property_title: propertyMap[booking.property_id.toString()] || "Unknown Property",
-        }));
+        const bookingsWithDetails = bookings.map(booking => {
+            const escrow = escrows.find(e => e.booking_id.toString() === booking._id.toString());
+            return {
+                ...booking,
+                property_title: propertyMap[booking.property_id.toString()] || "Unknown Property",
+                escrow_data: escrow || null
+            };
+        });
 
         return res.status(200).json(bookingsWithDetails);
     } catch (error) {

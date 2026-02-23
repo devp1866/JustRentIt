@@ -21,12 +21,12 @@ export default async function handler(req, res) {
         { location: searchRegex }
       ];
     }
-    
+
     if (price_min || price_max) {
       const min = parseInt(price_min) || 0;
       const max = parseInt(price_max) || Infinity;
 
-      
+
       const priceQuery = { $gte: min };
       if (max !== Infinity) priceQuery.$lte = max;
 
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
         { price_per_month: priceQuery },
         { price_per_night: priceQuery }
         // Note: This misses Room prices if main price is 0. 
-        
+
       );
       if (filter.$or.length === 0) delete filter.$or;
       if (filter.$or.length === 1 && !search) {
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     }
 
     const finalFilter = { ...filter };
-    delete finalFilter.$or; 
+    delete finalFilter.$or;
     const andConditions = [];
 
     if (rental_type && rental_type !== 'all') andConditions.push({ rental_type });
@@ -90,7 +90,8 @@ export default async function handler(req, res) {
       const properties = await Property.find(finalFilter)
         .sort({ createdAt: -1 }) // Newest first
         .skip(skip)
-        .limit(parseInt(limit));
+        .limit(parseInt(limit))
+        .select('-landlord_email');
 
       return res.status(200).json({
         properties,

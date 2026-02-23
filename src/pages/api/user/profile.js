@@ -70,7 +70,7 @@ export default async function handler(req, res) {
                 try {
                     isValid = await bcrypt.compare(oldPassword, user.password);
                 } catch (e) {
-                   
+
                 }
 
                 if (!isValid && user.password === oldPassword) {

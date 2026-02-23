@@ -5,15 +5,21 @@ import { Calendar as CalendarIcon, MapPin, DollarSign, AlertTriangle, CheckCircl
 import { format, differenceInDays, parseISO, addDays, isWithinInterval, startOfDay } from "date-fns";
 import Image from "next/image";
 import ReviewModal from "../reviews/ReviewModal";
+import DisputeModal from "../disputes/DisputeModal";
 
 export default function MyBookings({ user }) {
   const queryClient = useQueryClient();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [reviewBooking, setReviewBooking] = useState(null);
+  const [disputeBooking, setDisputeBooking] = useState(null);
   const [refundEstimate, setRefundEstimate] = useState(0);
   const [reason, setReason] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedEscrow, setSelectedEscrow] = useState(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['my-bookings'],
@@ -47,10 +53,133 @@ export default function MyBookings({ user }) {
     },
   });
 
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayRent = async (escrow, month_number) => {
+    setIsProcessingPayment(true);
+    const res = await loadRazorpayScript();
+    if (!res) {
+      alert("Razorpay SDK failed to load. Are you online?");
+      setIsProcessingPayment(false);
+      return;
+    }
+
+    try {
+      const orderRes = await fetch("/api/rent-payments/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ escrow_id: escrow._id, month_number }),
+      });
+      if (!orderRes.ok) {
+        const err = await orderRes.json();
+        throw new Error(err.message || "Failed to create order");
+      }
+      const orderData = await orderRes.json();
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: "JustRentIt Protect",
+        description: `Rent for Month ${month_number}`,
+        order_id: orderData.order.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch("/api/rent-payments/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                escrow_id: escrow._id,
+                month_number,
+                base_rent: orderData.base_rent,
+                guest_service_fee: orderData.guest_service_fee
+              }),
+            });
+            if (!verifyRes.ok) throw new Error("Verification failed");
+
+            alert(`Payment for Month ${month_number} successful!`);
+            setShowPaymentModal(false);
+            queryClient.invalidateQueries(["my-bookings"]);
+          } catch (error) {
+            console.error(error);
+            alert("Payment verification failed.");
+          }
+        },
+        prefill: {
+          name: user?.name,
+          email: user?.email,
+        },
+        theme: { color: "#2563EB" },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on("payment.failed", function (response) {
+        alert(response.error.description);
+      });
+      paymentObject.open();
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const confirmMoveInMutation = useMutation({
+    mutationFn: async ({ escrow_id }) => {
+      const res = await fetch("/api/user/confirm-move-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ escrow_id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to confirm move-in");
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["my-bookings"]);
+      alert("Move-in confirmed successfully!");
+    },
+    onError: (err) => {
+      alert(err.message);
+    },
+  });
+
+  const confirmCheckinMutation = useMutation({
+    mutationFn: async ({ booking_id }) => {
+      const res = await fetch("/api/user/confirm-checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to confirm check-in");
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["my-bookings"]);
+      alert("Check-in confirmed successfully!");
+    },
+    onError: (err) => {
+      alert(err.message);
+    },
+  });
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
-        return 'bg-brand-green animate-pulse'; 
+        return 'bg-brand-green animate-pulse';
       case 'confirmed':
         return 'bg-brand-blue';
       case 'pending':
@@ -175,7 +304,7 @@ export default function MyBookings({ user }) {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-brand-blue">₹{booking.total_amount}</p>
-                        <p className="text-xs text-brand-dark/50">Total Paid</p>
+                        <p className="text-xs text-brand-dark/50" title="Includes 8% Service Fee">Total Paid (Inc. Fee)</p>
                       </div>
                     </div>
 
@@ -212,6 +341,19 @@ export default function MyBookings({ user }) {
                         <div>
                           <p className="text-sm font-bold text-brand-dark">Landlord</p>
                           <p className="text-sm text-brand-dark/70">{booking.landlord_email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <DollarSign className="w-5 h-5 text-brand-blue mt-0.5" />
+                        <div>
+                          <p className="text-sm font-bold text-brand-dark">Fee Breakdown</p>
+                          <p className="text-xs text-brand-dark/70">
+                            Base: ₹{Math.round(booking.total_amount / 1.08)}<br />
+                            Fee (8%): ₹{booking.guest_service_fee || Math.round(booking.total_amount - (booking.total_amount / 1.08))}
+                          </p>
+                          {booking.escrow_data && (
+                            <span className="inline-block bg-brand-blue text-white text-[10px] px-2 py-0.5 rounded-full mt-1 font-bold">JustRentIt Protect Escrow</span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-start gap-3 col-span-1 sm:col-span-2 bg-brand-yellow/10 p-2 rounded-lg border border-brand-yellow/20">
@@ -265,6 +407,63 @@ export default function MyBookings({ user }) {
                           View Property Details →
                         </button>
                       </Link>
+
+                      {/* Dispute Booking */}
+                      {(booking.status === "active" || booking.status === "completed") && (
+                        <button
+                          onClick={() => {
+                            setDisputeBooking(booking);
+                            setShowDisputeModal(true);
+                          }}
+                          className="text-red-600 font-bold hover:text-red-800 text-sm transition-colors border border-red-200 px-3 py-1 rounded-lg hover:bg-red-50"
+                        >
+                          Report Issue
+                        </button>
+                      )}
+
+                      {/* View Payment Schedule */}
+                      {booking.escrow_data && booking.escrow_data.payment_schedule?.length > 0 && (
+                        <button
+                          onClick={() => {
+                            setSelectedEscrow(booking.escrow_data);
+                            setShowPaymentModal(true);
+                          }}
+                          className="bg-brand-dark font-bold text-white hover:bg-brand-dark/90 text-sm transition-colors px-3 py-1 rounded-lg shadow-md"
+                        >
+                          Payment Schedule
+                        </button>
+                      )}
+
+                      {/* Confirm Move In for Escrow (Long Term) */}
+                      {booking.escrow_data && (booking.status === "active" || booking.status === "confirmed") && !booking.escrow_data.move_in_confirmed && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to confirm move-in? This releases the first month's rent to the landlord.")) {
+                              confirmMoveInMutation.mutate({ escrow_id: booking.escrow_data._id });
+                            }
+                          }}
+                          disabled={confirmMoveInMutation.isPending}
+                          className="bg-brand-blue font-bold text-white hover:bg-brand-blue/90 text-sm transition-colors px-3 py-1 rounded-lg shadow-md"
+                        >
+                          Confirm Move-In
+                        </button>
+                      )}
+
+                      {/* Confirm Check In for Short Term */}
+                      {!booking.escrow_data && (booking.status === "active" || booking.status === "confirmed") && !booking.check_in_confirmed && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to confirm check-in? This releases your payment to the landlord.")) {
+                              confirmCheckinMutation.mutate({ booking_id: booking._id });
+                            }
+                          }}
+                          disabled={confirmCheckinMutation.isPending}
+                          className="bg-brand-blue font-bold text-white hover:bg-brand-blue/90 text-sm transition-colors px-3 py-1 rounded-lg shadow-md"
+                        >
+                          Confirm Check-In
+                        </button>
+                      )}
+
                       {/* Review Logic */}
                       {/* Review Logic */}
                       {(booking.status === 'active' || booking.status === 'completed') && (() => {
@@ -396,6 +595,78 @@ export default function MyBookings({ user }) {
             if (success) setReviewBooking(null);
           }}
         />
+      )}
+
+      {/* Dispute Modal */}
+      {showDisputeModal && disputeBooking && (
+        <DisputeModal
+          booking={disputeBooking}
+          userRole="renter"
+          onClose={(success) => {
+            setShowDisputeModal(false);
+            if (success) {
+              setDisputeBooking(null);
+            }
+          }}
+        />
+      )}
+
+      {/* Payment Schedule Modal */}
+      {showPaymentModal && selectedEscrow && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 animate-in fade-in zoom-in duration-200 border border-brand-blue/10 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-brand-dark">Payment Schedule</h3>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-brand-blue/5 p-4 rounded-xl border border-brand-blue/10 flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-brand-dark">Initial Escrow (Month 1 & Deposit)</p>
+                  <p className="text-sm text-brand-dark/70">Paid upfront</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-brand-blue">₹{selectedEscrow.first_month_rent + selectedEscrow.deposit_amount}</p>
+                  <span className="inline-block bg-brand-green/20 text-brand-green text-xs px-2 py-0.5 rounded-full font-bold mt-1">Paid</span>
+                </div>
+              </div>
+
+              {selectedEscrow.payment_schedule.map((payment) => (
+                <div key={payment.month_number} className="bg-white border p-4 rounded-xl flex justify-between items-center hover:shadow-md transition-shadow">
+                  <div>
+                    <p className="font-bold text-brand-dark">Month {payment.month_number}</p>
+                    <p className="text-sm text-brand-dark/70">Due: {format(new Date(payment.due_date), "MMM d, yyyy")}</p>
+                  </div>
+                  <div className="text-right flex items-center gap-4">
+                    <div>
+                      <p className="font-bold text-brand-blue">₹{payment.amount}</p>
+                      {payment.status === 'paid' || payment.status === 'pending_payout_to_landlord' ? (
+                        <span className="inline-block bg-brand-green/20 text-brand-green text-xs px-2 py-0.5 rounded-full font-bold mt-1">Paid</span>
+                      ) : (
+                        <span className="inline-block bg-brand-yellow/20 text-brand-yellow text-xs px-2 py-0.5 rounded-full font-bold mt-1">Pending</span>
+                      )}
+                    </div>
+                    {payment.status === 'pending' && (
+                      <button
+                        onClick={() => handlePayRent(selectedEscrow, payment.month_number)}
+                        disabled={isProcessingPayment}
+                        className="bg-brand-blue text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-brand-blue/90 disabled:opacity-50 shadow-md"
+                      >
+                        {isProcessingPayment ? "..." : "Pay Rent"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

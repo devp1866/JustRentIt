@@ -4,6 +4,7 @@ import MyProperties from "../components/dashboard/MyProperties";
 import MyBookings from "../components/dashboard/MyBookings";
 import LandlordBookings from "../components/dashboard/LandlordBookings";
 import { useSession, signIn } from "next-auth/react";
+import SEO from "../components/SEO";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -53,6 +54,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-brand-cream py-8">
+      <SEO title="Dashboard" description="Manage your properties and bookings on JustRentIt." />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-brand-dark mb-2">My Dashboard</h1>

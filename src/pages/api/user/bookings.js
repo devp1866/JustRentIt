@@ -46,10 +46,11 @@ export default async function handler(req, res) {
                 ));
             }
 
-            
+
             const bookingsWithImages = await Promise.all(updatedBookings.map(async (booking) => {
                 const property = await import("../../../models/Property").then(mod => mod.default.findById(booking.property_id));
                 const review = await import("../../../models/Review").then(mod => mod.default.findOne({ booking_id: booking._id }));
+                const escrow = await import("../../../models/EscrowContract").then(mod => mod.default.findOne({ booking_id: booking._id }));
 
                 return {
                     ...booking,
@@ -58,7 +59,8 @@ export default async function handler(req, res) {
                     has_review: !!review,
                     review_id: review?._id,
                     review_createdAt: review?.createdAt,
-                    review_data: review 
+                    review_data: review,
+                    escrow_data: escrow
                 };
             }));
 

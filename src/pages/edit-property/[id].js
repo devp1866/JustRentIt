@@ -355,7 +355,16 @@ export default function EditProperty() {
                                 <select
                                     id="rental_type"
                                     value={formData.rental_type}
-                                    onChange={e => setFormData({ ...formData, rental_type: e.target.value })}
+                                    onChange={e => {
+                                        const newType = e.target.value;
+                                        setFormData(prev => {
+                                            const updates = { rental_type: newType };
+                                            if (newType === 'long_term' && ['hotel', 'resort'].includes(prev.property_type)) {
+                                                updates.property_type = 'apartment';
+                                            }
+                                            return { ...prev, ...updates };
+                                        });
+                                    }}
                                     className="mt-1 w-full border px-3 py-2 rounded"
                                 >
                                     <option value="long_term">Long Term (Monthly)</option>
@@ -372,10 +381,15 @@ export default function EditProperty() {
                                         className="mt-1 w-full border px-3 py-2 rounded"
                                     >
                                         <option value="apartment">Apartment</option>
-
                                         <option value="condo">Condo</option>
                                         <option value="studio">Studio</option>
                                         <option value="villa">Villa</option>
+                                        {formData.rental_type === 'short_term' && (
+                                            <>
+                                                <option value="hotel">Hotel</option>
+                                                <option value="resort">Resort</option>
+                                            </>
+                                        )}
                                     </select>
                                 </div>
 
@@ -395,12 +409,12 @@ export default function EditProperty() {
                                             {formData.price_per_night > 0 && (
                                                 <div className="mt-2 text-sm bg-green-50 text-green-800 p-3 rounded-lg border border-green-200">
                                                     <div className="flex justify-between">
-                                                        <span>Platform Fee (10%):</span>
-                                                        <span>-₹{(formData.price_per_night * 0.10).toFixed(2)}</span>
+                                                        <span>Processing Fee (3%):</span>
+                                                        <span>-₹{(formData.price_per_night * 0.03).toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex justify-between font-bold mt-1 pt-1 border-t border-green-200">
                                                         <span>You will receive:</span>
-                                                        <span>₹{(formData.price_per_night * 0.90).toFixed(2)}</span>
+                                                        <span>₹{(formData.price_per_night * 0.97).toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -420,12 +434,12 @@ export default function EditProperty() {
                                             {formData.price_per_month > 0 && (
                                                 <div className="mt-2 text-sm bg-green-50 text-green-800 p-3 rounded-lg border border-green-200">
                                                     <div className="flex justify-between">
-                                                        <span>Platform Fee (10%):</span>
-                                                        <span>-₹{(formData.price_per_month * 0.10).toFixed(2)}</span>
+                                                        <span>Processing Fee (3%):</span>
+                                                        <span>-₹{(formData.price_per_month * 0.03).toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex justify-between font-bold mt-1 pt-1 border-t border-green-200">
                                                         <span>You will receive:</span>
-                                                        <span>₹{(formData.price_per_month * 0.90).toFixed(2)}</span>
+                                                        <span>₹{(formData.price_per_month * 0.97).toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -607,11 +621,12 @@ export default function EditProperty() {
                                                 />
                                             </div>
                                             <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Guests Capacity *</label>
                                                 <input
                                                     type="number"
                                                     min="1"
                                                     value={room.capacity}
-                                                    onChange={e => updateRoom(index, 'capacity', parseInt(e.target.value))}
+                                                    onChange={e => updateRoom(index, 'capacity', parseInt(e.target.value) || 1)}
                                                     className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
                                                     required
                                                 />
@@ -621,8 +636,8 @@ export default function EditProperty() {
                                                 <input
                                                     type="number"
                                                     min="0"
-                                                    value={room.area_sqft || 0}
-                                                    onChange={e => updateRoom(index, 'area_sqft', parseInt(e.target.value))}
+                                                    value={room.area_sqft || ''}
+                                                    onChange={e => updateRoom(index, 'area_sqft', e.target.value ? parseInt(e.target.value) : '')}
                                                     className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none"
                                                 />
                                             </div>
@@ -641,12 +656,12 @@ export default function EditProperty() {
                                                 {(formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) > 0 && (
                                                     <div className="mt-2 text-xs bg-green-50 text-green-800 p-2 rounded border border-green-200">
                                                         <div className="flex justify-between">
-                                                            <span>Fee (10%):</span>
-                                                            <span>-₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.10).toFixed(0)}</span>
+                                                            <span>Processing Fee (3%):</span>
+                                                            <span>-₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.03).toFixed(0)}</span>
                                                         </div>
                                                         <div className="flex justify-between font-bold border-t border-green-200 mt-1 pt-1">
                                                             <span>Payout:</span>
-                                                            <span>₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.90).toFixed(0)}</span>
+                                                            <span>₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.97).toFixed(0)}</span>
                                                         </div>
                                                     </div>
                                                 )}
@@ -715,8 +730,8 @@ export default function EditProperty() {
                                         id="area"
                                         type="number"
                                         min="0"
-                                        value={formData.area_sqft}
-                                        onChange={e => setFormData({ ...formData, area_sqft: parseInt(e.target.value) })}
+                                        value={formData.area_sqft === 0 ? '' : formData.area_sqft}
+                                        onChange={e => setFormData({ ...formData, area_sqft: e.target.value ? parseInt(e.target.value) : '' })}
                                         className="mt-1 w-full border px-3 py-2 rounded"
                                     />
                                 </div>

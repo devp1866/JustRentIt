@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, PlusCircle, Upload, X } from "lucide-react";
 import { useSession, signIn } from "next-auth/react";
 import Image from "next/image";
+import GeoVerificationModal from "../components/property/GeoVerificationModal";
 
 export default function AddProperty() {
     const { data: session, status } = useSession();
@@ -33,10 +34,11 @@ export default function AddProperty() {
         required_duration: 0,
         discount_percentage: 0,
         rooms: [], // For Hotels/Resorts
-        governance: new Array(9).fill(false)
+        governance: new Array(10).fill(false)
     });
     const [amenityInput, setAmenityInput] = useState("");
     const [isLoaded, setIsLoaded] = useState(false);
+    const [showGeoModal, setShowGeoModal] = useState(false);
 
     // Load from localStorage on mount
     useEffect(() => {
@@ -80,6 +82,30 @@ export default function AddProperty() {
         onSuccess: () => {
             alert("Property listed successfully!");
             localStorage.removeItem("add-property-form");
+
+            // Immediately clear the state so the useEffect doesn't re-save it before unmount
+            setFormData({
+                title: "",
+                description: "",
+                rental_type: "long_term",
+                property_type: "apartment",
+                location: "",
+                city: "",
+                bedrooms: 1,
+                bathrooms: 1,
+                area_sqft: 0,
+                price_per_month: 0,
+                price_per_night: 0,
+                amenities: [],
+                images: [],
+                status: "available",
+                furnishing_status: "unfurnished",
+                required_duration: 0,
+                discount_percentage: 0,
+                rooms: [],
+                governance: new Array(10).fill(false)
+            });
+
             queryClient.invalidateQueries({ queryKey: ['my-properties'] });
             router.push("/dashboard");
         },
@@ -131,14 +157,22 @@ export default function AddProperty() {
         }
 
         // Governance Validation
-        if (!formData.governance || !formData.governance.every(Boolean) || formData.governance.length !== 9) {
+        if (!formData.governance || !formData.governance.every(Boolean) || formData.governance.length !== 10) {
             alert("Please agree to all governance and safety rules to proceed.");
             return;
         }
 
+        // Show Geo-Verification Modal Instead of direct mutation
+        setShowGeoModal(true);
+    };
+
+    const handleVerificationSuccess = (status, coHostEmail) => {
+        setShowGeoModal(false);
         createPropertyMutation.mutate({
             ...formData,
             landlord_email: user.email.toLowerCase(),
+            verification_status: status,
+            co_host_email: coHostEmail
         });
     };
 
@@ -271,7 +305,7 @@ export default function AddProperty() {
             required_duration: 0,
             discount_percentage: 0,
             rooms: [],
-            governance: new Array(9).fill(false)
+            governance: new Array(10).fill(false)
         });
         setAmenityInput("");
         window.scrollTo(0, 0);
@@ -384,7 +418,16 @@ export default function AddProperty() {
                                 <select
                                     id="rental_type"
                                     value={formData.rental_type}
-                                    onChange={e => setFormData({ ...formData, rental_type: e.target.value })}
+                                    onChange={e => {
+                                        const newType = e.target.value;
+                                        setFormData(prev => {
+                                            const updates = { rental_type: newType };
+                                            if (newType === 'long_term' && ['hotel', 'resort'].includes(prev.property_type)) {
+                                                updates.property_type = 'apartment';
+                                            }
+                                            return { ...prev, ...updates };
+                                        });
+                                    }}
                                     className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                 >
                                     <option value="long_term">Long Term (Monthly)</option>
@@ -404,12 +447,15 @@ export default function AddProperty() {
                                         className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     >
                                         <option value="apartment">Apartment</option>
-
                                         <option value="condo">Condo</option>
                                         <option value="studio">Studio</option>
                                         <option value="villa">Villa</option>
-                                        <option value="hotel">Hotel</option>
-                                        <option value="resort">Resort</option>
+                                        {formData.rental_type === 'short_term' && (
+                                            <>
+                                                <option value="hotel">Hotel</option>
+                                                <option value="resort">Resort</option>
+                                            </>
+                                        )}
                                     </select>
                                 </div>
 
@@ -445,12 +491,12 @@ export default function AddProperty() {
                                             {formData.price_per_night > 0 && (
                                                 <div className="mt-2 text-sm bg-green-50 text-green-800 p-3 rounded-lg border border-green-200">
                                                     <div className="flex justify-between">
-                                                        <span>Platform Fee (10%):</span>
-                                                        <span>-₹{(formData.price_per_night * 0.10).toFixed(2)}</span>
+                                                        <span>Processing Fee (3%):</span>
+                                                        <span>-₹{(formData.price_per_night * 0.03).toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex justify-between font-bold mt-1 pt-1 border-t border-green-200">
                                                         <span>You will receive:</span>
-                                                        <span>₹{(formData.price_per_night * 0.90).toFixed(2)}</span>
+                                                        <span>₹{(formData.price_per_night * 0.97).toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -470,12 +516,12 @@ export default function AddProperty() {
                                             {formData.price_per_month > 0 && (
                                                 <div className="mt-2 text-sm bg-green-50 text-green-800 p-3 rounded-lg border border-green-200">
                                                     <div className="flex justify-between">
-                                                        <span>Platform Fee (10%):</span>
-                                                        <span>-₹{(formData.price_per_month * 0.10).toFixed(2)}</span>
+                                                        <span>Processing Fee (3%):</span>
+                                                        <span>-₹{(formData.price_per_month * 0.03).toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex justify-between font-bold mt-1 pt-1 border-t border-green-200">
                                                         <span>You will receive:</span>
-                                                        <span>₹{(formData.price_per_month * 0.90).toFixed(2)}</span>
+                                                        <span>₹{(formData.price_per_month * 0.97).toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -573,11 +619,12 @@ export default function AddProperty() {
                                                 />
                                             </div>
                                             <div>
+                                                <label className="block text-sm font-medium text-brand-dark mb-1">Guests Capacity *</label>
                                                 <input
                                                     type="number"
                                                     min="1"
                                                     value={room.capacity}
-                                                    onChange={e => updateRoom(index, 'capacity', parseInt(e.target.value))}
+                                                    onChange={e => updateRoom(index, 'capacity', parseInt(e.target.value) || 1)}
                                                     className="w-full px-3 py-2 rounded-lg border border-brand-blue/20 outline-none"
                                                     required
                                                 />
@@ -587,8 +634,8 @@ export default function AddProperty() {
                                                 <input
                                                     type="number"
                                                     min="0"
-                                                    value={room.area_sqft || 0}
-                                                    onChange={e => updateRoom(index, 'area_sqft', parseInt(e.target.value))}
+                                                    value={room.area_sqft || ''}
+                                                    onChange={e => updateRoom(index, 'area_sqft', e.target.value ? parseInt(e.target.value) : '')}
                                                     className="w-full px-3 py-2 rounded-lg border border-brand-blue/20 outline-none"
                                                 />
                                             </div>
@@ -607,12 +654,12 @@ export default function AddProperty() {
                                                 {(formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) > 0 && (
                                                     <div className="mt-2 text-xs bg-green-50 text-green-800 p-2 rounded border border-green-200">
                                                         <div className="flex justify-between">
-                                                            <span>Fee (10%):</span>
-                                                            <span>-₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.10).toFixed(0)}</span>
+                                                            <span>Fee (3%):</span>
+                                                            <span>-₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.03).toFixed(0)}</span>
                                                         </div>
                                                         <div className="flex justify-between font-bold border-t border-green-200 mt-1 pt-1">
                                                             <span>Payout:</span>
-                                                            <span>₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.90).toFixed(0)}</span>
+                                                            <span>₹{((formData.rental_type === 'short_term' ? room.price_per_night : room.price_per_month) * 0.97).toFixed(0)}</span>
                                                         </div>
                                                     </div>
                                                 )}
@@ -683,8 +730,8 @@ export default function AddProperty() {
                                         id="area"
                                         type="number"
                                         min="0"
-                                        value={formData.area_sqft}
-                                        onChange={e => setFormData({ ...formData, area_sqft: parseInt(e.target.value) })}
+                                        value={formData.area_sqft === 0 ? '' : formData.area_sqft}
+                                        onChange={e => setFormData({ ...formData, area_sqft: e.target.value ? parseInt(e.target.value) : '' })}
                                         className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     />
                                 </div>
@@ -781,12 +828,12 @@ export default function AddProperty() {
                                 <input
                                     type="checkbox"
                                     id="agree_all"
-                                    checked={formData.governance?.every(i => i) && formData.governance?.length === 9}
+                                    checked={formData.governance?.every(i => i) && formData.governance?.length === 10}
                                     onChange={(e) => {
                                         const checked = e.target.checked;
                                         setFormData(prev => ({
                                             ...prev,
-                                            governance: checked ? new Array(9).fill(true) : new Array(9).fill(false)
+                                            governance: checked ? new Array(10).fill(true) : new Array(10).fill(false)
                                         }));
                                     }}
                                     className="mt-1 h-4 w-4 text-brand-blue rounded border-brand-blue/30 focus:ring-brand-blue"
@@ -805,7 +852,8 @@ export default function AddProperty() {
                                 "I follow housing society rules and will disclose all restrictions.",
                                 "I will upload real, unedited, and recent property photos.",
                                 "I authorize JustRentIt to verify my listing if necessary.",
-                                "I understand violation may lead to listing removal or account suspension."
+                                "I understand violation may lead to listing removal or account suspension.",
+                                "I agree to the Platform Liability & Dispute Terms of Service."
                             ].map((rule, idx) => (
                                 <div key={idx} className="flex items-start">
                                     <input
@@ -813,7 +861,7 @@ export default function AddProperty() {
                                         id={`rule_${idx}`}
                                         checked={formData.governance?.[idx] || false}
                                         onChange={(e) => {
-                                            const newGov = [...(formData.governance || new Array(9).fill(false))];
+                                            const newGov = [...(formData.governance || new Array(10).fill(false))];
                                             newGov[idx] = e.target.checked;
                                             setFormData(prev => ({ ...prev, governance: newGov }));
                                         }}
@@ -863,6 +911,15 @@ export default function AddProperty() {
                     </div>
                 </form>
             </div>
+
+            <GeoVerificationModal
+                open={showGeoModal}
+                onClose={() => setShowGeoModal(false)}
+                onSuccess={handleVerificationSuccess}
+                propertyId={null} // Newly creating, so no ID yet
+                propertyAddress={`${formData.location}, ${formData.city}, ${formData.country || ''}`}
+                propertyCity={formData.city}
+            />
         </div>
     );
 }

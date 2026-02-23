@@ -4,6 +4,12 @@ import dbConnect from "../../../utils/db";
 import Booking from "../../../models/Booking";
 import crypto from "crypto";
 import { addMonths, format } from "date-fns";
+import rateLimit from "../../../utils/rateLimit";
+
+const limiter = rateLimit({
+    interval: 60 * 1000,
+    uniqueTokenPerInterval: 500,
+});
 
 export default async function handler(req, res) {
     if (req.method !== "POST") {
@@ -17,6 +23,13 @@ export default async function handler(req, res) {
     }
 
     try {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        await limiter.check(5, ip); // Limit to 5 bookings per minute per IP
+    } catch {
+        return res.status(429).json({ message: "Too many booking requests. Please try again later." });
+    }
+
+    try {
         const session = await dbConnect().then(conn => conn.startSession());
         session.startTransaction();
 
@@ -24,7 +37,6 @@ export default async function handler(req, res) {
             const {
                 property_id,
                 property_title,
-                landlord_email,
                 start_date,
                 duration_months,
                 duration_days,
@@ -32,7 +44,12 @@ export default async function handler(req, res) {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                room_id 
+                room_id,
+                is_escrow,
+                monthly_rent_amount,
+                deposit_amount,
+                first_month_rent_amount,
+                total_contract_amount
             } = req.body;
 
             if (!property_id || !start_date || !total_amount) {
@@ -87,6 +104,8 @@ export default async function handler(req, res) {
                 return res.status(404).json({ message: "Property not found" });
             }
 
+            const landlord_email = property.landlord_email;
+
             let maxInventory = 1;
             let selectedRoomName = "";
 
@@ -107,7 +126,7 @@ export default async function handler(req, res) {
 
             const overlappingBookings = await Booking.find({
                 property_id,
-                ...(req.body.room_id && { room_id: req.body.room_id }), 
+                ...(req.body.room_id && { room_id: req.body.room_id }),
                 status: { $in: ["confirmed", "active", "paid"] },
                 $or: [
                     {
@@ -115,9 +134,9 @@ export default async function handler(req, res) {
                         end_date: { $gt: start_date }
                     }
                 ]
-            }).session(session); 
+            }).session(session);
 
-           
+
             const isFullyBooked = () => {
                 const requestedStart = new Date(start_date);
                 const requestedEnd = new Date(endDate);
@@ -133,7 +152,7 @@ export default async function handler(req, res) {
                     while (current < rangeEnd) {
                         const dateStr = current.toISOString().split('T')[0];
                         occupancyMap[dateStr] = (occupancyMap[dateStr] || 0) + 1;
-                    
+
                         current.setDate(current.getDate() + 1);
                     }
                 });
@@ -146,9 +165,16 @@ export default async function handler(req, res) {
                 return res.status(409).json({ message: "Selected accommodation is fully booked for specific dates in your range." }); // 409 Conflict
             }
 
-            // Commission  (10%)
-            const platform_fee = Math.round(total_amount * 0.10);
-            const landlord_payout_amount = total_amount - platform_fee;
+            // Split Fee Calculation
+            const base_rent = Math.round(total_amount / 1.08);
+            const guest_service_fee = total_amount - base_rent;
+            const host_processing_fee = Math.round(base_rent * 0.03);
+            const platform_fee = guest_service_fee + host_processing_fee;
+
+            // If it's an escrow payment, the payout is held securely in the escrow contract
+            // For short-term, payout is also held until check-in is confirmed
+            const landlord_payout_amount = is_escrow ? 0 : (base_rent - host_processing_fee);
+            const payout_status = "held";
 
             const newBooking = new Booking({
                 property_id,
@@ -169,20 +195,62 @@ export default async function handler(req, res) {
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
+                guest_service_fee,
+                host_processing_fee,
                 platform_fee,
                 landlord_payout_amount,
-                payout_status: "pending"
+                payout_status
             });
 
-            await newBooking.save({ session }); 
+            await newBooking.save({ session });
 
-            await session.commitTransaction(); 
+            if (is_escrow) {
+                const EscrowContract = (await import("../../../models/EscrowContract")).default;
 
-            return res.status(201).json({ message: "Booking created successfully", booking: newBooking });
+                // Generate payment schedule for month 2 onwards
+                const payment_schedule = [];
+                const moveInDate = new Date(start_date);
+
+                for (let i = 2; i <= duration_months; i++) {
+                    const dueDate = new Date(moveInDate);
+                    dueDate.setMonth(dueDate.getMonth() + (i - 1));
+                    payment_schedule.push({
+                        month_number: i,
+                        due_date: dueDate,
+                        amount: monthly_rent_amount,
+                        status: 'pending'
+                    });
+                }
+
+                const newEscrow = new EscrowContract({
+                    booking_id: newBooking._id,
+                    property_id,
+                    renter_email: session.user?.email || req.body.renter_email,
+                    landlord_email,
+                    monthly_rent: monthly_rent_amount,
+                    deposit_amount: deposit_amount,
+                    first_month_rent: first_month_rent_amount,
+                    deposit_status: "held",
+                    first_month_rent_status: "held",
+                    move_in_confirmed: false,
+                    payment_schedule: payment_schedule
+                });
+                await newEscrow.save({ session });
+            }
+
+            await session.commitTransaction();
+
+            return res.status(201).json({ message: "Booking created successfully", booking: newBooking.toObject() });
 
         } catch (error) {
-            await session.abortTransaction();
-            console.error("Booking creation error:", error);
+            console.error("Booking creation error (Primary):", error);
+            try {
+                if (session.transaction && session.transaction.state !== 'TRANSACTION_COMMITTED') {
+                    await session.abortTransaction();
+                }
+            } catch (abortErr) {
+                console.error("Failed to abort transaction:", abortErr);
+            }
             return res.status(500).json({ message: "Internal Server Error", error: error.message });
         } finally {
             session.endSession();

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
+import SEO from "../components/SEO";
 
 export default function Profile() {
     const { data: session, status, update } = useSession();
@@ -53,15 +54,17 @@ export default function Profile() {
         enabled: status === "authenticated",
     });
 
-    const { data: transactions = [] } = useQuery({
+    const { data: transactionsData } = useQuery({
         queryKey: ["my-transactions"],
         queryFn: async () => {
-            const res = await fetch("/api/user/bookings");
+            const res = await fetch("/api/user/transactions");
             if (!res.ok) throw new Error("Failed to fetch transactions");
             return res.json();
         },
         enabled: status === "authenticated",
     });
+
+    const transactions = transactionsData?.transactions || [];
 
     // Mutations
     const handleUpdateProfile = async () => {
@@ -544,36 +547,54 @@ export default function Profile() {
             <div className="bg-white rounded-xl border border-brand-blue/10 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-brand-dark/70">
-                        <thead className="bg-brand-blue/5 text-brand-dark font-semibold">
+                        <thead className="bg-[#f8fafc] text-[#475569] text-xs uppercase tracking-wider font-bold">
                             <tr>
-                                <th className="px-6 py-3">Date</th>
-                                <th className="px-6 py-3">Property</th>
-                                <th className="px-6 py-3">Amount</th>
-                                <th className="px-6 py-3">Status</th>
+                                <th className="px-6 py-4 rounded-tl-lg">Date</th>
+                                <th className="px-6 py-4 border-l border-white">Property & Description</th>
+                                <th className="px-6 py-4 border-l border-white text-right">Amount</th>
+                                <th className="px-6 py-4 border-l border-white text-center rounded-tr-lg">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-brand-blue/5">
+                        <tbody className="divide-y divide-gray-100">
                             {transactions.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-8 text-center text-brand-dark/50">
-                                        No transactions found.
+                                    <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
+                                        <div className="flex flex-col items-center justify-center">
+                                            <History className="w-12 h-12 mb-3 text-gray-200" />
+                                            <p className="font-medium">No transactions found.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
                                 transactions.map((tx) => (
-                                    <tr key={tx._id} className="hover:bg-brand-blue/5 transition-colors">
-                                        <td className="px-6 py-4">
-                                            {tx.payment_date ? format(new Date(tx.payment_date), "MMM d, yyyy") : "-"}
+                                    <tr key={tx._id} className="hover:bg-blue-50/50 transition-colors group">
+                                        <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-600 font-medium">
+                                            {tx.date ? format(new Date(tx.date), "MMM d, yyyy") : "-"}
                                         </td>
-                                        <td className="px-6 py-4 font-medium text-brand-dark">
-                                            {tx.property_title}
+                                        <td className="px-6 py-5">
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-gray-900 group-hover:text-brand-blue transition-colors">
+                                                    {tx.property_title}
+                                                </span>
+                                                <span className="text-xs text-gray-500 mt-0.5">
+                                                    {tx.description}
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4 text-brand-blue font-bold">
-                                            ₹{tx.total_amount}
+                                        <td className="px-6 py-5 text-right whitespace-nowrap">
+                                            <div className={`inline-flex items-baseline font-bold text-lg tracking-tight ${tx.type === 'incoming' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                                <span className="text-base mr-0.5">{tx.type === 'incoming' ? '+' : '-'}</span>
+                                                ₹{tx.amount.toLocaleString()}
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${tx.payment_status === 'paid' ? 'bg-brand-green/10 text-brand-green' : 'bg-brand-yellow/10 text-brand-yellow'}`}>
-                                                {tx.payment_status}
+                                        <td className="px-6 py-5 text-center">
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider
+                                                ${tx.status === 'completed' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                                                    tx.status === 'processing' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                                                        tx.status === 'held_in_escrow' ? 'bg-amber-100 text-amber-800 border border-amber-200 shadow-sm' :
+                                                            'bg-gray-100 text-gray-800 border border-gray-200'}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tx.status === 'completed' ? 'bg-emerald-500' : tx.status === 'processing' ? 'bg-blue-500' : tx.status === 'held_in_escrow' ? 'bg-amber-500' : 'bg-gray-500'}`}></span>
+                                                {tx.status.replace(/_/g, ' ')}
                                             </span>
                                         </td>
                                     </tr>
@@ -606,6 +627,7 @@ export default function Profile() {
 
     return (
         <div className="min-h-screen bg-brand-cream font-sans">
+            <SEO title="My Profile" description="Manage your JustRentIt account, preferences, and security settings." />
             {/* Mobile Navigation (Horizontal Scroll) */}
             <div className="md:hidden sticky top-16 z-40 bg-white border-b border-brand-blue/10 shadow-sm overflow-x-auto scrollbar-hide">
                 <div className="flex p-2 gap-2 min-w-max">

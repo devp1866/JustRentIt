@@ -1,118 +1,119 @@
 import React from 'react';
-import Head from 'next/head';
+import SEO from '../components/SEO';
+import Link from 'next/link';
 
 export default function TermsOfService() {
     return (
         <div className="min-h-screen bg-gray-50 py-12">
-            <Head>
-                <title>Terms of Service - JustRentIt</title>
-            </Head>
+            <SEO title="Terms of Service" description="JustRentIt Terms of Service - Read the rules and guidelines for using our platform." />
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="bg-white rounded-2xl shadow-sm p-8 md:p-12">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Terms of Service</h1>
-                    <p className="text-gray-500 mb-8">Last Updated: November 26, 2025</p>
+                <div className="bg-white rounded-3xl shadow-sm p-8 md:p-12 border border-gray-100">
+                    <h1 className="text-4xl font-extrabold text-brand-dark mb-4">Terms of Service</h1>
+                    <p className="text-gray-500 mb-8 font-medium">Last Updated: February 21, 2026</p>
 
-                    <div className="space-y-8 text-gray-700">
+                    <div className="space-y-8 text-gray-700 leading-relaxed">
                         <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Acceptance of Terms</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">1</span>
+                                Acceptance of Terms
+                            </h2>
                             <p>
-                                By accessing or using the JustRentIt platform (&quot;Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Service.
+                                By accessing or using the JustRentIt platform (&quot;Service&quot;), you agree to be bound by these Terms of Service. This includes our Privacy Policy and all other guidelines. If you do not agree, please do not use our Service.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Nature of Service</h2>
-                            <p>
-                                JustRentIt acts solely as an intermediary platform connecting Renters and Landlords. We do not own, manage, or operate any properties listed on the Service. We are not a party to any rental agreement entered into between users.
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">2</span>
+                                Nature of Service
+                            </h2>
+                            <p className="p-4 bg-brand-cream/30 rounded-xl border border-brand-yellow/20 text-brand-dark/80">
+                                <strong>Important:</strong> JustRentIt acts solely as a technological intermediary connecting Renters and Landlords. We do not own, manage, or operate any properties listed on the Service. We are not a party to any rental agreement entered into between users.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. User Accounts</h2>
-                            <ul className="list-disc pl-5 space-y-2">
-                                <li>You must be at least 18 years old to create an account.</li>
-                                <li>You agree to provide accurate, current, and complete information during registration.</li>
-                                <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
-                                <li>You are responsible for all activities that occur under your account.</li>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">3</span>
+                                User Accounts & Verification
+                            </h2>
+                            <p className="mb-4">You must be at least 18 years old to create an account. You agree to provide accurate, current, and complete information.</p>
+                            <h3 className="font-bold text-gray-900 mb-2 mt-4">Geo-Verification Policy (For Landlords)</h3>
+                            <p>
+                                To ensure the authenticity of listings on our platform, Landlords are required to complete a <strong>Geo-Verification check</strong> when listing a property. This checks your current GPS location against the entered property address.
+                            </p>
+                            <ul className="list-disc pl-6 space-y-2 mt-2">
+                                <li>If you are not physically at the property, you may use our <strong>Delegated Verification</strong> system to send a verification link to your Property Manager or Co-Host.</li>
+                                <li>Listings that fail geo-verification or are found to be fraudulent will be permanently removed, and the associated accounts suspended.</li>
                             </ul>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">4. User Roles</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="font-medium text-gray-900">For Renters</h3>
-                                    <p>You agree to use properties responsibly, pay rent on time, and adhere to all house rules set by the Landlord.</p>
-                                </div>
-                                <div>
-                                    <h3 className="font-medium text-gray-900">For Hosts/Landlords</h3>
-                                    <p>You represent that you have the legal right to lease the property. You are responsible for ensuring your property meets all safety and health standards.</p>
-                                </div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">4</span>
+                                Bookings, Payments, and Fees
+                            </h2>
+                            <p className="mb-4">
+                                Bookings are confirmed only upon successful payment. JustRentIt facilitates payments but relies on third-party payment processors.
+                            </p>
+                            <h3 className="font-bold text-gray-900 mb-2 mt-4">Fee Structure</h3>
+                            <p>We operate on a split-fee model to keep our platform running:</p>
+                            <ul className="list-disc pl-6 space-y-2 mt-2">
+                                <li><strong>Renters:</strong> Pay a nominal Platform Service Fee (approximately 2.5%) added to their booking total at checkout.</li>
+                                <li><strong>Landlords:</strong> Incur a small Processing Fee (approximately 3%) deducted from their final payout.</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">5</span>
+                                Dispute Resolution Center
+                            </h2>
+                            <p className="mb-4">
+                                In the event of property damage, misrepresentation, or severe rules violations, users must utilize our built-in <strong>Dispute Resolution Center</strong>.
+                            </p>
+                            <ul className="list-disc pl-6 space-y-2 mt-2">
+                                <li><strong>Filing a Claim:</strong> Claims must be filed within 14 days of checkout. You must provide photographic evidence, a description, and the requested compensation amount.</li>
+                                <li><strong>Communication:</strong> All dispute communication must occur within the platform's secure Dispute Chat. Off-platform communications will not be considered in arbitration.</li>
+                                <li><strong>Arbitration:</strong> If the two parties cannot reach an agreement within 7 days of a claim being filed, JustRentIt Administrators will step in to arbitrate. Administrator decisions are final.</li>
+                            </ul>
+                            <div className="mt-4">
+                                <Link href="/resolution-center" className="text-brand-blue font-bold hover:underline">
+                                    Visit the Dispute Resolution Center &rarr;
+                                </Link>
                             </div>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Property Listings Standards</h2>
-                            <p>All listings must be accurate and truthful. Misleading descriptions, fake photos, or withholding information about material defects is strictly prohibited.</p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Booking & Payment Rules</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">6</span>
+                                Cancellation Rules
+                            </h2>
                             <p>
-                                Bookings are confirmed only upon successful payment. JustRentIt facilitates payments but is not a bank. All financial transactions are processed through secure third-party payment gateways.
+                                Cancellation policies are defined by the Host/Landlord for each property (e.g., Strict, Flexible). Renters should review these policies carefully before booking. JustRentIt platform and processing fees are generally non-refundable unless resulting from host cancellation.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Cancellation Rules</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">7</span>
+                                Limitation of Liability
+                            </h2>
                             <p>
-                                Cancellation policies are defined by the Host/Landlord for each property. Renters should review these policies carefully before booking. JustRentIt fees are non-refundable unless stated otherwise.
+                                <strong>JustRentIt is not liable</strong> for any damages, losses, or injuries resulting from the use of the Service or any rental transaction. Users assume all risks associated with renting or listing a property. While we enforce verification and dispute resolution, we do not guarantee the safety, habitability, or legal compliance of any property.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Prohibited Activities</h2>
-                            <p>Users may not:</p>
-                            <ul className="list-disc pl-5 space-y-2 mt-2">
-                                <li>Use the Service for any illegal purpose.</li>
-                                <li>Harass, abuse, or harm another person.</li>
-                                <li>Spam or solicit other users for commercial purposes unrelated to the Service.</li>
-                                <li>Interfere with the proper working of the Service.</li>
-                            </ul>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Liability Disclaimer</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="bg-brand-blue/10 text-brand-blue w-8 h-8 rounded-lg flex items-center justify-center text-sm">8</span>
+                                Contact Us
+                            </h2>
                             <p>
-                                JustRentIt is not liable for any damages, losses, or injuries resulting from the use of the Service or any rental transaction. Users assume all risks associated with renting or listing a property.
+                                If you experience technical issues, witness platform abuse, or have questions regarding these Terms, please contact our Support team.
                             </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Data Usage</h2>
-                            <p>
-                                By using the Service, you agree to our collection and use of your personal information as described in our Privacy Policy.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Account Suspension & Termination</h2>
-                            <p>
-                                We reserve the right to suspend or terminate accounts that violate these Terms or engage in fraudulent or harmful behavior.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">12. Changes to Terms</h2>
-                            <p>
-                                We may update these Terms from time to time. Continued use of the Service constitutes acceptance of the new Terms.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">13. Contact Info</h2>
-                            <p>
-                                For questions about these Terms, please contact us at <a href="mailto:devp1866@gmail.com" className="text-blue-600 hover:underline">devp1866@gmail.com</a>.
+                            <p className="mt-2">
+                                Email: <a href="mailto:devp1866@gmail.com" className="text-brand-blue font-bold hover:underline">devp1866@gmail.com</a>
                             </p>
                         </section>
                     </div>

@@ -98,7 +98,6 @@ export default function Properties() {
             }
         }, 500);
         return () => clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchCity]);
 
     const handlePageChange = (newPage) => {

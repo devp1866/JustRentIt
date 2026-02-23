@@ -95,7 +95,16 @@ export default function HelpCenter() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 
                 {/* Quick Links */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+                    <Link href="/resolution-center" className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-red-100 group hover:-translate-y-1 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110"></div>
+                        <div className="bg-red-100/50 w-14 h-14 rounded-xl flex items-center justify-center mb-6 relative z-10 group-hover:bg-red-600 transition-colors duration-300">
+                            <Shield className="w-7 h-7 text-red-600 group-hover:text-white transition-colors" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 relative z-10">Resolution Center</h3>
+                        <p className="text-gray-600 text-sm relative z-10">File a claim or manage ongoing disputes securely.</p>
+                    </Link>
+
                     <Link href="/privacy" className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-brand-blue/10 group hover:-translate-y-1">
                         <div className="bg-brand-blue/10 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-brand-blue group-hover:text-white transition-colors duration-300">
                             <Shield className="w-7 h-7 text-brand-blue group-hover:text-white transition-colors" />

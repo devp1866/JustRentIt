@@ -19,11 +19,11 @@ const PropertySchema = new mongoose.Schema({
 
   // Multi-Room Support
   rooms: [{
-    name: { type: String, required: true }, 
+    name: { type: String, required: true },
     price_per_night: { type: Number },
     price_per_month: { type: Number },
-    capacity: { type: Number, required: true }, 
-    count: { type: Number, required: true, default: 1 }, 
+    capacity: { type: Number, required: true },
+    count: { type: Number, required: true, default: 1 },
     bedrooms: { type: Number, default: 1 },
     bathrooms: { type: Number, default: 1 },
     area_sqft: { type: Number, default: 0 },
@@ -38,11 +38,13 @@ const PropertySchema = new mongoose.Schema({
   landlord_email: { type: String, required: true },
   offer: {
     enabled: { type: Boolean, default: false },
-    required_duration: { type: Number }, 
+    required_duration: { type: Number },
     discount_percentage: { type: Number }
   },
   rating: { type: Number, default: 0 },
-  review_count: { type: Number, default: 0 }
+  review_count: { type: Number, default: 0 },
+  verification_status: { type: String, enum: ["pending", "verified", "delegated", "failed"], default: "pending" },
+  co_host_email: { type: String }
 }, { timestamps: true });
 
 if (mongoose.models.Property) {

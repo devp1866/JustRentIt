@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { Mail, Lock, Loader2, ArrowRight, CheckCircle2, KeyRound } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function ForgotPassword() {
     const router = useRouter();
@@ -72,6 +73,7 @@ export default function ForgotPassword() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <SEO title="Forgot Password" description="Reset your JustRentIt password to regain access to your account." />
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
                 <div className="text-center">
                     <div className="mx-auto h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">

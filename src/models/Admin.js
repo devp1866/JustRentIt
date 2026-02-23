@@ -5,6 +5,9 @@ const AdminSchema = new mongoose.Schema({
     password: { type: String, required: true },
     name: { type: String },
     role: { type: String, default: 'super_admin' },
+    otp_hash: { type: String },
+    otp_expiry: { type: Date },
+    otp_purpose: { type: String, enum: ['PASSWORD_RESET'] }
 }, { timestamps: true });
 
 // Prevent Mongoose OverwriteModelError

@@ -5,6 +5,8 @@ import Admin from "../../../models/Admin";
 import Booking from "../../../models/Booking";
 import User from "../../../models/User";
 import Property from "../../../models/Property";
+import DisputeTicket from "../../../models/DisputeTicket";
+import EscrowContract from "../../../models/EscrowContract";
 import mongoose from "mongoose";
 
 export default async function handler(req, res) {
@@ -46,16 +48,31 @@ export default async function handler(req, res) {
         // 3. Active Listings
         const activeListings = await Property.countDocuments({ status: 'available' });
 
+        // Escrow Total Held
+        const escrowResult = await EscrowContract.aggregate([
+            { $match: { deposit_status: 'held' } },
+            { $group: { _id: null, total: { $sum: '$deposit_amount' } } }
+        ]);
+        const totalEscrowHeld = escrowResult[0]?.total || 0;
+
         // 4. Recent Transactions
         const recentBookings = await Booking.find({})
             .sort({ createdAt: -1 })
             .limit(10)
             .select('property_title renter_name renter_email total_amount platform_fee landlord_payout_amount payout_status createdAt');
 
+        const recentBookingIds = recentBookings.map(b => b._id);
+        const recentEscrows = await EscrowContract.find({ booking_id: { $in: recentBookingIds } });
+
         // Manually populate renter information if missing (for older bookings)
         const enrichedBookings = await Promise.all(recentBookings.map(async (booking) => {
             // Convert to plain object to allow modification if it's a Mongoose doc
             const b = booking.toObject ? booking.toObject() : booking;
+
+            const escrow = recentEscrows.find(e => e.booking_id.toString() === b._id.toString());
+            if (escrow) {
+                b.escrow_data = escrow;
+            }
 
             if (!b.renter_name && b.renter_email) {
                 // Assuming you have a User model imported - Wait, I need to check imports.
@@ -74,31 +91,75 @@ export default async function handler(req, res) {
             return b;
         }));
 
-        // 5. Monthly Revenue for Chart (Last 6 Months)
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        // 5. Escalted Tickets
+        const escalatedTickets = await DisputeTicket.find({ status: 'escalated' })
+            .populate('property_id', 'title')
+            .populate('reporter_id', 'full_name email')
+            .populate('accused_id', 'full_name email')
+            .sort({ updatedAt: -1 });
 
-        const monthlyRevenue = await Booking.aggregate([
-            {
-                $match: {
-                    payment_status: 'paid',
-                    createdAt: { $gte: sixMonthsAgo }
-                }
-            },
+        // 6. Chart Data Generation (7 Days, 6 Months, 1 Year)
+        const now = new Date();
+
+        // --- Last 7 Days ---
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(now.getDate() - 7);
+        const dailyRevenue = await Booking.aggregate([
+            { $match: { payment_status: 'paid', createdAt: { $gte: sevenDaysAgo } } },
             {
                 $group: {
                     _id: {
+                        day: { $dayOfMonth: "$createdAt" },
                         month: { $month: "$createdAt" },
                         year: { $year: "$createdAt" }
                     },
                     revenue: { $sum: "$platform_fee" }
                 }
             },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
+        ]);
+        const chartData7Days = dailyRevenue.map(item => {
+            const date = new Date(item._id.year, item._id.month - 1, item._id.day);
+            return {
+                name: date.toLocaleDateString('default', { weekday: 'short' }), // Mon, Tue...
+                revenue: item.revenue
+            };
+        });
+
+        // --- Last 6 Months ---
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(now.getMonth() - 6);
+        const monthlyRevenue = await Booking.aggregate([
+            { $match: { payment_status: 'paid', createdAt: { $gte: sixMonthsAgo } } },
+            {
+                $group: {
+                    _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },
+                    revenue: { $sum: "$platform_fee" }
+                }
+            },
             { $sort: { "_id.year": 1, "_id.month": 1 } }
         ]);
+        const chartData6Months = monthlyRevenue.map(item => {
+            const date = new Date(item._id.year, item._id.month - 1);
+            return {
+                name: date.toLocaleString('default', { month: 'short' }),
+                revenue: item.revenue
+            };
+        });
 
-        // Format Monthly Data for Recharts
-        const chartData = monthlyRevenue.map(item => {
+        // --- This Year ---
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const yearlyRevenue = await Booking.aggregate([
+            { $match: { payment_status: 'paid', createdAt: { $gte: startOfYear } } },
+            {
+                $group: {
+                    _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },
+                    revenue: { $sum: "$platform_fee" }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]);
+        const chartDataYear = yearlyRevenue.map(item => {
             const date = new Date(item._id.year, item._id.month - 1);
             return {
                 name: date.toLocaleString('default', { month: 'short' }),
@@ -114,10 +175,17 @@ export default async function handler(req, res) {
             stats: {
                 totalRevenue,
                 totalBookings,
-                activeListings
+                activeListings,
+                totalEscrowHeld,
+                escalatedCount: escalatedTickets.length
             },
             recentBookings: enrichedBookings,
-            chartData
+            escalatedTickets,
+            charts: {
+                sevenDays: chartData7Days,
+                sixMonths: chartData6Months,
+                thisYear: chartDataYear
+            }
         });
 
     } catch (error) {
