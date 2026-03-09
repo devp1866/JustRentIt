@@ -22,6 +22,7 @@ export default function AddProperty() {
         property_type: "apartment",
         location: "",
         city: "",
+        postal_code: "",
         bedrooms: 1,
         bathrooms: 1,
         area_sqft: 0,
@@ -91,6 +92,7 @@ export default function AddProperty() {
                 property_type: "apartment",
                 location: "",
                 city: "",
+                postal_code: "",
                 bedrooms: 1,
                 bathrooms: 1,
                 area_sqft: 0,
@@ -126,7 +128,8 @@ export default function AddProperty() {
         if (
             !formData.title ||
             !formData.location ||
-            !formData.city
+            !formData.city ||
+            !formData.postal_code
         ) {
             alert("Please fill in all required fields");
             return;
@@ -293,6 +296,7 @@ export default function AddProperty() {
             property_type: "apartment",
             location: "",
             city: "",
+            postal_code: "",
             bedrooms: 1,
             bathrooms: 1,
             area_sqft: 0,
@@ -549,6 +553,18 @@ export default function AddProperty() {
                                     value={formData.city}
                                     onChange={e => setFormData({ ...formData, city: e.target.value })}
                                     placeholder="New York"
+                                    className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="postal_code" className="block text-sm font-medium text-brand-dark mb-1">Postal Code *</label>
+                                <input
+                                    id="postal_code"
+                                    value={formData.postal_code}
+                                    onChange={e => setFormData({ ...formData, postal_code: e.target.value })}
+                                    placeholder="10001"
                                     className="w-full px-4 py-3 rounded-xl border border-brand-blue/20 focus:ring-2 focus:ring-brand-blue/50 focus:border-transparent outline-none transition-all bg-brand-cream/20 text-brand-dark"
                                     required
                                 />
@@ -917,8 +933,9 @@ export default function AddProperty() {
                 onClose={() => setShowGeoModal(false)}
                 onSuccess={handleVerificationSuccess}
                 propertyId={null} // Newly creating, so no ID yet
-                propertyAddress={`${formData.location}, ${formData.city}, ${formData.country || ''}`}
+                propertyAddress={formData.location}
                 propertyCity={formData.city}
+                propertyPostalCode={formData.postal_code}
             />
         </div>
     );

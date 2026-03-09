@@ -57,6 +57,16 @@ export default async function handler(req, res) {
                 await booking.save({ session: sessionMongoose });
             }
 
+            const Notification = (await import("../../../models/Notification")).default;
+
+            await new Notification({
+                user_email: escrow.landlord_email,
+                type: 'payment',
+                title: 'First Month Rent Released',
+                message: `The renter has successfully confirmed move-in. Your first month's rent payout is pending transfer.`,
+                link: '/dashboard'
+            }).save({ session: sessionMongoose });
+
             await sessionMongoose.commitTransaction();
 
             return res.status(200).json({ message: "Move-in confirmed successfully. First month's rent released." });

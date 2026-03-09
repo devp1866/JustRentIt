@@ -52,6 +52,16 @@ export default async function handler(req, res) {
                 if (budget_range) user.budget_range = budget_range;
 
                 await user.save();
+
+                const Notification = (await import("../../../models/Notification")).default;
+                await new Notification({
+                    user_email: user.email,
+                    type: 'system',
+                    title: 'Profile Updated',
+                    message: 'Your profile settings have been successfully updated.',
+                    link: '/profile'
+                }).save();
+
                 return res.status(200).json({ message: "Profile updated successfully" });
             }
 
@@ -85,6 +95,15 @@ export default async function handler(req, res) {
                 const hashedPassword = await bcrypt.hash(newPassword, 10);
                 user.password = hashedPassword;
                 await user.save();
+
+                const Notification = (await import("../../../models/Notification")).default;
+                await new Notification({
+                    user_email: user.email,
+                    type: 'system',
+                    title: 'Password Changed',
+                    message: 'Your account password was successfully changed. If this was not you, please contact support immediately.',
+                    link: '/profile'
+                }).save();
 
                 return res.status(200).json({ message: "Password changed successfully" });
             }
@@ -140,6 +159,15 @@ export default async function handler(req, res) {
                 user.otp_purpose = undefined;
 
                 await user.save();
+
+                const Notification = (await import("../../../models/Notification")).default;
+                await new Notification({
+                    user_email: user.email,
+                    type: 'system',
+                    title: 'Phone Verified',
+                    message: 'Your phone number has been successfully verified, unlocking enhanced trust tools.',
+                    link: '/profile'
+                }).save();
 
                 return res.status(200).json({ message: "Profile upgraded successfully" });
             }

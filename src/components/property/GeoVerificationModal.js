@@ -8,7 +8,8 @@ export default function GeoVerificationModal({
     onSuccess,
     propertyId,
     propertyAddress,
-    propertyCity
+    propertyCity,
+    propertyPostalCode
 }) {
     const [status, setStatus] = useState('idle'); // idle, locating, verifying, success, error, delegated
     const [errorMsg, setErrorMsg] = useState('');
@@ -44,20 +45,46 @@ export default function GeoVerificationModal({
                 setStatus('verifying');
 
                 try {
-                    // 1. Geocode the provided property address
-                    let res = await fetch(`/api/geocode?q=${encodeURIComponent(propertyAddress)}`);
+                    // 1. Cross-reference City and Postal Code to prevent Mismatched Entries
+                    let cityMatch = null;
+                    let postalMatch = null;
+
+                    if (propertyCity && propertyPostalCode) {
+                        const cityRes = await fetch(`/api/geocode?q=${encodeURIComponent(propertyCity)}`);
+                        const cityData = await cityRes.json();
+                        if (cityData && cityData.length > 0) cityMatch = cityData[0];
+
+                        const pcRes = await fetch(`/api/geocode?q=${encodeURIComponent(propertyPostalCode)}`);
+                        const pcData = await pcRes.json();
+                        if (pcData && pcData.length > 0) postalMatch = pcData[0];
+
+                        if (cityMatch && postalMatch) {
+                            const mismatchDist = calculateDistance(
+                                parseFloat(cityMatch.lat), parseFloat(cityMatch.lon),
+                                parseFloat(postalMatch.lat), parseFloat(postalMatch.lon)
+                            );
+
+                            if (mismatchDist > 50.0) {
+                                setStatus('error');
+                                setErrorMsg("Mismatched City and Postal Code. The postal code entered does not appear to be within the specified city. Please correct them.");
+                                return;
+                            }
+                        }
+                    }
+
+                    // 2. Geocode the provided full property address combined
+                    const fullAddress = `${propertyAddress}, ${propertyCity}, ${propertyPostalCode}`;
+                    let res = await fetch(`/api/geocode?q=${encodeURIComponent(fullAddress)}`);
                     let data = await res.json();
 
                     if (!data || data.length === 0) {
-                        // Fallback to searching the city if the exact address is unlisted or missing
-                        if (propertyCity) {
-                            res = await fetch(`/api/geocode?q=${encodeURIComponent(propertyCity)}`);
-                            data = await res.json();
-                        }
+                        // Fallback to searching just the postal code (the most precise boundary short of an exact address)
+                        res = await fetch(`/api/geocode?q=${encodeURIComponent(propertyPostalCode)}`);
+                        data = await res.json();
 
                         if (!data || data.length === 0) {
                             setStatus('error');
-                            setErrorMsg("Could not find coordinates for the entered property address or city. Please ensure the address or city is accurate.");
+                            setErrorMsg("Could not find coordinates for the entered property address, city, or postal code. Please ensure they are accurate.");
                             return;
                         }
                     }
@@ -65,21 +92,22 @@ export default function GeoVerificationModal({
                     const targetLat = parseFloat(data[0].lat);
                     const targetLon = parseFloat(data[0].lon);
 
-                    // 2. Compare distances
+                    // 3. Compare distance between the Validated Location and the User's GPS
                     const distance = calculateDistance(latitude, longitude, targetLat, targetLon);
 
-                    if (distance <= 5.0 || (propertyCity && data.length > 0)) { // Increased to 5 kilometers to loosen the distance constraint, or if matched city.
+                    // Strictly enforce 10 kilometers radius.
+                    if (distance <= 10.0) { 
                         setStatus('success');
                         setTimeout(() => {
                             onSuccess("verified");
                         }, 2000);
                     } else {
                         setStatus('error');
-                        setErrorMsg(`Verification failed. You appear to be ${distance.toFixed(1)}km away from the location. You must be physically present at the property city to verify it.`);
+                        setErrorMsg(`Verification failed. You are ${distance.toFixed(1)}km away from the property location. You must be physically present within 10km to verify it.`);
                     }
                 } catch (error) {
                     setStatus('error');
-                    setErrorMsg('Failed to verify location against the address. Please try again.');
+                    setErrorMsg('Failed to verify location. Please try again.');
                 }
             },
             (error) => {

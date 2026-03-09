@@ -6,6 +6,7 @@ const PropertySchema = new mongoose.Schema({
   property_type: { type: String, enum: ["apartment", "condo", "studio", "villa", "hotel", "resort"], required: true },
   location: { type: String, required: true },
   city: { type: String, required: true },
+  postal_code: { type: String, required: true },
 
   // Deprecated flat fields 
   bedrooms: { type: Number },

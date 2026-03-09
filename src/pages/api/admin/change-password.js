@@ -44,6 +44,15 @@ export default async function handler(req, res) {
         admin.password = hashedPassword;
         await admin.save();
 
+        const Notification = (await import("../../../models/Notification")).default;
+        await new Notification({
+            user_email: admin.email,
+            type: 'system',
+            title: 'Admin Password Changed',
+            message: 'Your administrator password has been changed successfully. Contact Super Admin if this was unauthorized.',
+            link: '/admin'
+        }).save();
+
         return res.status(200).json({ message: 'Password updated successfully' });
 
     } catch (error) {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Home, Building2, PlusCircle, User, LogOut, Menu, X } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
-
+import NotificationBell from './layout/NotificationBell';
 import Head from "next/head";
 
 export default function Layout({ children }) {
@@ -113,12 +113,16 @@ export default function Layout({ children }) {
                 ))}
               </nav>
               {/* User Actions */}
-              <div className="hidden md:flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-5">
                 {status === "loading" ? (
                   <Loader />
                 ) : user ? (
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
+                  <div className="flex items-center h-10">
+                    <div className="flex items-center pr-5 border-r border-gray-200">
+                      <NotificationBell />
+                    </div>
+                    <div className="flex items-center gap-3 pl-5">
+                      <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
                       <p className="text-xs text-gray-500 capitalize">{user.user_type || "renter"}</p>
                     </div>
@@ -154,6 +158,7 @@ export default function Layout({ children }) {
                           </button>
                         </div>
                       )}
+                    </div>
                     </div>
                   </div>
                 ) : (

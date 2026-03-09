@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const { rental_type, property_type, search, price_min, price_max, page = 1, limit = 9 } = req.query;
-    const filter = {};
+    const filter = { status: 'available' };
     if (rental_type && rental_type !== 'all') {
       filter.rental_type = rental_type;
     }
@@ -117,6 +117,17 @@ export default async function handler(req, res) {
 
       const newProp = new Property(req.body);
       await newProp.save();
+
+      const Notification = (await import("../../../models/Notification")).default;
+
+      await new Notification({
+          user_email: newProp.landlord_email,
+          type: 'property',
+          title: 'Property Listed Successfully',
+          message: `Your property "${newProp.title}" is now live and available for renters to view.`,
+          link: `/property-details/${newProp._id}`
+      }).save();
+
       return res.status(201).json(newProp);
     } catch (error) {
       console.error("Error creating property:", error);

@@ -35,7 +35,7 @@ export default function MyProperties({ user }) {
   });
 
   const handleDelete = (property) => {
-    if (window.confirm(`Are you sure you want to delete "${property.title}"?`)) {
+    if (window.confirm(`Are you sure you want to delete "${property.title}"?\n\nWARNING: This will permanently delete this property and all associated data, including bookings, reviews, escrow contracts, and dispute tickets. This action cannot be undone.`)) {
       deletePropertyMutation.mutate(property._id);
     }
   };

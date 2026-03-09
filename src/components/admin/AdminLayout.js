@@ -12,9 +12,9 @@ import {
     AlertTriangle,
     CreditCard,
     ChevronRight,
-    Search,
-    Bell
+    Search
 } from 'lucide-react';
+import NotificationBell from '../layout/NotificationBell';
 
 export default function AdminLayout({ children, title = 'Admin Dashboard' }) {
     const router = useRouter();
@@ -168,10 +168,7 @@ export default function AdminLayout({ children, title = 'Admin Dashboard' }) {
                                 className="bg-transparent border-none outline-none text-sm w-48 text-brand-dark placeholder-gray-400"
                             />
                         </div>
-                        <button className="relative p-2 text-gray-400 hover:text-brand-dark transition-colors rounded-full hover:bg-gray-100">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                        </button>
+                        <NotificationBell />
                     </div>
                 </header>
 

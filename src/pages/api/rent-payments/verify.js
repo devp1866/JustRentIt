@@ -67,6 +67,16 @@ export default async function handler(req, res) {
             await booking.save();
         }
 
+        const Notification = (await import("../../../models/Notification")).default;
+
+        await new Notification({
+            user_email: escrow.landlord_email,
+            type: 'payment',
+            title: 'Rent Payment Received',
+            message: `You have received a rent payment for Month ${month_number}. The funds will be transferred to your account shortly.`,
+            link: '/dashboard'
+        }).save();
+
         res.status(200).json({ message: "Payment verified successfully", escrow });
     } catch (error) {
         console.error("Rent verification error:", error);

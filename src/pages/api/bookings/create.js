@@ -238,6 +238,24 @@ export default async function handler(req, res) {
                 await newEscrow.save({ session });
             }
 
+            const Notification = (await import("../../../models/Notification")).default;
+
+            await new Notification({
+                user_email: session.user?.email || req.body.renter_email,
+                type: 'booking',
+                title: 'Booking Confirmed',
+                message: `Your booking for ${property_title} has been confirmed successfully!`,
+                link: '/dashboard'
+            }).save({ session });
+
+            await new Notification({
+                user_email: landlord_email,
+                type: 'booking',
+                title: 'New Booking Received',
+                message: `You have received a new booking for ${property_title}.`,
+                link: '/dashboard'
+            }).save({ session });
+
             await session.commitTransaction();
 
             return res.status(201).json({ message: "Booking created successfully", booking: newBooking.toObject() });

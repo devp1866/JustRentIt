@@ -44,6 +44,16 @@ export default async function handler(req, res) {
 
         await booking.save();
 
+        const Notification = (await import("../../../models/Notification")).default;
+
+        await new Notification({
+            user_email: booking.landlord_email,
+            type: 'payment',
+            title: 'Payment Released',
+            message: `The renter has successfully checked in. Your payout has been released.`,
+            link: '/dashboard'
+        }).save();
+
         return res.status(200).json({ message: "Check-in confirmed successfully. Payment released to landlord." });
 
     } catch (error) {

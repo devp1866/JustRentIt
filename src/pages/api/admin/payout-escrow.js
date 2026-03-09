@@ -69,6 +69,34 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: 'Invalid release type' });
         }
 
+        const Notification = (await import("../../../models/Notification")).default;
+
+        if (type === 'release_rent') {
+            await new Notification({
+                user_email: escrow.landlord_email,
+                type: 'payment',
+                title: 'First Month Rent Released',
+                message: 'An administrator has released your first month rent payout to your account.',
+                link: '/dashboard'
+            }).save();
+        } else if (type === 'release_deposit_to_renter') {
+            await new Notification({
+                user_email: escrow.renter_email,
+                type: 'payment',
+                title: 'Security Deposit Refunded',
+                message: 'An administrator has released the security deposit back to your account.',
+                link: '/dashboard'
+            }).save();
+        } else if (type === 'release_deposit_to_landlord') {
+            await new Notification({
+                user_email: escrow.landlord_email,
+                type: 'payment',
+                title: 'Security Deposit Released',
+                message: 'An administrator has released the renter safety deposit to your account.',
+                link: '/dashboard'
+            }).save();
+        }
+
         await escrow.save();
         res.status(200).json({ message: 'Escrow updated successfully', escrow });
 

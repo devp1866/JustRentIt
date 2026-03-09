@@ -21,6 +21,7 @@ export default function EditProperty() {
         property_type: "apartment",
         location: "",
         city: "",
+        postal_code: "",
         bedrooms: 1,
         bathrooms: 1,
         area_sqft: 0,
@@ -60,6 +61,7 @@ export default function EditProperty() {
                 property_type: property.property_type || "apartment",
                 location: property.location || "",
                 city: property.city || "",
+                postal_code: property.postal_code || "",
                 bedrooms: property.bedrooms || 1,
                 bathrooms: property.bathrooms || 1,
                 area_sqft: property.area_sqft || 0,
@@ -101,7 +103,8 @@ export default function EditProperty() {
         if (
             !formData.title ||
             !formData.location ||
-            !formData.city
+            !formData.city ||
+            !formData.postal_code
         ) {
             alert("Please fill in all required fields");
             return;
@@ -551,6 +554,17 @@ export default function EditProperty() {
                                     value={formData.city}
                                     onChange={e => setFormData({ ...formData, city: e.target.value })}
                                     placeholder="New York"
+                                    className="mt-1 w-full border px-3 py-2 rounded"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="postal_code">Postal Code *</label>
+                                <input
+                                    id="postal_code"
+                                    value={formData.postal_code}
+                                    onChange={e => setFormData({ ...formData, postal_code: e.target.value })}
+                                    placeholder="10001"
                                     className="mt-1 w-full border px-3 py-2 rounded"
                                     required
                                 />
