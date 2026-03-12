@@ -123,12 +123,11 @@ export default async function handler(req, res) {
                 user.otp_purpose = "phone_verification";
                 await user.save();
 
-                // Send SMS
-                const { sendSMS } = await import("../../../lib/sms");
                 const smsResult = await sendSMS(`+91${phone}`, `Your JustRentIt verification code is: ${otp}`);
 
                 if (!smsResult.success) {
-                    console.log(`[DEV MODE] Bypass Twilio Error. Use OTP: ${otp} to verify.`);
+                    // This console.log will be visible in the Vercel Function/Server Logs in Production
+                    console.log(`[SYSTEM OTP MOCK - VISIBLE IN PROD LOGS] Bypass Twilio Error. Use the generated OTP: ${otp} to verify.`);
                 }
 
                 return res.status(200).json({ message: "OTP sent successfully" });
@@ -145,7 +144,18 @@ export default async function handler(req, res) {
                     return res.status(400).json({ error: "OTP expired" });
                 }
 
-                const isValid = await verifyOTP(otp, user.otp_hash);
+                // --- START INDEPENDENT DUMMY OTP BLOCK ---
+                // You can safely delete this entire block when you go completely live with real Twilio SMS.
+                let isValid = false;
+                if (otp === "123456") {
+                    console.log(`[DUMMY OTP ACCEPTED] Bypassed verification explicitly via master code 123456 for phone: ${phone}`);
+                    isValid = true;
+                } else {
+                    // If not using master code, verify against the actual hashed OTP from DB
+                    isValid = await verifyOTP(otp, user.otp_hash);
+                }
+                // --- END INDEPENDENT DUMMY OTP BLOCK ---
+
                 if (!isValid) {
                     return res.status(400).json({ error: "Invalid OTP" });
                 }
