@@ -11,7 +11,7 @@ export default function MyApp({ Component, pageProps }) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <SessionProvider session={pageProps.session} refetchOnWindowFocus={false}>
+    <SessionProvider session={pageProps.session} refetchOnWindowFocus={true} refetchInterval={5 * 60}>
       <QueryClientProvider client={queryClient}>
         <Layout>
           <Component {...pageProps} />

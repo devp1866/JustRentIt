@@ -180,7 +180,7 @@ export default function TicketDetails() {
                                                 className="relative h-24 rounded-xl overflow-hidden cursor-zoom-in hover:opacity-90 border border-gray-200"
                                                 onClick={() => setZoomedImage(url)}
                                             >
-                                                <Image src={url} alt={`Evidence ${i}`} fill className="object-cover" />
+                                                <Image src={url} alt={`Evidence ${i}`} fill unoptimized={true} className="object-cover" />
                                             </div>
                                         ))}
                                     </div>
@@ -260,7 +260,7 @@ export default function TicketDetails() {
                                                                     className="relative h-20 rounded-lg overflow-hidden border border-black/10 cursor-zoom-in"
                                                                     onClick={() => setZoomedImage(url)}
                                                                 >
-                                                                    <Image src={url} alt="Attachment" fill className="object-cover" />
+                                                                    <Image src={url} alt="Attachment" fill unoptimized={true} className="object-cover" />
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -345,6 +345,7 @@ export default function TicketDetails() {
                             src={zoomedImage}
                             alt="Zoomed Evidence"
                             fill
+                            unoptimized={true}
                             className="object-contain"
                         />
                     </div>

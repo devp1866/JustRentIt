@@ -283,6 +283,7 @@ export default function MyBookings({ user }) {
                       src={booking.property_image || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800"}
                       alt={booking.property_title}
                       fill
+                      unoptimized={true}
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   </div>

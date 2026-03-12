@@ -259,6 +259,7 @@ export default function PropertyDetails() {
                       src={property.images[0]}
                       alt={property.title}
                       fill
+                      unoptimized={true}
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       priority
                     />
@@ -283,7 +284,7 @@ export default function PropertyDetails() {
                       className="relative h-24 rounded-lg overflow-hidden cursor-pointer hover:opacity-90"
                       onClick={() => openGallery(idx + 1)}
                     >
-                      <Image src={img} alt={`View ${idx + 2}`} fill className="object-cover" />
+                      <Image src={img} alt={`View ${idx + 2}`} fill unoptimized={true} className="object-cover" />
                       {idx === 3 && property.images.length > 5 && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white font-bold text-lg">
                           +{property.images.length - 5}

@@ -184,7 +184,11 @@ export default async function handler(req, res) {
                     link: '/profile'
                 }).save();
 
-                return res.status(200).json({ message: "Profile upgraded successfully" });
+                return res.status(200).json({ 
+                    message: "Profile upgraded successfully",
+                    user_type: user.user_type, // Explicitly tell the frontend NextAuth what to mutate to
+                    phone: user.phone
+                });
             }
 
             if (action === "update_phone") {

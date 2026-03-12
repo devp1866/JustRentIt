@@ -688,7 +688,7 @@ export default function AddProperty() {
                                             <div className="flex flex-wrap gap-2">
                                                 {room.images.map((img, imgIdx) => (
                                                     <div key={imgIdx} className="relative w-20 h-20">
-                                                        <Image src={img} alt="Room" fill className="object-cover rounded-lg" />
+                                                        <Image src={img} alt="Room" fill unoptimized={true} className="object-cover rounded-lg" />
                                                     </div>
                                                 ))}
                                                 <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-brand-blue/20 rounded-lg cursor-pointer hover:bg-brand-blue/5">
@@ -819,6 +819,7 @@ export default function AddProperty() {
                                                 src={img}
                                                 alt="Property preview"
                                                 fill
+                                                unoptimized={true}
                                                 className="object-cover rounded-xl"
                                             />
                                             <button

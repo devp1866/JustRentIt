@@ -688,7 +688,7 @@ export default function EditProperty() {
                                             <div className="flex flex-wrap gap-2">
                                                 {room.images && room.images.map((img, imgIdx) => (
                                                     <div key={imgIdx} className="relative w-20 h-20">
-                                                        <Image src={img} alt="Room" fill className="object-cover rounded-lg" />
+                                                        <Image src={img} alt="Room" fill unoptimized={true} className="object-cover rounded-lg" />
                                                     </div>
                                                 ))}
                                                 <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100">
@@ -817,6 +817,7 @@ export default function EditProperty() {
                                                 src={img}
                                                 alt="Property preview"
                                                 fill
+                                                unoptimized={true}
                                                 className="object-cover rounded-lg"
                                             />
                                             <button

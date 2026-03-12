@@ -114,8 +114,14 @@ export default function Profile() {
                 setOtpSent(false);
                 setOtp("");
                 queryClient.invalidateQueries(["profile"]);
-                await update({ user_type: "both", phone: phoneInput });
-                setTimeout(() => router.push("/add-property"), 1500);
+                
+                // Use the exact user_type returned from the server (either 'landlord' or upgraded to 'both')
+                await update({ user_type: data.user_type || "both", phone: phoneInput });
+                
+                // Give NextAuth a tiny window to overwrite the tab's cookie before pushing
+                setTimeout(() => {
+                    router.push("/add-property");
+                }, 500);
             }
         },
         onError: (err) => {
@@ -418,6 +424,7 @@ export default function Profile() {
                                     src={user.govt_id_image}
                                     alt="Government ID"
                                     fill
+                                    unoptimized={true}
                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                             </div>

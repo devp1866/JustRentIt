@@ -50,18 +50,34 @@ export const authOptions = {
                 token.user_type = user.user_type;
                 token.phone = user.phone;
             }
-            if (trigger === "update" && session) {
-                if (session.user_type) token.user_type = session.user_type;
-                if (session.phone) token.phone = session.phone;
+            // When update() is called on the frontend, forcibly query the DB 
+            // to ensure the JWT encapsulates the absolute latest DB state, preventing reload stales.
+            if (trigger === "update") {
+                try {
+                    await dbConnect();
+                    const User = (await import("../models/User")).default;
+                    const freshUser = await User.findOne({ email: token.email });
+                    if (freshUser) {
+                        token.user_type = freshUser.user_type;
+                        token.phone = freshUser.phone;
+                    }
+                } catch (error) {
+                    console.error("JWT Update DB fetch failed:", error);
+                    // Fallback to frontend trusting if DB fails
+                    if (session?.user_type) token.user_type = session.user_type;
+                    if (session?.phone) token.phone = session.phone;
+                }
             }
             return token;
         },
         async session({ session, token }) {
-            session.user.id = token.id;
-            session.user.user_type = token.user_type;
-            session.user.name = token.name;
-            session.user.email = token.email;
-            session.user.phone = token.phone;
+            if (session?.user) {
+                session.user.id = token.id;
+                session.user.user_type = token.user_type;
+                session.user.name = token.name;
+                session.user.email = token.email;
+                session.user.phone = token.phone;
+            }
             return session;
         },
     },
