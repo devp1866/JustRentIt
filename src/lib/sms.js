@@ -22,7 +22,9 @@ export const sendSMS = async (to, body) => {
         console.log(`SMS sent to ${to}. SID: ${message.sid}`);
         return { success: true, sid: message.sid };
     } catch (error) {
-        console.error('Error sending SMS:', error);
-        throw new Error('Failed to send SMS');
+        console.error('Error sending SMS via Twilio:', error.message);
+        console.warn(`[FALLBACK - MOCK SMS] To: ${to}, Body: ${body}`);
+        // Return success: false but pass through so the dev can test local OTP flow
+        return { success: false, error: error.message };
     }
 };
