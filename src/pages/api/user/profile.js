@@ -123,6 +123,7 @@ export default async function handler(req, res) {
                 user.otp_purpose = "phone_verification";
                 await user.save();
 
+                const { sendSMS } = await import("../../../lib/sms");
                 const smsResult = await sendSMS(`+91${phone}`, `Your JustRentIt verification code is: ${otp}`);
 
                 if (!smsResult.success) {
